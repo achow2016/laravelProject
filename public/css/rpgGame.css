@@ -1,0 +1,87 @@
+.centered-button .btn {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+.centered-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.characterPosition {
+	height: 40px;
+	border: 1px solid black;
+}
+
+.content .spacerBox {
+	height: 100%;
+	margin-bottom: 0%;
+}	
+
+#startScreenButtons {
+	margin-top: 20%;	
+}	
+
+
+.terrainBox {
+	height: 40%;	
+	position: relative;
+	margin-top: 0%;
+	position: relative;
+}	
+
+.terrainBox #enemyCondition{
+	right: 0;
+	top: 0; 
+	position: absolute;
+}	
+
+.terrainBox #activePlayer {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+}
+
+.terrainBox #activeEnemy {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+}
+
+#characterGrid {
+	margin-top: 20%;	
+}
+
+#playerMainDashboard {
+	margin-top: 10%;	
+}
+
+#playerCommandCenter {
+	margin-top: 10%;	
+}	
+
+.enemyStatus {
+		font-size: 10pt;
+}
+
+#enemyHealthSquare {
+	height: 20px;
+	width: 20px;
+	background-color: blue;
+}
+
+#enemyConditionTriangle {
+	width:0;
+	height:0;
+	border-left: 10px solid transparent;
+	border-right: 10px solid transparent;
+	border-top: 20px solid green;
+}
+
+.playerBodyGrid {
+	height: 20px;
+	width: 20px;
+	background-color: green;
+	border: 1px solid black;
+}	

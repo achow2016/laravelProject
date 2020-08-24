@@ -1,0 +1,11 @@
+#corkboardContainer {
+	position: relative;
+}
+
+#corkboardReturn {
+	float: left;
+}
+
+.corkboardPost {
+	border: 1px solid black;
+}
