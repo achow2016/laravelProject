@@ -139,8 +139,10 @@
 										<div class="col">
 											<img id="activeEnemy" src="data:," alt="Enemy Image" height="80px" width="80px">		
 											<div id="enemyHealthSquare"></div>
-											<br>
+											
 											<div id="enemyConditionTriangle"></div>
+											
+											<div id="enemyStaminaCircle"></div>
 										</div>
 									</div>
 
@@ -223,21 +225,20 @@
 											<div class="row">
 												<div class="col">
 													<p id="playerStatus" data-toggle="tooltip" title=""></p>
-													<p id="playerSkill">---</p>
-													<p id="gameStatus" data-toggle="tooltip" title="" style="display:none"></p>
+													<p id="gameStatus" data-toggle="tooltip" title="">---</p>
 												</div>
 												
 											</div>
 											<div class="row">
 												<div class="col">
 													<div class="progress">
-														<div id="playerHealthBar" class="progress-bar bg-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
+														HP:<div id="playerHealthBar" class="progress-bar bg-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
 														aria-valuemax="100" style="width:100%">
 														</div>
 													</div>
 													<br>
 													<div class="progress">
-														<div id="playerStaminaBar" class="progress-bar bg-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
+														SP:<div id="playerStaminaBar" class="progress-bar bg-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
 														aria-valuemax="100" style="width:100%">
 														</div>													
 													</div>
@@ -274,7 +275,7 @@
 							</div>
 						</div>
 				
-				<!--enemy condition modal-->
+				<!--enemy detail modal-->
 				
 				<!-- Modal -->
 				<div class="modal fade" id="enemyModal" role="dialog">
@@ -288,8 +289,12 @@
 							<div class="modal-body">
 								<div class="col">
 									<div class="row">
-										<p>Condition:</p>&nbsp;
-										<p id="enemyCondition" data-toggle="tooltip" title=""></p>
+										<p>Health:</p>&nbsp;
+										<p id="enemyHealthCondition" data-toggle="tooltip" title=""></p>
+									</div>
+									<div class="row">
+										<p>Stamina:</p>&nbsp;
+										<p id="enemyStaminaCondition" data-toggle="tooltip" title=""></p>
 									</div>
 									<div class="row">
 										<p>Last Skill:</p>&nbsp;

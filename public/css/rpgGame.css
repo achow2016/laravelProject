@@ -69,6 +69,7 @@
 	height: 20px;
 	width: 20px;
 	background-color: blue;
+	margin-bottom: 2px;
 }
 
 #enemyConditionTriangle {
@@ -77,6 +78,14 @@
 	border-left: 10px solid transparent;
 	border-right: 10px solid transparent;
 	border-top: 20px solid green;
+	margin-bottom: 2px;
+}
+
+#enemyStaminaCircle {
+	height: 20px;
+	width: 20px;
+	background-color: blue;
+	border-radius: 50%;	
 }
 
 .playerBodyGrid {
