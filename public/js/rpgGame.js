@@ -13,10 +13,11 @@ var enemyList = '{ "enemies" : [' +
 var raceList = '{ "races" : [' +
 	'{ "name":"human", "health":"10", "attack":"1", "stamina":"10", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" } ]}';		
 
-var meleeSkillList = '{ "skills" : [' +
-	'{ "name":"Arm Smash", "effect":"Attack Reduction", "percent":"25", "meleePercentage":"10", "staminaCost":"1" } ,' +
-	'{ "name":"Advancing Swing", "effect":"Decrease Distance One", "percent":"100", "meleePercentage":"50", "staminaCost":"2" } ,' +
-	'{ "name":"Disengage", "effect":"Increase Distance One", "percent":"100", "meleePercentage":"100", "staminaCost":"2" }]}';
+
+var meleeSkillList = [{ "name":"Arm Smash", "debuff":"Attack Reduction", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"25", "meleePercentage":"10", "staminaCost":"1" },
+	{ "name":"Advancing Swing I", "debuff":"none", "effect":"Decrease Distance", "range":"1", "effectQuantity":"1", "percent":"100", "meleePercentage":"50", "staminaCost":"2" },
+	{ "name":"Disengage II", "debuff":"none", "effect":"Increase Distance", "range":"6", "effectQuantity":"2", "percent":"100", "meleePercentage":"50", "staminaCost":"2" }];
+
 
 var battleItemList = '{ "items" : [' +
 	'{ "name":"Auto-Injector: Berserker" , "effect":"Attack Increase", "effectStackLimit":"1", "meleePercentage":"10" } ,' +
@@ -79,6 +80,7 @@ class Actor {
 	//health and chance add 1 to 10
 	//attack and chance add 0 to 5
 	constructor(name,health,attack,stamina) {
+		this.position = 1;
 		this.name = name;
 		this.health = parseInt(health);
 		this.currentHealth = parseInt(health);
@@ -94,14 +96,20 @@ class Actor {
 		this.stamina = stamina;
 	}	
 	
+	setPosition(position) {
+		this.position = position;	
+	}	
+	getPosition() {
+		return this.position;	
+	}		
+	
 	setStamina(stamina) {
-			this.stamina = stamina;
+		this.stamina = stamina;
 	}
 
 	getStamina(stamina) {
-			return this.stamina;
+		return this.stamina;
 	}				
-	
 	
 	addMeleeSkill(name,effect,percent) {
 		var skill = new MeleeSkill(name,effect,percent);
@@ -225,7 +233,16 @@ var playerSkillCount = 0;
 var playerSkillArray = null;
 var playerAttackPenalty = 0;
 var enemyAttackPenalty = 0;
+
+var playerPosition = 0;
+var enemyPosition = 0;
+
+var playerAttackFailure = false;
+var enemyAttackFailure = false;
+
+
 var firstRun = true;
+
 
 
 //sets initial game mechanic values
@@ -238,7 +255,8 @@ function gameInit() {
 	battleItemObj = JSON.parse(battleItemList);
 	enemyObj = JSON.parse(enemyList);
 	raceObj = JSON.parse(raceList);
-	meleeSkillObj = JSON.parse(meleeSkillList);
+	
+	meleeSkillObj = meleeSkillList;
 	
 	
 	//init player
@@ -259,14 +277,12 @@ function gameInit() {
 		armourObj.armours[0].reduction
 	);
 	
-	player.addMeleeSkill(meleeSkillObj.skills[0].name,meleeSkillObj.skills[0].effect,
-		meleeSkillObj.skills[0].percent, meleeSkillObj.skills[0].penalty,
-		meleeSkillObj.skills[0].staminaCost);
-	
-	player.addMeleeSkill(meleeSkillObj.skills[1].name,meleeSkillObj.skills[1].effect,
-		meleeSkillObj.skills[1].percent, meleeSkillObj.skills[1].penalty,
-		meleeSkillObj.skills[1].staminaCost);
-	
+	//assign list of skills
+	for(var i = 0; i < meleeSkillObj.length; i++) {
+		player.addMeleeSkill(meleeSkillObj[i].name,meleeSkillObj[i].effect,
+			meleeSkillObj[i].percent, meleeSkillObj[i].penalty,
+			meleeSkillObj[i].staminaCost);
+	}
 	
 	//init enemy 
 	enemy = new Actor(
@@ -311,7 +327,6 @@ function gameInit() {
 	enemyArmour = enemy.getArmourValue();
 	enemyAttack = enemy.getAttackValue();
 	
-
 	//add buttons for each skill in possession
 	//prints skill names
 	//attacks right after with modifiers applied
@@ -323,29 +338,86 @@ function gameInit() {
 			$('#skillButtonArray').append('<input name="' + skillName + '" id=skillButton' + i + ' type="button" class="btn btn-primary active"></button>');								
 			
 			$('#skillButton' + i).prop('value',skillName).click({param1:skillName}, function(event) {
-				
-				for(var j = 0; j < Object.keys(meleeSkillObj).length; j++) {	
+				//for(var j = 0; j < Object.keys(meleeSkillObj).length; j++) {	
+				for(var j = 0; j < meleeSkillObj.length; j++) {	
 					//finds skill details in data
-					if(meleeSkillObj.skills[j].name == event.data.param1) {
-						playerAttackPenalty = meleeSkillObj.skills[j].meleePercentage;
-						enemyAttackPenalty = meleeSkillObj.skills[j].percent;
+					if(meleeSkillObj[j].name == event.data.param1) {
+						playerAttackPenalty = meleeSkillObj[j].meleePercentage;
+						enemyAttackPenalty = meleeSkillObj[j].percent;
 
-						//first checks if stamina available, if not closes modal and shows message
-						if((playerCurrentStamina - meleeSkillObj.skills[j].staminaCost) < 0) {
+						//first checks if stamina available, if not attack fails and regular exchange happens
+						if((playerCurrentStamina - meleeSkillObj[j].staminaCost) < 0) {
 							$('#skillModal').modal('toggle');
+							$("#gameStatus").text("Stamina too low!");
+							playerAttackFailure = true;
 							setTimeout(function(){
-								$("#gameStatus").text("Stamina too low!");
+								$("#gameStatus").text("---");
 							}, 1500);
+							$('#skillModal').modal('toggle');
+							$("#attackButton").click();
+						}
+						//next checks if target in range, if not attack fails and regular exchange happens
+						else if((playerPosition + enemyPosition) > meleeSkillObj[j].range) {
+							$("#gameStatus").text("Target out of range!");
+							playerAttackFailure = true;
+							setTimeout(function(){
+								$("#gameStatus").text("---");
+							}, 1500);
+							$('#skillModal').modal('toggle');
+							$("#attackButton").click();
 						}
 						//if enough stamina, executes skill
-						else {
-							playerCurrentStamina = playerCurrentStamina - meleeSkillObj.skills[j].staminaCost;
+						else {					
+							playerCurrentStamina = playerCurrentStamina - meleeSkillObj[j].staminaCost;
 							$("#playerStaminaBar").text(playerCurrentStamina + "/" + playerStamina);
 							$("#playerStaminaBar").css('width', (Math.floor((playerCurrentStamina / playerStamina) * 100)) + "%");
 									
-							$("#gameStatus").text(meleeSkillObj.skills[j].name);
-							$("#enemyActiveEffects").text(meleeSkillObj.skills[j].effect);
-							$("#enemyConditionTriangle").css('border-top', '20px solid red');
+							$("#gameStatus").text(meleeSkillObj[j].name);
+							
+							//moves back player. 
+							//if player already at +3, opponent is shifted instead
+							//+3, +3 is maximum distance in moving zone
+							if(meleeSkillObj[j].effect === "Increase Distance") {
+								if(playerPosition < 3) {
+									playerPosition = playerPosition + parseInt(meleeSkillObj[j].effectQuantity);
+									if(playerPosition > 3)
+										playerPosition = 3;	
+								}
+								if(playerPosition == 3 && enemyPosition < 3) {
+									enemyPosition = enemyPosition +  parseInt(meleeSkillObj[j].effectQuantity);
+									if(enemyPosition > 3)
+										enemyPosition = 3;
+								}	
+								$(".characterPosition").css('background-color', 'green');
+								$("#playerGridColumn" + playerPosition).css('background-color', 'gray');
+								$("#enemyGridColumn" + enemyPosition).css('background-color', 'gray');								
+							}
+							
+							//moves forward player. 
+							//if opponent already at +0, player is shifted forward instead
+							if(meleeSkillObj[j].effect === "Decrease Distance") {
+								if(enemyPosition > 0) {
+									enemyPosition = enemyPosition -  parseInt(meleeSkillObj[j].effectQuantity);
+									if(enemyPosition < 0)
+										enemyPosition = 0;										
+								}
+								if(enemyPosition == 0 && playerPosition > 0) {
+									playerPosition = playerPosition -  parseInt(meleeSkillObj[j].effectQuantity);
+									if(playerPosition < 0)
+										playerPosition = 0;	
+								}	
+								//sets grid based on distance
+								$(".characterPosition").css('background-color', 'green');
+								$("#playerGridColumn" + playerPosition).css('background-color', 'gray');
+								$("#enemyGridColumn" + enemyPosition).css('background-color', 'gray');
+							}
+
+							//applies debuff if any			
+							if(meleeSkillObj[j].debuff != "none") {
+								$("#enemyActiveEffects").text(meleeSkillObj[j].debuff);
+								$("#enemyConditionTriangle").css('border-top', '20px solid red');
+							}
+							
 							setTimeout(function(){
 								$("#gameStatus").text("---");
 							}, 1500);
@@ -361,29 +433,31 @@ function gameInit() {
 	}
 
 
+	//game UI reset
 	
-	//reset health, stamina bar length
-	//reset enemy health condition
+	$(".characterPosition").css('background-color', 'green');
+	$("#playerGridColumn0").css('background-color', 'gray');
+	$("#enemyGridColumn0").css('background-color', 'gray');
 	
 	$("#gameStatus").text("---");
 	
-	$("#playerHealthCondition").text("Uninjured").css('color', 'green');
+	$("#playerHealthCondition").text('Uninjured').css('color', 'green');
 	$("#playerHealthBar").css('width', 100 + "%");
 	$("#playerStaminaBar").css('width', 100 + "%");
 	
 	//reset health bars back to default
 	$("#playerHealthBar").removeClass();
-	$("#playerHealthBar").addClass("progress-bar");
-	$("#playerHealthBar").addClass("bg-success");
+	$("#playerHealthBar").addClass('progress-bar');
+	$("#playerHealthBar").addClass('bg-success');
 	
 	//reset stamina bar back to default
 	$("#playerStaminaBar").removeClass();
-	$("#playerStaminaBar").addClass("progress-bar");
-	$("#playerStaminaBar").addClass("bg-success");
+	$("#playerStaminaBar").addClass('progress-bar');
+	$("#playerStaminaBar").addClass('bg-success');
 	
 	//enemy condition reset
-	$("#enemyHealthCondition").text("Uninjured").css('color', 'green');
-	$("#enemyStaminaCondition").text("Alert").css('color', 'green');
+	$("#enemyHealthCondition").text('Uninjured').css('color', 'green');
+	$("#enemyStaminaCondition").text('Alert').css('color', 'green');
 	$("#enemyActiveEffects").text("");
 	$("#enemyStaminaCircle").css('background-color', 'blue');
 	$("#enemyConditionTriangle").css('border-top', '20px solid blue');
@@ -442,36 +516,53 @@ $(document).ready(function(){
 	//calculates damages, updates fields on attack button
 
 	$("#attackButton").click(function() {
-		
-		playerCurrentStamina--;
-		$("#playerStaminaBar").text(playerCurrentStamina + "/" + playerStamina);
-		$("#playerStaminaBar").css('width', (Math.floor((playerCurrentStamina / playerStamina) * 100)) + "%");
-				
-		enemyCurrentStamina--;
-		
-		var playerDamage = 0;
-		var enemyDamage = 0; 
-		
-		playerDamage = playerAttack - enemyArmour;
-		enemyDamage = enemyAttack - playerArmour;
-			
-		if(playerAttackPenalty != 0) {
-			enemyDamage = Math.floor(enemyDamage * (enemyAttackPenalty / 100));
-		}	
-		
-		if(enemyAttackPenalty != 0) {
-			enemyDamage = Math.floor(enemyDamage * (enemyAttackPenalty / 100));
-		}	
-
-		playerAttackPenalty = 0;
-		
-		if(enemyDamage > 0) {
-			playerCurrentHealth = playerCurrentHealth - enemyDamage;
-		}	
-		
-		if(playerDamage > 0) {
-			enemyCurrentHealth = enemyCurrentHealth - playerDamage;
+					
+		//player attack sequence only happens if attack did not fail, resets after
+		if(playerAttackFailure == false) {
+			playerCurrentStamina--;
+			$("#playerStaminaBar").text(playerCurrentStamina + "/" + playerStamina);
+			$("#playerStaminaBar").css('width', (Math.floor((playerCurrentStamina / playerStamina) * 100)) + "%");
+			var playerDamage = 0;
+			if(playerAttackPenalty != 0) {
+				playerDamage = Math.floor(playerDamage * (playerAttackPenalty / 100));
+			}	
+			else {
+				playerDamage = playerAttack - enemyArmour;
+			}
+			playerAttackPenalty = 0;
+			if(playerDamage > 0) {
+				enemyCurrentHealth = enemyCurrentHealth - playerDamage;
+			}
 		}
+		playerAttackFailure = false;
+		
+		//enemy moves forward if not close enough to attack 
+		if(playerPosition == 0 && enemyPosition != 0) {
+			enemyPosition--;	
+		}	
+		else if(playerPosition > 0 && enemyPosition == 0) {
+			playerPosition--;
+		}
+		else if(playerPosition != 0 && enemyPosition != 0) {
+			enemyPosition--;
+		}	
+		else {			
+			enemyCurrentStamina--;
+			var enemyDamage = 0; 
+			enemyDamage = enemyAttack - playerArmour;
+			if(enemyAttackPenalty != 0) {
+				enemyDamage = Math.floor(enemyDamage * (enemyAttackPenalty / 100));
+			}	
+			if(enemyDamage > 0) {
+				playerCurrentHealth = playerCurrentHealth - enemyDamage;
+			}	
+		}
+		
+		//sets grid based on distance
+		$(".characterPosition").css('background-color', 'green');
+		$("#playerGridColumn" + playerPosition).css('background-color', 'gray');
+		$("#enemyGridColumn" + enemyPosition).css('background-color', 'gray');
+
 			
 		//player attack, change to attack frame(s) and back after a while
 		$(".playerImage").attr("src", raceObj.races[0].melee);

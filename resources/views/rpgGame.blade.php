@@ -155,22 +155,21 @@
 									-->
 									
 									<div class="row" id="characterGrid">
-										<div id="characterGridColumn1" class="col characterPosition">
-											qa
+										<div id="playerGridColumn3" class="col characterPosition">
 										</div>
-										<div id="characterGridColumn2" class="col characterPosition">
+										<div id="playerGridColumn2" class="col characterPosition">
 										</div>
-										<div id="characterGridColumn3" class="col characterPosition">
+										<div id="playerGridColumn1" class="col characterPosition">
 										</div>
-										<div id="characterGridColumn4" class="col characterPosition">
+										<div id="playerGridColumn0" class="col characterPosition">
 										</div>
-										<div id="characterGridColumn5" class="col characterPosition">
+										<div id="enemyGridColumn0" class="col characterPosition">
 										</div>
-										<div id="characterGridColumn6" class="col characterPosition">
+										<div id="enemyGridColumn1" class="col characterPosition">
 										</div>
-										<div id="characterGridColumn7" class="col characterPosition">
+										<div id="enemyGridColumn2" class="col characterPosition">
 										</div>
-										<div id="characterGridColumn8" class="col characterPosition">
+										<div id="enemyGridColumn3" class="col characterPosition">
 										</div>
 									</div>
 									
