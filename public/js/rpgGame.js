@@ -1,17 +1,13 @@
 //game data
 
-var weaponList = '{ "weapons" : [' +
-	'{ "name":"Wood Sword" , "damage":"1" } ]}';
+var weaponList = [{ "name":"Wood Sword" , "damage":"1" } ];
 
-var armourList = '{ "armours" : [' +
-	'{ "name":"Wood armour" , "reduction":"1" } ]}';
+var armourList = [{ "name":"Wood armour" , "reduction":"1" } ];
 	
-var enemyList = '{ "enemies" : [' +
-	'{ "name":"Pickpocket", "health":"10", "attack":"1", "stamina":"10", "avatar":"/img/enemyFace.jpg" } ,' +
-	'{ "name":"Mugger", "health":"15", "attack":"1", "stamina":"10", "avatar":"/img/enemyFace.jpg" }]}';
+var enemyList = [{ "name":"Pickpocket", "health":"10", "attack":"1", "stamina":"10", "avatar":"/img/enemyFace.jpg" },
+	{ "name":"Mugger", "health":"15", "attack":"1", "stamina":"10", "avatar":"/img/enemyFace.jpg" }];
 					
-var raceList = '{ "races" : [' +
-	'{ "name":"human", "health":"10", "attack":"1", "stamina":"10", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" } ]}';		
+var raceList = [{ "name":"human", "health":"10", "attack":"1", "stamina":"10", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }];		
 
 
 var meleeSkillList = [{ "name":"Arm Smash", "debuff":"Attack Reduction", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"25", "meleePercentage":"10", "staminaCost":"1" },
@@ -19,9 +15,8 @@ var meleeSkillList = [{ "name":"Arm Smash", "debuff":"Attack Reduction", "effect
 	{ "name":"Disengage II", "debuff":"none", "effect":"Increase Distance", "range":"6", "effectQuantity":"2", "percent":"100", "meleePercentage":"50", "staminaCost":"2" }];
 
 
-var battleItemList = '{ "items" : [' +
-	'{ "name":"Auto-Injector: Berserker" , "effect":"Attack Increase", "effectStackLimit":"1", "meleePercentage":"10" } ,' +
-	'{ "name":"Auto-Injector: Clot Enzyme", "effect":"Remove Bleed", "effectStackLimit":"1" }]}';
+var battleItemList = [{ "name":"Auto-Injector: Berserker" , "effect":"Attack Increase", "effectStackLimit":"1", "meleePercentage":"10" },
+	{ "name":"Auto-Injector: Clot Enzyme", "effect":"Remove Bleed", "effectStackLimit":"1" }];
 	
 
 //melee skill object
@@ -146,12 +141,12 @@ class Actor {
 	}
 	
 	randomizeHealth() {
-		this.health = this.health + Math.floor((Math.random() * 10) + 1);
+		this.health = parseInt(this.health) + Math.floor((Math.random() * 10) + 1);
 		this.currentHealth = this.health;
 	}
 
 	randomizeAttack() {
-		this.attack = this.attack + Math.floor(((Math.random() * 10) + 1) / 2);
+		this.attack = parseInt(this.attack) + Math.floor(((Math.random() * 10) + 1) / 2);
 	}					
 	
 	getAttackValue() {
@@ -250,56 +245,55 @@ var firstRun = true;
 function gameInit() {
 	
 	//get game data from JSON
-	weaponObj = JSON.parse(weaponList);
-	armourObj = JSON.parse(armourList);
-	battleItemObj = JSON.parse(battleItemList);
-	enemyObj = JSON.parse(enemyList);
-	raceObj = JSON.parse(raceList);
-	
+	weaponObj = weaponList;
+	armourObj = armourList;
+	battleItemObj = battleItemList;
+	enemyObj = enemyList;
+	raceObj = raceList;
 	meleeSkillObj = meleeSkillList;
 	
 	
 	//init player
 	player = new Actor(
-	raceObj.races[0].name,
-	raceObj.races[0].health,
-	raceObj.races[0].attack,
-	raceObj.races[0].stamina
+	raceObj[0].name,
+	raceObj[0].health,
+	raceObj[0].attack,
+	raceObj[0].stamina
 	);
 
 	player.equipWeapon(
-		weaponObj.weapons[0].name, 
-		weaponObj.weapons[0].damage
+		weaponObj[0].name, 
+		weaponObj[0].damage
 	);
 
 	player.equipArmour(
-		armourObj.armours[0].name, 
-		armourObj.armours[0].reduction
+		armourObj[0].name, 
+		armourObj[0].reduction
 	);
 	
 	//assign list of skills
 	for(var i = 0; i < meleeSkillObj.length; i++) {
-		player.addMeleeSkill(meleeSkillObj[i].name,meleeSkillObj[i].effect,
+		player.addMeleeSkill(meleeSkillObj[i].name, meleeSkillObj[i].effect,
 			meleeSkillObj[i].percent, meleeSkillObj[i].penalty,
 			meleeSkillObj[i].staminaCost);
 	}
 	
 	//init enemy 
 	enemy = new Actor(
-		enemyObj.enemies[0].name,
-		enemyObj.enemies[0].health,
-		enemyObj.enemies[0].attack,
-		enemyObj.enemies[0].stamina
+		enemyObj[0].name,
+		enemyObj[0].health,
+		enemyObj[0].attack,
+		enemyObj[0].stamina
 	);
 	
 	enemy.equipWeapon(
-		weaponObj.weapons[0].name, 
-		weaponObj.weapons[0].damage
+		weaponObj[0].name, 
+		weaponObj[0].damage
 	);
 
 	enemy.equipArmour(
-		armourObj.armours[0].name, 
-		armourObj.armours[0].reduction
+		armourObj[0].name, 
+		armourObj[0].reduction
 	);
 	
 	//randomize attack and health values
@@ -492,7 +486,7 @@ $(document).ready(function(){
 		//set game text or picture values
 		player.setName($("#name").val());
 		
-		$(".playerImage").attr("src", raceObj.races[0].avatar);
+		$(".playerImage").attr("src", raceObj[0].avatar);
 		$("#playerName").text(player.getName());
 		$("#playerArmour").text(playerArmour);
 		$("#playerAttack").text(playerAttack);
@@ -505,7 +499,7 @@ $(document).ready(function(){
 		$("#playerArmourName").text(playerArmourName);
 		
 		
-		$("#activeEnemy").attr("src", enemyObj.enemies[0].avatar);
+		$("#activeEnemy").attr("src", enemyObj[0].avatar);
 		$("#enemyName").text(enemy.getName());
 		$("#enemyArmour").text(enemyArmour);
 		$("#enemyAttack").text(enemyAttack);
@@ -565,10 +559,10 @@ $(document).ready(function(){
 
 			
 		//player attack, change to attack frame(s) and back after a while
-		$(".playerImage").attr("src", raceObj.races[0].melee);
+		$(".playerImage").attr("src", raceObj[0].melee);
 		
 		setTimeout(function(){
-			$(".playerImage").attr("src", raceObj.races[0].avatar);
+			$(".playerImage").attr("src", raceObj[0].avatar);
 		}, 500);
 		
 		
