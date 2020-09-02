@@ -4,19 +4,26 @@ var weaponList = [{ "name":"Wood Sword" , "damage":"1" } ];
 
 var armourList = [{ "name":"Wood armour" , "reduction":"1" } ];
 	
-var enemyList = [{ "name":"Pickpocket", "health":"10", "attack":"1", "stamina":"10", "avatar":"/img/enemyFace.jpg" },
-	{ "name":"Mugger", "health":"15", "attack":"1", "stamina":"10", "avatar":"/img/enemyFace.jpg" }];
-					
-var raceList = [{ "name":"human", "health":"10", "attack":"1", "stamina":"10", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }];		
+var enemyList = [
+	{ "name":"Pickpocket", "health":"10", "attack":"1", "stamina":"10",  "agility":"1", "avatar":"/img/enemyFace.jpg" },
+	{ "name":"Mugger", "health":"15", "attack":"1", "stamina":"10",  "agility":"1", "avatar":"/img/enemyFace.jpg" }
+];
+
+var raceList = [{ "name":"human", "health":"10", "attack":"1", "stamina":"10", "agility":"1", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }];		
 
 
-var meleeSkillList = [{ "name":"Arm Smash", "debuff":"Attack Reduction", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"25", "meleePercentage":"10", "staminaCost":"1" },
-	{ "name":"Advancing Swing I", "debuff":"none", "effect":"Decrease Distance", "range":"1", "effectQuantity":"1", "percent":"100", "meleePercentage":"50", "staminaCost":"2" },
-	{ "name":"Disengage II", "debuff":"none", "effect":"Increase Distance", "range":"6", "effectQuantity":"2", "percent":"100", "meleePercentage":"50", "staminaCost":"2" }];
+var meleeSkillList = [
+	{ "name":"Arm Smash", "debuff":"Attack Reduction", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"10", "staminaCost":"1" },
+	{ "name":"Advancing Swing II", "debuff":"none", "effect":"Decrease Distance", "range":"2", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"0", "staminaCost":"2" },
+	{ "name":"Disengage II", "debuff":"none", "effect":"Increase Distance", "range":"6", "effectQuantity":"2", "percent":"100", "meleePercentagePenalty":"50", "staminaCost":"2" },
+	{ "name":"Heavy Attack", "debuff":"none", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"-100", "staminaCost":"0" }
+];
 
 
-var battleItemList = [{ "name":"Auto-Injector: Berserker" , "effect":"Attack Increase", "effectStackLimit":"1", "meleePercentage":"10" },
-	{ "name":"Auto-Injector: Clot Enzyme", "effect":"Remove Bleed", "effectStackLimit":"1" }];
+var battleItemList = [
+	{ "name":"Auto-Injector: Berserker" , "effect":"Attack Increase", "effectStackLimit":"1", "meleePercentage":"10" },
+	{ "name":"Auto-Injector: Clot Enzyme", "effect":"Remove Bleed", "effectStackLimit":"1" }
+];
 	
 
 //melee skill object
@@ -74,7 +81,7 @@ class MeleeSkill {
 class Actor {
 	//health and chance add 1 to 10
 	//attack and chance add 0 to 5
-	constructor(name,health,attack,stamina) {
+	constructor(name,health,attack,stamina,agility) {
 		this.position = 1;
 		this.name = name;
 		this.health = parseInt(health);
@@ -89,6 +96,31 @@ class Actor {
 		this.defenseMultiplier = 1;
 		this.meleeSkillArray = [];
 		this.stamina = stamina;
+		this.agility = parseInt(agility);
+	}	
+	
+	getAgility() {
+		return this.agility;	
+	}
+
+	setAgility(agility) {
+		this.agility = agility;
+	}	
+	
+	getAttack() {
+		return this.attack;		
+	}	
+	
+	setAttack(attack) {
+		this.attack = attack;
+	}	
+	
+	getWeaponDamage() {
+		return this.weaponDamage;	
+	}
+	
+	setWeaponDamage(damage) {
+		this.weaponDamage = damage;	
 	}	
 	
 	setPosition(position) {
@@ -234,9 +266,180 @@ var enemyPosition = 0;
 
 var playerAttackFailure = false;
 var enemyAttackFailure = false;
-
+var enemyAttackMade = false;
 
 var firstRun = true;
+
+
+function basicEnemyAttack() {
+	//enemy moves forward if not close enough to attack 
+	if(playerPosition == 0 && enemyPosition != 0) {
+		enemyPosition--;	
+	}	
+	else if(playerPosition > 0 && enemyPosition == 0) {
+		playerPosition--;
+	}
+	else if(playerPosition != 0 && enemyPosition != 0) {
+		enemyPosition--;
+	}	
+	else {			
+		enemyCurrentStamina--;
+		var enemyDamage = 0; 
+		
+		if(enemyAttackPenalty != 0) {
+		enemyDamage = Math.floor((enemyAttack * ((100 - enemyAttackPenalty) / 100) - playerArmour));
+		}	
+		else if(enemyAttackPenalty != 0 < 0) {
+		enemyDamage = Math.ceiling((enemyAttack * ((100 - enemyAttackPenalty) / 100) - playerArmour));
+		}
+		else {
+			enemyDamage = enemyAttack - playerArmour;
+		}	
+		
+		if(enemyDamage > 0) {
+			playerCurrentHealth = playerCurrentHealth - enemyDamage;
+		}	
+	}
+	//sets grid based on distance
+	$(".characterPosition").css('background-color', 'green');
+	$("#playerGridColumn" + playerPosition).css('background-color', 'gray');
+	$("#enemyGridColumn" + enemyPosition).css('background-color', 'gray');
+	
+	enemyAttackMade = true;
+}
+
+function postAttackUpdates() {
+//set condition text for player based on health
+	if((playerCurrentHealth / playerHealth) == 1) {
+		$("#playerCondition").text("Uninjured").css('color', 'blue');
+	}
+	else if((playerCurrentHealth / playerHealth) >= .75 && (playerCurrentHealth / playerHealth) < 1) {
+		$("#playerCondition").text("Lightly Injured").css('color', 'green');
+		$("#playerHealthBar").removeClass();
+		$("#playerHealthBar").addClass("progress-bar");
+	}
+	else if((playerCurrentHealth / playerHealth) >= .50 && (playerCurrentHealth / playerHealth) < .75) {
+		$("#playerCondition").text("Injured").css('color', 'orange');
+		$("#playerHealthBar").removeClass();
+		$("#playerHealthBar").addClass("progress-bar bg-warning");
+	}
+	else if((playerCurrentHealth / playerHealth) >= .25 && (playerCurrentHealth / playerHealth) < .50) {
+		$("#playerCondition").text("Heavy Injuries").css('color', 'brown');
+	}
+	else if((playerCurrentHealth / playerHealth) > 0 && (playerCurrentHealth / playerHealth) < .25) {
+		$("#playerCondition").text("Near Death").css('color', 'gray');
+		$("#playerHealthBar").removeClass();
+		$("#playerHealthBar").addClass("progress-bar bg-dark");			
+	}
+	else {
+		$("#playerCondition").text("Dead").css('color', 'black');
+	}
+	
+	//set enemy health condition text for enemy based on health
+	if((enemyCurrentHealth / enemyHealth) == 1) {
+		$("#enemyHealthCondition").text("Uninjured").css('color', 'blue');
+	}
+	else if((enemyCurrentHealth / enemyHealth) >= .75 && (enemyCurrentHealth / enemyHealth) < 1) {
+		$("#enemyHealthCondition").text("Lightly Injured").css('color', 'green');
+		$("#enemyHealthSquare").css('background-color', 'green');
+	}
+	else if((enemyCurrentHealth / enemyHealth) >= .50 && (enemyCurrentHealth / enemyHealth) < .75) {
+		$("#enemyHealthCondition").text("Injured").css('color', 'orange');
+		$("#enemyHealthSquare").css('background-color', 'orange');
+	}
+	else if((enemyCurrentHealth / enemyHealth) >= .25 && (enemyCurrentHealth / enemyHealth) < .50) {
+		$("#enemyHealthCondition").text("Heavy Injuries").css('color', 'brown');
+		$("#enemyHealthSquare").css('background-color', 'brown');
+	}
+	else if((enemyCurrentHealth / enemyHealth) > 0 && (enemyCurrentHealth / enemyHealth) < .25) {
+		$("#enemyHealthCondition").text("Near Death").css('color', 'gray');
+		$("#enemyHealthSquare").css('background-color', 'gray');
+	}
+	else {
+		$("#enemyHealthCondition").text("Dead").css('color', 'black');
+		$("#enemyHealthSquare").css('background-color', 'black');
+	}
+	
+	//set enemy stamina condition text for enemy based on stamina
+	if((enemyCurrentStamina / enemyStamina) == 1) {
+		$("#enemyStaminaCondition").text("Alert").css('color', 'blue');
+	}
+	else if((enemyCurrentStamina / enemyStamina) >= .75 && (enemyCurrentStamina / enemyStamina) < 1) {
+		$("#enemyStaminaCondition").text("Somewhat Tired").css('color', 'green');
+		$("#enemyStaminaCircle").css('background-color', 'green');
+	}
+	else if((enemyCurrentStamina / enemyStamina) >= .50 && (enemyCurrentStamina / enemyStamina) < .75) {
+		$("#enemyStaminaCondition").text("Tired").css('color', 'red');
+		$("#enemyStaminaCircle").css('background-color', 'red');
+	}
+	else if((enemyCurrentStamina / enemyStamina) >= .25 && (enemyCurrentStamina / enemyStamina) < .50) {
+		$("#enemyStaminaCondition").text("Exhausted").css('color', 'brown');
+		$("#enemyStaminaCircle").css('background-color', 'brown');
+	}
+	else if((enemyCurrentStamina / enemyStamina) > 0 && (enemyCurrentStamina / enemyStamina) < .25) {
+		$("#enemyStaminaCondition").text("Nearly Spent").css('color', 'gray');
+		$("#enemyStaminaCircle").css('background-color', 'gray');
+	}
+	else {
+		$("#enemyStaminaCondition").text("Completely Exhausted").css('color', 'black');
+		$("#enemyStaminaCircle").css('background-color', 'black');
+	}
+		
+	if(playerCurrentHealth < 1) {
+		$("#playerHealthBar").text(playerCurrentHealth);
+		$("#playerHealthBar").css('width', 100 + "%");
+		$("#playerHealthBar").removeClass();
+		$("#playerHealthBar").addClass("bg-danger");
+		$("#playerActiveEffects").text("");		
+		
+		
+		$("#gameStatus").text("You lose!");
+		$("#attackButton").hide();
+		$("#skillMenu").hide();
+	}	
+
+	else if(enemyCurrentHealth < 1) {
+		$("#playerHealthBar").text(playerCurrentHealth + "/" + playerHealth);
+		$("#playerHealthBar").css('width', (Math.floor((playerCurrentHealth / playerHealth) * 100)) + "%");
+		
+		$("#enemyActiveEffects").text("");
+		$("#enemyStaminaCondition").text("");				
+		
+		$("#enemyConditionTriangle").css('color', 'green');		
+		
+		$("#gameStatus").text("You win!");
+		
+		$("#attackButton").hide();
+		$("#skillMenu").hide();
+	}
+	else{
+		$("#playerHealthBar").text(playerCurrentHealth + "/" + playerHealth);
+		$("#playerHealthBar").css('width', (Math.floor((playerCurrentHealth / playerHealth) * 100)) + "%");
+	}
+}
+
+function agilityCheck() {
+	//speed check, enemy performs attack first if slower
+	if(playerAgility < enemyAgility) {
+		basicEnemyAttack();
+		postAttackUpdates();
+		enemyAttackMade = true;
+	}
+	//equal a flip is made, on a 1 enemy attacks first
+	if(playerAgility == enemyAgility) {
+		var flip = Math.random() + 1;
+		flip = Math.round(flip);
+		if(flip == 1) {
+			basicEnemyAttack();
+			postAttackUpdates();
+			enemyAttackMade = true;
+			$("#playerStatus").text("Enemy moved first!");
+			setTimeout(function(){
+				$("#playerStatus").text("---");
+			}, 1500);
+		}
+	}	
+}	
 
 
 
@@ -255,10 +458,11 @@ function gameInit() {
 	
 	//init player
 	player = new Actor(
-	raceObj[0].name,
-	raceObj[0].health,
-	raceObj[0].attack,
-	raceObj[0].stamina
+		raceObj[0].name,
+		raceObj[0].health,
+		raceObj[0].attack,
+		raceObj[0].stamina,
+		raceObj[0].agility
 	);
 
 	player.equipWeapon(
@@ -283,7 +487,8 @@ function gameInit() {
 		enemyObj[0].name,
 		enemyObj[0].health,
 		enemyObj[0].attack,
-		enemyObj[0].stamina
+		enemyObj[0].stamina,
+		enemyObj[0].agility		
 	);
 	
 	enemy.equipWeapon(
@@ -307,11 +512,14 @@ function gameInit() {
 	playerCurrentHealth = player.getHealth();
 	playerStamina = player.getStamina();
 	playerCurrentStamina = player.getStamina();
+	playerAgility = player.getAgility();
+	
 	
 	enemyHealth = enemy.getHealth();
 	enemyCurrentHealth = enemy.getHealth();
 	enemyStamina = enemy.getStamina();
 	enemyCurrentStamina = enemy.getStamina();
+	enemyAgility = enemy.getAgility();
 	
 	playerWeapon = player.getWeaponName();
 	playerArmourName = player.getArmourName();
@@ -336,10 +544,13 @@ function gameInit() {
 				for(var j = 0; j < meleeSkillObj.length; j++) {	
 					//finds skill details in data
 					if(meleeSkillObj[j].name == event.data.param1) {
-						playerAttackPenalty = meleeSkillObj[j].meleePercentage;
+						playerAttackPenalty = meleeSkillObj[j].meleePercentagePenalty;
 						enemyAttackPenalty = meleeSkillObj[j].percent;
-
-						//first checks if stamina available, if not attack fails and regular exchange happens
+						
+						//agility check
+						agilityCheck();
+						
+						//checks if stamina available, if not attack fails and regular exchange happens
 						if((playerCurrentStamina - meleeSkillObj[j].staminaCost) < 0) {
 							$('#skillModal').modal('toggle');
 							$("#gameStatus").text("Stamina too low!");
@@ -434,20 +645,20 @@ function gameInit() {
 	$("#enemyGridColumn0").css('background-color', 'gray');
 	
 	$("#gameStatus").text("---");
+	$("#playerStatus").text("---");
 	
-	$("#playerHealthCondition").text('Uninjured').css('color', 'green');
+	$("#playerCondition").text('Uninjured').css('color', 'green');
 	$("#playerHealthBar").css('width', 100 + "%");
 	$("#playerStaminaBar").css('width', 100 + "%");
+	
 	
 	//reset health bars back to default
 	$("#playerHealthBar").removeClass();
 	$("#playerHealthBar").addClass('progress-bar');
-	$("#playerHealthBar").addClass('bg-success');
 	
 	//reset stamina bar back to default
 	$("#playerStaminaBar").removeClass();
 	$("#playerStaminaBar").addClass('progress-bar');
-	$("#playerStaminaBar").addClass('bg-success');
 	
 	//enemy condition reset
 	$("#enemyHealthCondition").text('Uninjured').css('color', 'green');
@@ -487,16 +698,16 @@ $(document).ready(function(){
 		player.setName($("#name").val());
 		
 		$(".playerImage").attr("src", raceObj[0].avatar);
-		$("#playerName").text(player.getName());
+		$("#playerName").text("Name: " + player.getName());
 		$("#playerArmour").text(playerArmour);
-		$("#playerAttack").text(playerAttack);
+		$("#playerAttack").text(player.getAttack() + " + " + player.getWeaponDamage());
 		$("#playerHealthBar").text(playerCurrentHealth + "/" + playerHealth)
 		
 		$("#playerStaminaBar").text(playerCurrentStamina + "/" + playerStamina)
 				
-		$("#playerHealthMaximum").text(playerHealth);
-		$("#playerAttackWeapon").text(playerWeapon);
-		$("#playerArmourName").text(playerArmourName);
+		$("#playerHealthMaximum").text("Health: " + playerHealth);
+		$("#playerAttackWeapon").text("Weapon: " + playerWeapon);
+		$("#playerArmourName").text("Armour: " + playerArmourName);
 		
 		
 		$("#activeEnemy").attr("src", enemyObj[0].avatar);
@@ -510,7 +721,10 @@ $(document).ready(function(){
 	//calculates damages, updates fields on attack button
 
 	$("#attackButton").click(function() {
-					
+		
+		//agility check on regular attack
+		agilityCheck();
+		
 		//player attack sequence only happens if attack did not fail, resets after
 		if(playerAttackFailure == false) {
 			playerCurrentStamina--;
@@ -518,8 +732,13 @@ $(document).ready(function(){
 			$("#playerStaminaBar").css('width', (Math.floor((playerCurrentStamina / playerStamina) * 100)) + "%");
 			var playerDamage = 0;
 			if(playerAttackPenalty != 0) {
-				playerDamage = Math.floor(playerDamage * (playerAttackPenalty / 100));
+				playerDamage = Math.floor((playerAttack * ((100 - playerAttackPenalty) / 100) - enemyArmour));
 			}	
+			
+			else if(playerAttackPenalty < 0) {
+				playerDamage = Math.ceiling((playerAttack * ((100 - playerAttackPenalty) / 100) - enemyArmour));
+			}
+			
 			else {
 				playerDamage = playerAttack - enemyArmour;
 			}
@@ -530,27 +749,13 @@ $(document).ready(function(){
 		}
 		playerAttackFailure = false;
 		
-		//enemy moves forward if not close enough to attack 
-		if(playerPosition == 0 && enemyPosition != 0) {
-			enemyPosition--;	
-		}	
-		else if(playerPosition > 0 && enemyPosition == 0) {
-			playerPosition--;
+		//checks if enemy made attack already (on skill use with player lower agility)
+		if(enemyAttackMade == false) {
+			basicEnemyAttack();
 		}
-		else if(playerPosition != 0 && enemyPosition != 0) {
-			enemyPosition--;
-		}	
-		else {			
-			enemyCurrentStamina--;
-			var enemyDamage = 0; 
-			enemyDamage = enemyAttack - playerArmour;
-			if(enemyAttackPenalty != 0) {
-				enemyDamage = Math.floor(enemyDamage * (enemyAttackPenalty / 100));
-			}	
-			if(enemyDamage > 0) {
-				playerCurrentHealth = playerCurrentHealth - enemyDamage;
-			}	
-		}
+		
+		//resets if enemy made move
+		enemyAttackMade = false;
 		
 		//sets grid based on distance
 		$(".characterPosition").css('background-color', 'green');
@@ -565,107 +770,8 @@ $(document).ready(function(){
 			$(".playerImage").attr("src", raceObj[0].avatar);
 		}, 500);
 		
-		
-		//set condition text for player based on health
-		if((playerCurrentHealth / playerHealth) == 1) {
-			$("#playerCondition").text("Uninjured").css('color', 'blue');
-		}
-		else if((playerCurrentHealth / playerHealth) >= .75 && (playerCurrentHealth / playerHealth) < 1) {
-			$("#playerCondition").text("Lightly Injured").css('color', 'green');
-		}
-		else if((playerCurrentHealth / playerHealth) >= .50 && (playerCurrentHealth / playerHealth) < .75) {
-			$("#playerCondition").text("Injured").css('color', 'red');
-		}
-		else if((playerCurrentHealth / playerHealth) >= .25 && (playerCurrentHealth / playerHealth) < .50) {
-			$("#playerCondition").text("Heavy Injuries").css('color', 'brown');
-		}
-		else if((playerCurrentHealth / playerHealth) > 0 && (playerCurrentHealth / playerHealth) < .25) {
-			$("#playerCondition").text("Near Death").css('color', 'gray');
-		}
-		else {
-			$("#playerCondition").text("Dead").css('color', 'black');
-		}
-		
-		//set enemy health condition text for enemy based on health
-		if((enemyCurrentHealth / enemyHealth) == 1) {
-			$("#enemyHealthCondition").text("Uninjured").css('color', 'blue');
-		}
-		else if((enemyCurrentHealth / enemyHealth) >= .75 && (enemyCurrentHealth / enemyHealth) < 1) {
-			$("#enemyHealthCondition").text("Lightly Injured").css('color', 'green');
-			$("#enemyHealthSquare").css('background-color', 'green');
-		}
-		else if((enemyCurrentHealth / enemyHealth) >= .50 && (enemyCurrentHealth / enemyHealth) < .75) {
-			$("#enemyHealthCondition").text("Injured").css('color', 'red');
-			$("#enemyHealthSquare").css('background-color', 'red');
-		}
-		else if((enemyCurrentHealth / enemyHealth) >= .25 && (enemyCurrentHealth / enemyHealth) < .50) {
-			$("#enemyHealthCondition").text("Heavy Injuries").css('color', 'brown');
-			$("#enemyHealthSquare").css('background-color', 'brown');
-		}
-		else if((enemyCurrentHealth / enemyHealth) > 0 && (enemyCurrentHealth / enemyHealth) < .25) {
-			$("#enemyHealthCondition").text("Near Death").css('color', 'gray');
-			$("#enemyHealthSquare").css('background-color', 'gray');
-		}
-		else {
-			$("#enemyHealthCondition").text("Dead").css('color', 'black');
-			$("#enemyHealthSquare").css('background-color', 'black');
-		}
-		
-		//set enemy stamina condition text for enemy based on stamina
-		if((enemyCurrentStamina / enemyStamina) == 1) {
-			$("#enemyStaminaCondition").text("Alert").css('color', 'blue');
-		}
-		else if((enemyCurrentStamina / enemyStamina) >= .75 && (enemyCurrentStamina / enemyStamina) < 1) {
-			$("#enemyStaminaCondition").text("Somewhat Tired").css('color', 'green');
-			$("#enemyStaminaCircle").css('background-color', 'green');
-		}
-		else if((enemyCurrentStamina / enemyStamina) >= .50 && (enemyCurrentStamina / enemyStamina) < .75) {
-			$("#enemyStaminaCondition").text("Tired").css('color', 'red');
-			$("#enemyStaminaCircle").css('background-color', 'red');
-		}
-		else if((enemyCurrentStamina / enemyStamina) >= .25 && (enemyCurrentStamina / enemyStamina) < .50) {
-			$("#enemyStaminaCondition").text("Exhausted").css('color', 'brown');
-			$("#enemyStaminaCircle").css('background-color', 'brown');
-		}
-		else if((enemyCurrentStamina / enemyStamina) > 0 && (enemyCurrentStamina / enemyStamina) < .25) {
-			$("#enemyStaminaCondition").text("Nearly Spent").css('color', 'gray');
-			$("#enemyStaminaCircle").css('background-color', 'gray');
-		}
-		else {
-			$("#enemyStaminaCondition").text("Completely Exhausted").css('color', 'black');
-			$("#enemyStaminaCircle").css('background-color', 'black');
-		}
-		
-		
-		if(playerCurrentHealth < 1) {
-			$("#playerHealthBar").text(playerCurrentHealth);
-			$("#playerHealthBar").css('width', 100 + "%");
-			$("#playerHealthBar").removeClass();
-			$("#playerHealthBar").addClass("bg-danger");
-			$("#playerActiveEffects").text("");		
-			
-			
-			$("#gameStatus").text("You lose!");
-			$("#attackButton").hide();
-			$("#skillMenu").hide();
-		}	
-
-		else if(enemyCurrentHealth < 1) {
-			$("#playerHealthBar").text(playerCurrentHealth + "/" + playerHealth);
-			$("#playerHealthBar").css('width', (Math.floor((playerCurrentHealth / playerHealth) * 100)) + "%");
-			
-			$("#enemyActiveEffects").text("");	
-			$("#enemyConditionTriangle").css('color', 'green');		
-			
-			$("#gameStatus").text("You win!");
-			
-			$("#attackButton").hide();
-			$("#skillMenu").hide();
-		}
-		else{
-			$("#playerHealthBar").text(playerCurrentHealth + "/" + playerHealth);
-			$("#playerHealthBar").css('width', (Math.floor((playerCurrentHealth / playerHealth) * 100)) + "%");
-		}
+		//update game based on changed values
+		postAttackUpdates();
 	});
 	
 	//from modal go to title

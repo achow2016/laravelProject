@@ -231,13 +231,13 @@
 											<div class="row">
 												<div class="col">
 													<div class="progress">
-														HP:<div id="playerHealthBar" class="progress-bar bg-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
+														HP:<div id="playerHealthBar" class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
 														aria-valuemax="100" style="width:100%">
 														</div>
 													</div>
 													<br>
 													<div class="progress">
-														SP:<div id="playerStaminaBar" class="progress-bar bg-success" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
+														SP:<div id="playerStaminaBar" class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
 														aria-valuemax="100" style="width:100%">
 														</div>													
 													</div>
@@ -442,14 +442,10 @@
 				
 				<div id="playerPanel" class="container tab-pane fade">
 					<img src="data:," alt="Player Image" class="playerImage" height="80px" width="80px">
-					<p>Name:</p> 
 					<p id="playerName" data-toggle="tooltip" title=""></p>
-					<p>Health:</p> 
 					<p id="playerHealthMaximum" data-toggle="tooltip" title=""></p>
-					<p>Armour:</p>
 					<p id="playerArmourName" data-toggle="tooltip" title=""></p>
 					<p id="playerArmour" data-toggle="tooltip" title=""></p>
-					<p>Attack:</p>
 					<p id="playerAttackWeapon" data-toggle="tooltip" title=""></p>
 					<p id="playerAttack" data-toggle="tooltip" title=""></p>	
 				</div>
