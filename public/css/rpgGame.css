@@ -1,3 +1,5 @@
+
+
 .centered-button .btn {
   width: 100%;
   margin-bottom: 10px;
@@ -14,15 +16,19 @@
 	border: 1px solid black;
 }
 
-.content .spacerBox {
+.content .spacerBox {00
 	height: 100%;
 	margin-bottom: 0%;
+	max-width: 100%;
 }	
 
 #startScreenButtons {
 	margin-top: 20%;	
 }	
 
+#gameMain {
+	max-height: 100vh;
+}	
 
 .terrainBox {
 	height: 40%;	
@@ -92,9 +98,61 @@
 	border-radius: 50%;	
 }
 
+#playerHealthSquare {
+	height: 20px;
+	width: 20px;
+	background-color: black;
+	margin-bottom: 2px;
+	color: white;
+}
+
+#playerConditionTriangle {
+	width:0;
+	height:0;
+	border-left: 10px solid transparent;
+	border-right: 10px solid transparent;
+	border-top: 20px solid blue;
+	margin-bottom: 2px;
+	float: right;
+}
+
+#playerStaminaCircle {
+	height: 20px;
+	width: 20px;
+	background-color: black;
+	border-radius: 50%;	
+	color: white;	
+}
+
 .playerBodyGrid {
 	height: 20px;
 	width: 20px;
 	background-color: green;
 	border: 1px solid black;
+}	
+
+.actorGridContainer {
+	padding-left: 40px;	
+}
+
+#gameControlRow {
+	min-width: 100%;
+}	
+
+#startLogoTitle {
+	max-width: 100%;
+	margin-left: 0px;
+}
+
+#gameIntroMenu {
+	max-width: 100%;
+	margin-left: 0px;
+}
+
+#playerConfigMenu p{
+	min-width: 100%;
+}	
+
+#playerConfigMenu button{
+	display: inline-block;
 }	

@@ -34,7 +34,7 @@
 		
     </head>
     <body>
-		<div class="content .container">
+		<div class="content .container" id="outer">
 			<!--
 			game title top div
 				image
@@ -47,7 +47,7 @@
 				</div>
 			</div>
 			
-			<div class="row" id="startlogoTitle">
+			<div class="row" id="startLogoTitle">
 				<div class="col">
 					<div id="gameTitle">
 						<img src="/img/gameTitleTempImage.jpg" width="150px" height="150px" alt="Game Title Art"/>
@@ -112,6 +112,71 @@
 					
 				</div>
 			</div>		
+			
+			<!--configuration screen for character
+				allocation of points 12
+					strength training atk
+					endurance training sp
+					lifestyle hp
+			-->
+			<div id="playerConfigMenu" style="display:none">
+				<div class="col">
+					<div class="row">
+						<div class="col">
+							<br>
+							<p>Please allocate 12 points for your character.</p>
+						</div>					
+					</div>
+				
+					<div class="row">
+						<div class="col">
+							<div class="row"><p>Strength</p></div><br>
+							<div class="row"><p>Endurance</p></div><br>
+							<div class="row"><p>Lifestyle</p></div><br>
+						</div>
+						<div class="col">
+							<div class="row justify-content-center">
+								<button id="decreaseStrengthAlloc" type="button" class="btn btn-danger" >-</button>
+							</div><br>
+							<div class="row justify-content-center">
+								<button id="decreaseEnduranceAlloc" type="button" class="btn btn-danger" >-</button>
+							</div><br>
+							<div class="row justify-content-center">
+								<button id="decreaseLifestyleAlloc" type="button" class="btn btn-danger" >-</button>
+							</div><br>							
+						</div>
+						<div class="col">
+							<div class="row justify-content-center">
+								<p id="strengthAlloc">0</p>
+							</div><br>
+							<div class="row justify-content-center">
+								<p id="enduranceAlloc">0</p>
+							</div><br>
+							<div class="row justify-content-center">
+								<p id="lifestyleAlloc">0</p>
+							</div><br>					
+						</div>
+						<div class="col">
+							<div class="row justify-content-center">
+								<button id="increaseStrengthAlloc"  type="button" class="btn btn-success" >+</button>
+							</div><br>
+							<div class="row justify-content-center">
+								<button id="increaseEnduranceAlloc" type="button" class="btn btn-success" >+</button>
+							</div><br>
+							<div class="row justify-content-center">
+								<button id="increaseLifestyleAlloc" type="button" class="btn btn-success" >+</button>
+							</div><br>							
+						</div>
+					</div>
+					<div class="row">
+						<div class="col">
+							<div class="centered-button">
+								<button id="completeConfig" type="button" class="btn btn-primary active">Save</button>
+							</div>
+						</div>	
+					</div>	
+				</div>
+			</div>				
 
 			<!--div class="row" id="gameMain" style="display:none"-->
 			<div id="gameMain" style="display:none">
@@ -123,9 +188,6 @@
 							<div id="gamePanel" class="panel panel-default">
 								<div class="container col">
 
-									
-
-
 									<!--
 									"terrain box"
 									attack animations and background here
@@ -133,15 +195,14 @@
 									
 									<div class="row terrainBox">
 										<div class="col">
-											<img id="activePlayer" src="data:," alt="Player Image" class="playerImage" height="80px" width="80px">																	
+											<img id="activePlayer" src="data:," alt="Player Image" class="playerImage" height="80px" width="80px">
+											<div id="playerConditionTriangle"></div>
 										</div>
 										
 										<div class="col">
 											<img id="activeEnemy" src="data:," alt="Enemy Image" height="80px" width="80px">		
 											<div id="enemyHealthSquare"></div>
-											
 											<div id="enemyConditionTriangle"></div>
-											
 											<div id="enemyStaminaCircle"></div>
 										</div>
 									</div>
@@ -178,47 +239,94 @@
 								
 								<br>	
 									<div class="row">
-										<p>Stance:</p>
-									</div>	
-									<div class="row">
-										<div class="col-1">
-											<div class="playerBodyGrid" id="pUpperLeft"></div>
-										</div>
-										<div class="col-1">
-											<div class="playerBodyGrid" id="pHead"></div>
-										</div>
-										<div class="col-1">
-											<div class="playerBodyGrid" id="pUpperRight"></div>
-										</div>
+										<div class="col">
+											<p id="playerDamagedAmount">---</p>
+										</div>	
+										<div class="col">
+											<p id="enemyDamagedAmount">---</p>
+										</div>											
 									</div>
 									
+									<!--body grids-->
 									<div class="row">
-										<div class="col-1">
-											<div class="playerBodyGrid" id="pLeftHand"></div>
-										</div>
-										<div class="col-1">
-											<div class="playerBodyGrid" id="pTorso"></div>
-										</div>
-										<div class="col-1">
-											<div class="playerBodyGrid" id="pRightHand"></div>
-										</div>
-									</div>
 									
-									<div class="row">
-										<div class="col-1">
-											<div class="playerBodyGrid" id="pLeftLeg"></div>
+									<!--player-->
+										<div class="col actorGridContainer">
+											<div class="row">
+												<div class="col-1">
+													<div class="playerBodyGrid" id="pUpperLeft"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="pHead"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="pUpperRight"></div>
+												</div>
+											</div>	
+											<div class="row">
+												<div class="col-1">
+													<div class="playerBodyGrid" id="pLeftHand"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="pTorso"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="pRightHand"></div>
+												</div>
+											</div>
+											<div class="row">
+												<div class="col-1">
+													<div class="playerBodyGrid" id="pLeftLeg"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="pGroin"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="pRightLeg"></div>
+												</div>
+											</div>	
 										</div>
-										<div class="col-1">
-											<div class="playerBodyGrid" id="pGroin"></div>
+										
+										<!--enemy body grid-->	
+										<div class="col actorGridContainer">
+											<div class="row">
+												<div class="col-1">
+													<div class="playerBodyGrid" id="eUpperLeft"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="eHead"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="eUpperRight"></div>
+												</div>
+											</div>
+											<div class="row">
+												<div class="col-1">
+													<div class="playerBodyGrid" id="eLeftHand"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="eTorso"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="eRightHand"></div>
+												</div>
+											</div>
+											<div class="row">
+												<div class="col-1">
+													<div class="playerBodyGrid" id="eLeftLeg"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="eGroin"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid" id="eRightLeg"></div>
+												</div>
+											</div>
 										</div>
-										<div class="col-1">
-											<div class="playerBodyGrid" id="pRightLeg"></div>
-										</div>
-									</div>	
-									
+									</div>				
 									<!--player control row-->
 										
-									<div class="row">	
+									<div class="row" id="gameControlRow">	
 										<!--divides in two, adds status effect and skill-->
 										<div class="col" id="playerMainDashboard">
 											<div class="row">
@@ -231,15 +339,18 @@
 											<div class="row">
 												<div class="col">
 													<div class="progress">
-														HP:<div id="playerHealthBar" class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
+														<div id="playerHealthSquare">HP</div>
+														<div id="playerHealthBar" class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
 														aria-valuemax="100" style="width:100%">
 														</div>
 													</div>
+													
 													<br>
 													<div class="progress">
-														SP:<div id="playerStaminaBar" class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
+														<div id="playerStaminaCircle">SP</div>	
+														<div id="playerStaminaBar" class="progress-bar" role="progressbar" aria-valuenow="100" aria-valuemin="0" 
 														aria-valuemax="100" style="width:100%">
-														</div>													
+														</div>
 													</div>
 												</div>
 											</div>
@@ -302,50 +413,6 @@
 									<div class="row">
 										<p>Effects:</p>&nbsp;
 										<p id="enemyActiveEffects"></p>
-									</div>
-									<!--
-									show body grid of opponent
-										attack damage is based on coords targeted and armor 
-										at location
-										skills change armor ratings
-									-->
-									<div class="row">
-										<p>Stance:</p>
-									</div>	
-									<div class="row">
-										<div class="col">
-											<div class="enemyBodyGrid" id="eUpperLeft" style="height:20px;width:20px;background-color: green;"></div>
-										</div>
-										<div class="col">
-											<div class="enemyBodyGrid" id="eHead" style="height:20px;width:20px;background-color: blue;"></div>
-										</div>
-										<div class="col">
-											<div class="enemyBodyGrid" id="eUpperRight" style="height:20px;width:20px;background-color: blue;"></div>
-										</div>
-									</div>
-									<br>
-									<div class="row">
-										<div class="col">
-											<div class="enemyBodyGrid" id="eLeftHand" style="height:20px;width:20px;background-color: blue;"></div>
-										</div>
-										<div class="col">
-											<div class="enemyBodyGrid" id="eTorso" style="height:20px;width:20px;background-color: blue;"></div>
-										</div>
-										<div class="col">
-											<div class="enemyBodyGrid" id="eRightHand" style="height:20px;width:20px;background-color: blue;"></div>
-										</div>
-									</div>
-									<br>
-									<div class="row">
-										<div class="col">
-											<div class="enemyBodyGrid" id="eLeftLeg" style="height:20px;width:20px;background-color: blue;"></div>
-										</div>
-										<div class="col">
-											<div class="enemyBodyGrid" id="eGroin" style="height:20px;width:20px;background-color: blue;"></div>
-										</div>
-										<div class="col">
-											<div class="enemyBodyGrid" id="eRightLeg" style="height:20px;width:20px;background-color: blue;"></div>
-										</div>
 									</div>
 								</div>		
 							</div>
@@ -448,6 +515,7 @@
 					<p id="playerArmour" data-toggle="tooltip" title=""></p>
 					<p id="playerAttackWeapon" data-toggle="tooltip" title=""></p>
 					<p id="playerAttack" data-toggle="tooltip" title=""></p>	
+					<p id="playerAgility" data-toggle="tooltip" title=""></p>
 				</div>
 				
 				<!--
@@ -461,11 +529,6 @@
 					<h3>Menu 2</h3>
 					<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
 				</div>
-				
-						
-					</div>
-
-				
 				
 			</div>
 		</div>

@@ -270,6 +270,8 @@ var enemyAttackMade = false;
 
 var firstRun = true;
 
+var enemyDamage;
+var playerDamage;
 
 function basicEnemyAttack() {
 	//enemy moves forward if not close enough to attack 
@@ -284,7 +286,7 @@ function basicEnemyAttack() {
 	}	
 	else {			
 		enemyCurrentStamina--;
-		var enemyDamage = 0; 
+		enemyDamage = 0; 
 		
 		if(enemyAttackPenalty != 0) {
 		enemyDamage = Math.floor((enemyAttack * ((100 - enemyAttackPenalty) / 100) - playerArmour));
@@ -298,6 +300,9 @@ function basicEnemyAttack() {
 		
 		if(enemyDamage > 0) {
 			playerCurrentHealth = playerCurrentHealth - enemyDamage;
+		}	
+		else {
+			enemyDamage = 0;	
 		}	
 	}
 	//sets grid based on distance
@@ -393,7 +398,10 @@ function postAttackUpdates() {
 		$("#playerActiveEffects").text("");		
 		
 		
-		$("#gameStatus").text("You lose!");
+		//$("#gameStatus").text("You lose!");
+		setTimeout(function(){
+			$("#gameStatus").text("You lose!");
+		}, 500);
 		$("#attackButton").hide();
 		$("#skillMenu").hide();
 	}	
@@ -407,7 +415,10 @@ function postAttackUpdates() {
 		
 		$("#enemyConditionTriangle").css('color', 'green');		
 		
-		$("#gameStatus").text("You win!");
+		//$("#gameStatus").text("You win!");
+		setTimeout(function(){
+			$("#gameStatus").text("You win!");
+		}, 500);
 		
 		$("#attackButton").hide();
 		$("#skillMenu").hide();
@@ -646,6 +657,8 @@ function gameInit() {
 	
 	$("#gameStatus").text("---");
 	$("#playerStatus").text("---");
+	$("#playerDamagedAmount").text("---");
+	$("#enemyDamagedAmount").text("---");
 	
 	$("#playerCondition").text('Uninjured').css('color', 'green');
 	$("#playerHealthBar").css('width', 100 + "%");
@@ -685,12 +698,15 @@ $(document).ready(function(){
 		$('[data-toggle="tooltip"]').tooltip();
 		
 		$("#gameIntroMenu").hide();
-		$("#startlogoTitle").hide();
+		$("#startLogoTitle").hide();
 		$("#gameIntroMenu").hide();
 		$("#gameIntroMenu").hide();
 		$(".spacerBox").hide();
 		
-		$("#gameMain").show();
+		
+		//$("#gameMain").show();
+		$("#playerConfigMenu").show();
+		
 		$("#gameTopTab").show();
 		
 		
@@ -701,6 +717,7 @@ $(document).ready(function(){
 		$("#playerName").text("Name: " + player.getName());
 		$("#playerArmour").text(playerArmour);
 		$("#playerAttack").text(player.getAttack() + " + " + player.getWeaponDamage());
+		
 		$("#playerHealthBar").text(playerCurrentHealth + "/" + playerHealth)
 		
 		$("#playerStaminaBar").text(playerCurrentStamina + "/" + playerStamina)
@@ -708,7 +725,7 @@ $(document).ready(function(){
 		$("#playerHealthMaximum").text("Health: " + playerHealth);
 		$("#playerAttackWeapon").text("Weapon: " + playerWeapon);
 		$("#playerArmourName").text("Armour: " + playerArmourName);
-		
+		$("#playerAgility").text("Agility: " + player.getAgility());
 		
 		$("#activeEnemy").attr("src", enemyObj[0].avatar);
 		$("#enemyName").text(enemy.getName());
@@ -730,7 +747,7 @@ $(document).ready(function(){
 			playerCurrentStamina--;
 			$("#playerStaminaBar").text(playerCurrentStamina + "/" + playerStamina);
 			$("#playerStaminaBar").css('width', (Math.floor((playerCurrentStamina / playerStamina) * 100)) + "%");
-			var playerDamage = 0;
+			playerDamage = 0;
 			if(playerAttackPenalty != 0) {
 				playerDamage = Math.floor((playerAttack * ((100 - playerAttackPenalty) / 100) - enemyArmour));
 			}	
@@ -743,9 +760,13 @@ $(document).ready(function(){
 				playerDamage = playerAttack - enemyArmour;
 			}
 			playerAttackPenalty = 0;
+			
 			if(playerDamage > 0) {
 				enemyCurrentHealth = enemyCurrentHealth - playerDamage;
-			}
+			} 
+			else {
+				playerDamage = 0;	
+			}	
 		}
 		playerAttackFailure = false;
 		
@@ -761,15 +782,23 @@ $(document).ready(function(){
 		$(".characterPosition").css('background-color', 'green');
 		$("#playerGridColumn" + playerPosition).css('background-color', 'gray');
 		$("#enemyGridColumn" + enemyPosition).css('background-color', 'gray');
-
-			
+				
 		//player attack, change to attack frame(s) and back after a while
 		$(".playerImage").attr("src", raceObj[0].melee);
 		
 		setTimeout(function(){
 			$(".playerImage").attr("src", raceObj[0].avatar);
 		}, 500);
-		
+	
+		//show damage
+		$("#playerDamagedAmount").text(enemyDamage);
+		$("#enemyDamagedAmount").text(playerDamage);
+		setTimeout(function(){
+			$("#playerDamagedAmount").text("---");
+		}, 200);	
+		setTimeout(function(){
+			$("#enemyDamagedAmount").text("---");
+		}, 200);	
 		//update game based on changed values
 		postAttackUpdates();
 	});
@@ -779,7 +808,7 @@ $(document).ready(function(){
 		$('#menuModal').modal('toggle');
 
 		$("#gameIntroMenu").show();
-		$("#startlogoTitle").show();
+		$("#startLogoTitle").show();
 		$("#gameIntroMenu").show();
 		$("#gameIntroMenu").show();
 		$(".spacerBox").show();
