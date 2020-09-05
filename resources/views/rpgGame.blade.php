@@ -142,7 +142,7 @@
 								<button id="decreaseEnduranceAlloc" type="button" class="btn btn-danger" >-</button>
 							</div><br>
 							<div class="row justify-content-center">
-								<button id="decreaseLifestyleAlloc" type="button" class="btn btn-danger" >-</button>
+								<button id="decreaseLifeAlloc" type="button" class="btn btn-danger" >-</button>
 							</div><br>							
 						</div>
 						<div class="col">
@@ -153,7 +153,7 @@
 								<p id="enduranceAlloc">0</p>
 							</div><br>
 							<div class="row justify-content-center">
-								<p id="lifestyleAlloc">0</p>
+								<p id="lifeAlloc">0</p>
 							</div><br>					
 						</div>
 						<div class="col">
@@ -164,7 +164,7 @@
 								<button id="increaseEnduranceAlloc" type="button" class="btn btn-success" >+</button>
 							</div><br>
 							<div class="row justify-content-center">
-								<button id="increaseLifestyleAlloc" type="button" class="btn btn-success" >+</button>
+								<button id="increaseLifeAlloc" type="button" class="btn btn-success" >+</button>
 							</div><br>							
 						</div>
 					</div>
