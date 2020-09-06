@@ -124,7 +124,10 @@
 					<div class="row">
 						<div class="col">
 							<br>
-							<p>Please allocate 12 points for your character.</p>
+							<p>
+							Please allocate 12 points for your character.<br>
+							Each point grants a 5% bonus.
+							</p>
 						</div>					
 					</div>
 				
@@ -132,7 +135,7 @@
 						<div class="col">
 							<div class="row"><p>Strength</p></div><br>
 							<div class="row"><p>Endurance</p></div><br>
-							<div class="row"><p>Lifestyle</p></div><br>
+							<div class="row"><p>Life</p></div><br>
 						</div>
 						<div class="col">
 							<div class="row justify-content-center">
@@ -254,35 +257,35 @@
 										<div class="col actorGridContainer">
 											<div class="row">
 												<div class="col-1">
-													<div class="playerBodyGrid" id="pUpperLeft"></div>
+													<div class="playerBodyGrid p0" id="pUpperLeft"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid" id="pHead"></div>
+													<div class="playerBodyGrid p1" id="pHead"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid" id="pUpperRight"></div>
+													<div class="playerBodyGrid p2" id="pUpperRight"></div>
 												</div>
 											</div>	
 											<div class="row">
 												<div class="col-1">
-													<div class="playerBodyGrid" id="pLeftHand"></div>
+													<div class="playerBodyGrid p3" id="pLeftHand"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid" id="pTorso"></div>
+													<div class="playerBodyGrid p4" id="pTorso"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid" id="pRightHand"></div>
+													<div class="playerBodyGrid p5" id="pRightHand"></div>
 												</div>
 											</div>
 											<div class="row">
 												<div class="col-1">
-													<div class="playerBodyGrid" id="pLeftLeg"></div>
+													<div class="playerBodyGrid p6" id="pLeftLeg"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid" id="pGroin"></div>
+													<div class="playerBodyGrid p7" id="pGroin"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid" id="pRightLeg"></div>
+													<div class="playerBodyGrid p8" id="pRightLeg"></div>
 												</div>
 											</div>	
 										</div>
@@ -291,35 +294,35 @@
 										<div class="col actorGridContainer">
 											<div class="row">
 												<div class="col-1">
-													<div class="playerBodyGrid" id="eUpperLeft"></div>
+													<div class="playerBodyGrid e1" id="eUpperLeft"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid" id="eHead"></div>
+													<div class="playerBodyGrid e2" id="eHead"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid" id="eUpperRight"></div>
-												</div>
-											</div>
-											<div class="row">
-												<div class="col-1">
-													<div class="playerBodyGrid" id="eLeftHand"></div>
-												</div>
-												<div class="col-1">
-													<div class="playerBodyGrid" id="eTorso"></div>
-												</div>
-												<div class="col-1">
-													<div class="playerBodyGrid" id="eRightHand"></div>
+													<div class="playerBodyGrid e3" id="eUpperRight"></div>
 												</div>
 											</div>
 											<div class="row">
 												<div class="col-1">
-													<div class="playerBodyGrid" id="eLeftLeg"></div>
+													<div class="playerBodyGrid e4" id="eLeftHand"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid" id="eGroin"></div>
+													<div class="playerBodyGrid e5" id="eTorso"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid" id="eRightLeg"></div>
+													<div class="playerBodyGrid e6" id="eRightHand"></div>
+												</div>
+											</div>
+											<div class="row">
+												<div class="col-1">
+													<div class="playerBodyGrid e7" id="eLeftLeg"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid e8" id="eGroin"></div>
+												</div>
+												<div class="col-1">
+													<div class="playerBodyGrid e9" id="eRightLeg"></div>
 												</div>
 											</div>
 										</div>

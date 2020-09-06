@@ -9,7 +9,10 @@ var enemyList = [
 	{ "name":"Mugger", "health":"150", "attack":"10", "stamina":"100",  "agility":"1", "avatar":"/img/enemyFace.jpg" }
 ];
 
-var raceList = [{ "name":"human", "health":"100", "attack":"10", "stamina":"100", "agility":"1", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }];		
+var raceList = [
+	{ "name":"human", "health":"100", "attack":"10", "stamina":"100", "agility":"1", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" },
+	{ "name":"golem", "health":"1000", "attack":"100", "stamina":"100", "agility":"1", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }
+];		
 
 //stance is 000000000
 //0 is exposed to attack
@@ -17,7 +20,7 @@ var raceList = [{ "name":"human", "health":"100", "attack":"10", "stamina":"100"
 //left upper, head, right upper, left mid, torso, right mid, left leg, groin, right leg 
 
 var meleeSkillList = [
-	{ "name":"Arm Smash", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"Attack Reduction", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"10", "staminaCost":"1" },
+	{ "name":"Arm Smash", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"Attack Reduction", "debuffPercent":"10", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"10", "staminaCost":"1" },
 	{ "name":"Advancing Swing II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Decrease Distance", "range":"2", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"0", "staminaCost":"2" },
 	{ "name":"Retreating Cut II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Increase Distance", "range":"6", "effectQuantity":"2", "percent":"100", "meleePercentagePenalty":"50", "staminaCost":"2" },
 	{ "name":"Heavy Attack", "bodyTarget":"100100000", "stanceResult":"100100110", "debuff":"none", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"-100", "staminaCost":"0" }
@@ -315,9 +318,15 @@ var currentConfigAlloc = 0;
 var strengthAlloc = 0;
 var enduranceAlloc = 0;
 var lifeAlloc = 0;
+		
+	
+function getRandomInteger(min, max) {
+	return Math.floor(Math.random() * (max - min + 1) ) + min;
+}	
 	
 function basicEnemyAttack() {
-	//enemy moves forward if not close enough to attack 
+	//enemy moves forward if not close enough to attack
+	//decreases player distance if enemy forward most and player at max distance
 	if(playerPosition == 0 && enemyPosition != 0) {
 		enemyPosition--;	
 	}	
@@ -327,16 +336,26 @@ function basicEnemyAttack() {
 	else if(playerPosition != 0 && enemyPosition != 0) {
 		enemyPosition--;
 	}	
+	//close enough to attack
 	else {			
-		enemyCurrentStamina--;
-		enemyDamage = 0; 
+		enemyCurrentStamina--; 
+		
+		//selects spot on player stance to target
+		let targetSquare = getRandomInteger(0,9);
+		let playerStance = player.getStance();
+		if(playerStance[targetSquare] == 0) {
+			playerDefenseBroken = true;	
+			playerArmour = 0;
+		}	
+		
+		//target square becomes red
+		$(".p" + targetSquare).css({"border": "2px solid red"});	
+			
+
 		
 		if(enemyAttackPenalty != 0) {
-		enemyDamage = Math.floor((enemyAttack * ((100 - enemyAttackPenalty) / 100) - playerArmour));
+			enemyDamage = Math.floor((enemyAttack * ((100 - enemyAttackPenalty) / 100) - playerArmour));
 		}	
-		else if(enemyAttackPenalty != 0 < 0) {
-		enemyDamage = Math.ceiling((enemyAttack * ((100 - enemyAttackPenalty) / 100) - playerArmour));
-		}
 		else {
 			enemyDamage = enemyAttack - playerArmour;
 		}	
@@ -347,6 +366,9 @@ function basicEnemyAttack() {
 		else {
 			enemyDamage = 0;	
 		}	
+		
+		//reset armour break
+		playerArmour = player.getArmourValue();
 	}
 	//sets grid based on distance
 	$(".characterPosition").css('background-color', 'green');
@@ -440,8 +462,6 @@ function postAttackUpdates() {
 		$("#playerHealthBar").addClass("bg-danger");
 		$("#playerActiveEffects").text("");		
 		
-		
-		//$("#gameStatus").text("You lose!");
 		setTimeout(function(){
 			$("#gameStatus").text("You lose!");
 		}, 500);
@@ -458,7 +478,6 @@ function postAttackUpdates() {
 		
 		$("#enemyConditionTriangle").css('color', 'green');		
 		
-		//$("#gameStatus").text("You win!");
 		setTimeout(function(){
 			$("#gameStatus").text("You win!");
 		}, 500);
@@ -470,6 +489,16 @@ function postAttackUpdates() {
 		$("#playerHealthBar").text(playerCurrentHealth + "/" + playerHealth);
 		$("#playerHealthBar").css('width', (Math.floor((playerCurrentHealth / playerHealth) * 100)) + "%");
 	}
+	
+	//reset grids
+	for(let i = 0; i < 10; i++) {
+		setTimeout(function(){
+			$(".p" + i).css({"border": "1px solid black"});
+			$(".e" + i).css({"border": "1px solid black"});
+		}, 800);	
+		//$(".p" + i).css({"border": "1px solid black"});
+		//$(".e" + i).css({"border": "1px solid black"});
+	}	
 }
 
 function agilityCheck() {
@@ -490,7 +519,7 @@ function agilityCheck() {
 			$("#playerStatus").text("Enemy moved first!");
 			setTimeout(function(){
 				$("#playerStatus").text("---");
-			}, 1500);
+			}, 800);
 		}
 	}	
 }	
@@ -605,7 +634,6 @@ function gameInit() {
 					//finds skill details in data
 					if(meleeSkillObj[j].name == event.data.param1) {
 						playerAttackPenalty = meleeSkillObj[j].meleePercentagePenalty;
-						enemyAttackPenalty = meleeSkillObj[j].percent;
 						
 						//agility check
 						agilityCheck();
@@ -677,8 +705,12 @@ function gameInit() {
 								$("#enemyGridColumn" + enemyPosition).css('background-color', 'gray');
 							}
 							
-							//set new player stance
+							//set new player stance, yellow is open, updates grid
 							player.setStance(meleeSkillObj[j].stanceResult);
+							for(let i = 0; i < 10; i++) {
+								if(meleeSkillObj[j].stanceResult[i] == 0)
+									$(".p" + i).css({"border": "2px solid yellow"});
+							}	
 							
 							//check enemy stance to see if damage reduced
 							let playerTargeting = meleeSkillObj[j].bodyTarget;
@@ -693,6 +725,8 @@ function gameInit() {
 							if(meleeSkillObj[j].debuff != "none" && enemyDefenseBroken == true) {
 								$("#enemyActiveEffects").text(meleeSkillObj[j].debuff);
 								$("#enemyConditionTriangle").css('border-top', '20px solid red');
+								if(meleeSkillObj[j].debuff === "attack reduction")
+									enemyAttackPenalty = meleeSkillObj[j].debuffPercent;
 							}
 							
 							setTimeout(function(){
@@ -773,16 +807,12 @@ $(document).ready(function(){
 		strengthAlloc = 0;
 		enduranceAlloc = 0;
 		lifeAlloc = 0;
+		$("#strengthAlloc").text("0");
+		$("#enduranceAlloc").text("0");
+		$("#lifeAlloc").text("0");
 		
-		//panel set for game session
-		/*
-		$('[data-toggle="tooltip"]').tooltip();
 		
-		$("#gameIntroMenu").hide();
-		$("#startLogoTitle").hide();
-		$(".spacerBox").hide();
-		*/
-		
+		//show battle UI
 		$("#gameMain").show();
 		$("#gameTopTab").show();
 		
@@ -805,9 +835,9 @@ $(document).ready(function(){
 		$("#playerAgility").text("Agility: " + player.getAgility());
 		
 		$("#activeEnemy").attr("src", enemyObj[0].avatar);
-		$("#enemyName").text(enemy.getName());
-		$("#enemyArmour").text(enemyArmour);
-		$("#enemyAttack").text(enemyAttack);
+		//$("#enemyName").text(enemy.getName());
+		//$("#enemyArmour").text(enemyArmour);
+		//$("#enemyAttack").text(enemyAttack);
 		
 			
 	});
@@ -867,6 +897,11 @@ $(document).ready(function(){
 
 	$("#attackButton").click(function() {
 		
+		$("#attackButton").attr("disabled", true);
+		setTimeout(function(){
+			$("#attackButton").attr("disabled", false);
+		}, 900);
+		
 		//agility check on regular attack
 		agilityCheck();
 		
@@ -875,7 +910,6 @@ $(document).ready(function(){
 			playerCurrentStamina--;
 			$("#playerStaminaBar").text(playerCurrentStamina + "/" + playerStamina);
 			$("#playerStaminaBar").css('width', (Math.floor((playerCurrentStamina / playerStamina) * 100)) + "%");
-			playerDamage = 0;
 			
 			if(enemyDefenseBroken == true) {
 				enemyArmour = 0;	
@@ -912,8 +946,7 @@ $(document).ready(function(){
 		enemyAttackMade = false;
 		player.setStance("111111111");
 		enemy.setStance("111111111");
-		enemyDefenseBroken = false;
-		playerDefenseBroken = false;
+
 		
 		//sets grid based on distance
 		$(".characterPosition").css('background-color', 'green');
@@ -942,14 +975,17 @@ $(document).ready(function(){
 		else {
 			$("#enemyDamagedAmount").text("Hit: " + playerDamage);	
 		}
+		enemyDefenseBroken = false;
+		playerDefenseBroken = false;
+		
 		
 		//reset damage values shown after display
 		setTimeout(function(){
 			$("#playerDamagedAmount").text("---");
-		}, 200);	
+		}, 800);	
 		setTimeout(function(){
 			$("#enemyDamagedAmount").text("---");
-		}, 200);	
+		}, 800);	
 		
 		//update game based on changed values
 		postAttackUpdates();
