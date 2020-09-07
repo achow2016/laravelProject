@@ -78,39 +78,10 @@
 			</div>
 			
 			
-			<!--
-				start panel
-					name
-					class
-					start game
-			-->
-			<div class="row" id="gameIntroMenu">
-				<div class="col">
-
-					<!--name-->
-					<div class="form-group">
-					<label for="name">Name:</label>
-					<input type="text" class="form-control" id="name">
-					</div>
-
-					<!--starting classes-->
-					<div class="form-group">
-						<label for="gameClass">Select a class</label>
-						<select class="form-control" id="gameClass">
-							<option>Warrior</option>
-						</select>
-					</div>
-					
-					<!--button to start with values in select-->
-					<div id="startScreenButtons" class="centered-button">
-						<button id="startButton" type="button" class="btn btn-primary active">New Game</button>
-					</div>
-					
-					<div class="centered-button">
-						<button type="button" class="returnButton btn btn-primary active">Return to Website</button>
-					</div>
-					
-				</div>
+			<!--start buttons-->
+			<div class="btn-group d-flex w-100 fixed-bottom" id="gameIntroMenu" role="group">
+				<button id="startButton" type="button" class="introButtons btn btn-primary active w-100">New Game</button>
+				<button type="button" class="introButtons returnButton btn btn-primary active w-100">home</button>
 			</div>		
 			
 			<!--configuration screen for character
@@ -171,6 +142,35 @@
 							</div><br>							
 						</div>
 					</div>
+					
+					<div class="row">
+						<div class="col">
+							<label for="name">Name:</label>
+							<input type="text" class="form-control" id="name">
+						</div>	
+					</div>
+
+					
+					<div class="row">
+						<div class="col">
+							<label for="gameClass">Select a class</label>
+							<select class="form-control" id="gameClass">
+								<option>Warrior</option>
+							</select>
+						</div>	
+					</div>
+					
+					
+					<div class="row">
+						<div class="col">
+							<label for="race">Choose a race:</label>
+							<select name="race" id="race">
+								<option value="Human">Human</option>
+								<option value="Android">Android</option>
+							</select>	
+						</div>	
+					</div>
+					
 					<div class="row">
 						<div class="col">
 							<div class="centered-button">
@@ -181,8 +181,13 @@
 				</div>
 			</div>				
 
-			<!--div class="row" id="gameMain" style="display:none"-->
-			<div id="gameMain" style="display:none">
+
+			<!--story main page-->
+			<div id="storyMain" style="display:none">
+			</div>
+			
+			<!--battle main page-->
+			<div id="battleMain" style="display:none">
 			
 					<!-- Tab panes -->
 					<div class="tab-content">
@@ -359,12 +364,28 @@
 											</div>
 										</div>
 										
+										<!--
+													<div class="btn-group d-flex w-100 fixed-bottom" id="gameIntroMenu" role="group">
+				<button id="startButton" type="button" class="introButtons btn btn-primary active w-100">New Game</button>
+				<button type="button" class="introButtons returnButton btn btn-primary active w-100">home</button>
+			</div>	
+										
+										-->
+										
 										<!--player commands center-->
 										<div class="col-sm-4" id="playerCommandCenter">
-											<div class="row">
+											
+											<div class="btn-group d-flex w-100" id="gameIntroMenu" role="group">
+												<button id="attackButton" type="button" class="btn btn-primary active  w-100">Attack!</button>
+												<button style="display:none" id="nextTurnButton" type="button" class="btn btn-primary active  w-100">Next</button>
+												<button id="skillMenu" type="button" class="btn btn-primary active w-100" data-toggle="modal" data-target="#skillModal">Skill</button>
+												<button id="operationMenu" type="button" class="btn btn-primary active w-100" data-toggle="modal" data-target="#menuModal">Menu</button>
+											</div>	
+											<!--div class="row">
 												<div class="col">
 													<div class="centered-button">
 														<button id="attackButton" type="button" class="btn btn-primary active">Attack!</button>
+														<button style="display:none" id="nextTurnButton" type="button" class="btn btn-primary active">Next</button>
 													</div>
 												</div>
 												<div class="col">
@@ -377,12 +398,8 @@
 														<button id="operationMenu" type="button" class="btn btn-primary active" data-toggle="modal" data-target="#menuModal">Menu</button>
 													</div>
 												</div>
-											</div>
+											</div-->
 										</div>
-										
-										
-										
-										
 									</div>
 								</div>
 							</div>
@@ -467,12 +484,10 @@
 								<button type="button" class="close" data-dismiss="modal">&times;</button>
 							</div>
 							<div class="modal-body">
-								<div class="centered-button">
-									<button id="toTitleButton" type="button" class="btn btn-primary active">To Title</button>
-								</div>
-								<div class="centered-button">
-									<button type="button" class="returnButton btn btn-primary active">Return to Website</button>
-								</div>								
+								<div class="" id="gameIntroMenu" role="group">
+									<button id="toTitleButton" type="button" class="btn btn-primary active w-100 mb-1">To Title</button>
+									<button type="button" class="returnButton btn btn-primary active w-100">Return to Website</button>
+								</div>	
 							</div>
 							<div class="modal-footer centered-button">
 								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
