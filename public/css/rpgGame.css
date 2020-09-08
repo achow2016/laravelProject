@@ -3,12 +3,6 @@
 	border: 1px solid black;
 }
 
-.content .spacerBox {00
-	height: 100%;
-	margin-bottom: 0%;
-	max-width: 100%;
-}	
-
 #gameMain {
 	max-height: 100vh;
 }	
@@ -140,3 +134,7 @@
 	display: inline-block;
 }	
 
+#playerCommandCenter {
+	margin-left: 0;
+	margin-right: 0;
+}	

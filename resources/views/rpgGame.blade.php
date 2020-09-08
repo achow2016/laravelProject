@@ -35,24 +35,22 @@
     </head>
     <body>
 		<div class="content .container" id="outer">
-			<!--
-			game title top div
-				image
-				title
-				hidden on game start
-			-->
-			<div class="row spacerBox">
-				<div class="col">
-
-				</div>
-			</div>
-			
-			<div class="row" id="startLogoTitle">
-				<div class="col">
-					<div id="gameTitle">
-						<img src="/img/gameTitleTempImage.jpg" width="150px" height="150px" alt="Game Title Art"/>
-						<h1>My Game</h1>
+		
+			<!--game intro screen-->
+			<div class="col" id="gameIntroMenu">			
+				<div class="row">
+					<div class="col">
+						<div id="gameTitle">
+							<img src="/img/gameTitleTempImage.jpg" width="150px" height="150px" alt="Game Title Art"/>
+							<h1>My Game</h1>
+						</div>
 					</div>
+				</div>
+				<div class="row">
+					<div class="btn-group d-flex w-100 fixed-bottom" role="group">
+						<button id="startButton" type="button" class="introButtons btn btn-primary active w-100">New Game</button>
+						<button type="button" class="introButtons returnButton btn btn-primary active w-100">home</button>
+					</div>					
 				</div>
 			</div>
 			
@@ -72,18 +70,14 @@
 						</li>
 						<li class="nav-item">
 							<a class="nav-link" data-toggle="pill" href="#scorePanel">Score</a>
+						</li>					
+						<li>
+							<button id="operationMenu" type="button" class="btn btn-dark active w-100" data-toggle="modal" data-target="#menuModal">Menu</button>
 						</li>
 					</ul>
 				</div>
 			</div>
-			
-			
-			<!--start buttons-->
-			<div class="btn-group d-flex w-100 fixed-bottom" id="gameIntroMenu" role="group">
-				<button id="startButton" type="button" class="introButtons btn btn-primary active w-100">New Game</button>
-				<button type="button" class="introButtons returnButton btn btn-primary active w-100">home</button>
-			</div>		
-			
+
 			<!--configuration screen for character
 				allocation of points 12
 					strength training atk
@@ -340,7 +334,16 @@
 											<div class="row">
 												<div class="col">
 													<p id="playerStatus" data-toggle="tooltip" title=""></p>
-													<p id="gameStatus" data-toggle="tooltip" title="">---</p>
+													
+													
+													
+											<div class="d-flex w-100" role="group">
+												<p class="w-100 mr-1" id="playerGameStatus" data-toggle="tooltip" title="">---</p>
+												<p class="w-100 mr-1" id="enemyGameStatus" data-toggle="tooltip" title="">---</p>
+											</div>	
+													
+													
+													<!--p id="gameStatus" data-toggle="tooltip" title="">---</p-->
 												</div>
 												
 											</div>
@@ -364,41 +367,15 @@
 											</div>
 										</div>
 										
-										<!--
-													<div class="btn-group d-flex w-100 fixed-bottom" id="gameIntroMenu" role="group">
-				<button id="startButton" type="button" class="introButtons btn btn-primary active w-100">New Game</button>
-				<button type="button" class="introButtons returnButton btn btn-primary active w-100">home</button>
-			</div>	
-										
-										-->
-										
 										<!--player commands center-->
 										<div class="col-sm-4" id="playerCommandCenter">
-											
-											<div class="btn-group d-flex w-100" id="gameIntroMenu" role="group">
-												<button id="attackButton" type="button" class="btn btn-primary active  w-100">Attack!</button>
-												<button style="display:none" id="nextTurnButton" type="button" class="btn btn-primary active  w-100">Next</button>
+											<div class="btn-group d-flex w-100" id="gameCommandMenu" role="group">
+												<button id="attackButton" type="button" class="btn btn-primary active w-100 mr-1">Attack</button>
+												<button id="defendButton" type="button" class="btn btn-primary active w-100 mr-1">Defend</button>
+												<button id="itemButton" type="button" class="btn btn-primary active w-100 mr-1">Item</button>
+												<button style="display:none" id="nextTurnButton" type="button" class="btn btn-primary active w-100 mr-1">Next</button>
 												<button id="skillMenu" type="button" class="btn btn-primary active w-100" data-toggle="modal" data-target="#skillModal">Skill</button>
-												<button id="operationMenu" type="button" class="btn btn-primary active w-100" data-toggle="modal" data-target="#menuModal">Menu</button>
 											</div>	
-											<!--div class="row">
-												<div class="col">
-													<div class="centered-button">
-														<button id="attackButton" type="button" class="btn btn-primary active">Attack!</button>
-														<button style="display:none" id="nextTurnButton" type="button" class="btn btn-primary active">Next</button>
-													</div>
-												</div>
-												<div class="col">
-													<div class="centered-button">
-														<button id="skillMenu" type="button" class="btn btn-primary active" data-toggle="modal" data-target="#skillModal">Skill</button>
-													</div>
-												</div>
-												<div class="col">
-													<div class="centered-button">
-														<button id="operationMenu" type="button" class="btn btn-primary active" data-toggle="modal" data-target="#menuModal">Menu</button>
-													</div>
-												</div>
-											</div-->
 										</div>
 									</div>
 								</div>
