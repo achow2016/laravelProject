@@ -1,31 +1,31 @@
 //game data
 
-var weaponList = [{ "name":"Wood Sword" , "damage":"1" } ];
+var weaponObj = [{ "name":"Wood Sword" , "damage":"1" } ];
 
-var armourList = [{ "name":"Wood armour" , "reduction":"1" } ];
+var armourObj = [{ "name":"Wood armour" , "reduction":"1" } ];
 	
 //ST, EN, LI is strength(atk), endurance(sp), life(hp)	
 //for android only
-var implantList = [
+var implantObj = [
 	{ "name":"Pain Inhibitor" , "effect":"Reduce Damage", "buffPercent":"10" }, 
 	{ "name":"Fatigue Inhibitor" , "effect":"Increase agility", "buffPercent":"10" }, 
 	{ "name":"Steroid Booster" , "effect":"Increase ST-EN-LI", "buffPercent":"10" },
 	{ "name":"Battlefield Aid" , "effect":"Regenerate LI-EN", "buffPercent":"1" }
 ];	
 
-var personalityList = [
+var personalityObj = [
 	{ "type":"Aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"0" }, 
 	{ "type":"Defensive" , "attackPercent":"50", "defendPercent":"50", "skillPercent":"0" }
 ];	
 	
-var enemyList = [
-	{ "name":"Pickpocket", "health":"100", "attack":"10", "stamina":"100",  "agility":"1", "avatar":"/img/enemyFace.jpg" },
-	{ "name":"Mugger", "health":"150", "attack":"10", "stamina":"100",  "agility":"1", "avatar":"/img/enemyFace.jpg" }
+var enemyObj = [
+	{ "name":"Pickpocket", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "baseAttackCost":"10", "agility":"1", "avatar":"/img/enemyFace.jpg" },
+	{ "name":"Mugger", "health":"150", "attack":"10", "stamina":"100", "staminaRegen":"10",  "baseAttackCost":"10", "agility":"1", "avatar":"/img/enemyFace.jpg" }
 ];
 
-var raceList = [
-	{ "name":"human", "health":"100", "attack":"10", "stamina":"100", "agility":"1", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" },
-	{ "name":"android", "health":"100", "attack":"100", "stamina":"100", "agility":"1", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }
+var raceObj = [
+	{ "name":"human", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10",  "baseAttackCost":"10", "agility":"1", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" },
+	{ "name":"android", "health":"100", "attack":"100", "stamina":"100", "staminaRegen":"10",  "baseAttackCost":"10", "agility":"1", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }
 ];		
 
 //stance is 000000000
@@ -33,7 +33,7 @@ var raceList = [
 //target is 1 for targeted parts
 //left upper, head, right upper, left mid, torso, right mid, left leg, groin, right leg 
 
-var meleeSkillList = [
+var meleeSkillObj = [
 	{ "name":"Arm Smash", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"Attack Reduction", "debuffPercent":"10", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"10", "staminaCost":"5" },
 	{ "name":"Advancing Swing II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Decrease Distance", "range":"2", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"0", "staminaCost":"10" },
 	{ "name":"Retreating Cut II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Increase Distance", "range":"6", "effectQuantity":"2", "percent":"100", "meleePercentagePenalty":"50", "staminaCost":"10" },
@@ -41,7 +41,7 @@ var meleeSkillList = [
 ];
 
 
-var battleItemList = [
+var battleItemObj = [
 	{ "name":"Auto-Injector: Berserker" , "effect":"Attack Increase", "effectStackLimit":"1", "buffPercent":"10" },
 	{ "name":"Auto-Injector: Clot Enzyme", "effect":"Remove Bleed", "effectStackLimit":"1" }
 ];
@@ -125,7 +125,7 @@ class Actor {
 	//randomizers are for enemy actor and adds up to 30% each to attack and health
 	//stamina randomizer added but not used
 		//to be adjusted down to 20% each once enemy skill use is implemented
-	constructor(name,health,attack,stamina,agility) {
+	constructor(name,health,attack,stamina,staminaRegen,baseAttackCost,agility) {
 		this.position = 1;
 		this.name = name;
 		this.health = parseInt(health);
@@ -140,9 +140,29 @@ class Actor {
 		this.defenseMultiplier = 1;
 		this.meleeSkillArray = [];
 		this.stamina = stamina;
+		this.currentStamina = stamina;
 		this.agility = parseInt(agility);
 		this.stance = "111111111";
 		this.personality = null;
+		this.limbHealth = "1111";
+		this.staminaRegen = parseInt(staminaRegen);
+		this.baseAttackCost = parseInt(baseAttackCost);
+	}	
+	
+	setBaseAttackCost(baseAttackCost) {
+		this.baseAttackCost = baseAttackCost;
+	}	
+	
+	getBaseAttackCost() {
+		return this.baseAttackCost;
+	}	
+	
+	setLimbHealth(limbHealth) {
+		this.limbHealth = limbHealth;
+	}	
+	
+	getLimbHealth() {
+		return this.limbHealth;
 	}	
 	
 	setPersonality(personality) {
@@ -188,8 +208,34 @@ class Actor {
 	setPosition(position) {
 		this.position = position;	
 	}	
+	
 	getPosition() {
 		return this.position;	
+	}		
+	
+	applyAttackExertion() {
+		this.setCurrentStamina(this.currentStamina - this.baseAttackCost);
+	}	
+	
+	recoverStamina() {
+		if(this.currentStamina <= (this.stamina - this.staminaRegen))
+			this.setCurrentStamina(this.currentStamina += this.staminaRegen);
+	}	
+	
+	setStaminaRegen(stamina) {
+		this.staminaRegen = stamina;
+	}
+
+	getStaminaRegen() {
+		return this.staminaRegen;
+	}	
+	
+	setCurrentStamina(stamina) {
+		this.currentStamina = stamina;
+	}
+
+	getCurrentStamina(stamina) {
+		return this.currentStamina;
 	}		
 	
 	setStamina(stamina) {
@@ -271,6 +317,26 @@ class Actor {
 	getWeaponName() {
 		return this.weaponName;	
 	}	
+	
+	defend() {
+		this.setArmourValue(this.armourValue * 10); 
+	}	
+	
+	stopDefend() {
+		this.setArmourValue(this.armourValue / 10); 	
+	}	
+	
+	applyDefenseBreak() {
+		this.setArmourValue(this.armourValue / 10); 
+	}
+	
+	removeDefenseBreak() {
+		this.setArmourValue(this.armourValue * 10); 
+	}	
+	
+	setArmourValue(value) {
+		this.armourValue = value;
+	}	
 
 	equipArmour(armourName, armourValue) {
 		this.armourName = armourName;
@@ -296,17 +362,8 @@ class Actor {
 }
 
 /*
-init objects from json data strings
 init player and enemy
-
 */
-
-var weaponObj;
-var armourObj;
-var battleItemObj;
-var enemyObj;
-var raceObj;
-var personalityObj;
 
 var player;
 var enemy;
@@ -318,34 +375,39 @@ var playerCurrentStamina = null;
 
 var enemyHealth = null;
 var enemyCurrentHealth = null;
+
 var enemyStamina = null;
 var enemyCurrentStamina = null;
+
 var playerWeapon = null;
 var playerArmourName = null;
-var playerArmour = null;
 var playerAttack = null;
-var enemyArmour = null;
 var enemyAttack = null;
 
-var playerSkillCount = 0;
-var playerSkillArray = null;
+
 var playerAttackPenalty = 0;
 var enemyAttackPenalty = 0;
 
 var playerPosition = 0;
 var enemyPosition = 0;
 
+
+
+var playerSkillCount = 0;
+var playerSkillArray = null;
+
 var playerAttackFailure = false;
 var enemyAttackFailure = false;
 var enemyAttackMade = false;
-
-var firstRun = true;
 
 var enemyDamage;
 var playerDamage;
 
 var playerDefenseBroken = false;
 var enemyDefenseBroken = false;
+
+
+var firstRun = true;
 
 var currentConfigAlloc = 0;
 var strengthAlloc = 0;
@@ -451,13 +513,19 @@ function skillEnemyAttack() {
 				}	
 
 				//applies debuff if any, does not apply it if defended against			
-				if(meleeSkillObj[j].debuff != "none" && playerDefenseBroken == true) {
+				if(meleeSkillObj[j].debuff != "none") {
 					$("#playerActiveEffects").text(meleeSkillObj[j].debuff);
 					$("#playerConditionTriangle").css('border-top', '20px solid red');
 					
 					//debuff list
-					if(meleeSkillObj[j].debuff === "attack reduction")
-						enemyAttackPenalty = meleeSkillObj[j].debuffPercent;
+					if(meleeSkillObj[j].debuff === "attack reduction") {
+						if(enemyDefend)
+							enemyAttackPenalty = Math.floor(meleeSkillObj[j].debuffPercent / 2);
+						if(!enemyDefend)
+							enemyAttackPenalty = meleeSkillObj[j].debuffPercent;
+						if(enemyDefenseBroken)
+							enemyAttackPenalty = Math.floor(meleeSkillObj[j].debuffPercent * 1.5);						
+					}	
 				}
 				
 				//is using skill, next step calculates damage
@@ -472,11 +540,9 @@ function basicEnemyAttack() {
 	
 	//if defends, increases armour and stamina
 	if(enemyDefend == true) {
-		playerCurrentStamina += 20;
-		$("#playerStaminaBar").text(playerCurrentStamina + "/" + playerStamina);
-		$("#playerStaminaBar").css('width', (Math.floor((playerCurrentStamina / playerStamina) * 100)) + "%");
-		playerArmour = Math.floor(playerArmour * 10);
-		playerDamage = 0;
+		enemy.recoverStamina();
+		enemy.defend(); 	
+		enemyDamage = 0;
 	}
 	else {
 		//enemy moves forward if not close enough to attack
@@ -498,21 +564,21 @@ function basicEnemyAttack() {
 			enemyCurrentStamina--; 
 			
 			//selects spot on player stance to target
-			let targetSquare = getRandomInteger(0,9);
+			let targetSquare = getRandomInteger(0,8);
 			let playerStance = player.getStance();
 			if(playerStance[targetSquare] == 0) {
 				playerDefenseBroken = true;	
-				playerArmour = 0;
+				player.applyDefenseBreak();
 			}	
 			
 			//target square becomes red
 			$(".p" + targetSquare).css({"border": "2px solid red"});	
 				
 			if(enemyAttackPenalty != 0) {
-				enemyDamage = Math.floor((enemyAttack * ((100 - enemyAttackPenalty) / 100) - playerArmour));
+				enemyDamage = Math.ceil((enemyAttack * ((100 - enemyAttackPenalty) / 100) - player.getArmourValue()));
 			}	
 			else {
-				enemyDamage = enemyAttack - playerArmour;
+				enemyDamage = Math.ceil(enemyAttack - player.getArmourValue());
 			}	
 			
 			if(enemyDamage > 0) {
@@ -523,7 +589,8 @@ function basicEnemyAttack() {
 			}	
 			
 			//reset armour break
-			playerArmour = player.getArmourValue();
+			if(playerDefenseBroken)
+				player.removeDefenseBreak();
 		}
 		//sets grid based on distance
 		$(".characterPosition").css('background-color', 'green');
@@ -671,22 +738,14 @@ function agilityCheck() {
 //called from start and on reset
 function gameInit() {
 	
-	//get game data from JSON
-	weaponObj = weaponList;
-	armourObj = armourList;
-	battleItemObj = battleItemList;
-	enemyObj = enemyList;
-	raceObj = raceList;
-	meleeSkillObj = meleeSkillList;
-	personalityObj = personalityList;
-	
-	
 	//init player
 	player = new Actor(
 		raceObj[0].name,
 		raceObj[0].health,
 		raceObj[0].attack,
 		raceObj[0].stamina,
+		raceObj[0].staminaRegen,
+		raceObj[0].baseAttackCost,		
 		raceObj[0].agility
 	);
 
@@ -713,6 +772,8 @@ function gameInit() {
 		enemyObj[0].health,
 		enemyObj[0].attack,
 		enemyObj[0].stamina,
+		enemyObj[0].staminaRegen,
+		enemyObj[0].baseAttackCost,
 		enemyObj[0].agility		
 	);
 	
@@ -769,8 +830,8 @@ function gameInit() {
 	}
 
 	//sets enemy personality at beginning
-	let enemyPersonalityChoice = getRandomInteger(0, (personalityList.length - 1));
-	enemy.setPersonality(personalityList[enemyPersonalityChoice]);
+	let enemyPersonalityChoice = getRandomInteger(0, (personalityObj.length - 1));
+	enemy.setPersonality(personalityObj[enemyPersonalityChoice]);
 	
 	
 	//add buttons for each skill in possession
@@ -978,7 +1039,7 @@ $(document).ready(function(){
 		
 		$(".playerImage").attr("src", raceObj[0].avatar);
 		$("#playerName").text("Name: " + player.getName());
-		$("#playerArmour").text(playerArmour);
+		$("#playerArmour").text(player.getArmourValue());
 		$("#playerAttack").text(player.getAttack() + " + " + player.getWeaponDamage());
 		
 		$("#playerHealthBar").text(playerCurrentHealth + "/" + playerHealth)
@@ -1056,20 +1117,20 @@ $(document).ready(function(){
 		$("#itemButton").hide();
 		$("#skillMenu").hide();
 		$("#nextTurnButton").show();
-
-		//agility check on regular attack
-		agilityCheck();
 			
 		//if defends, increases armour and stamina
-		if(playerDefend == true) {
-			playerCurrentStamina += 20;
-			$("#playerStaminaBar").text(playerCurrentStamina + "/" + playerStamina);
-			$("#playerStaminaBar").css('width', (Math.floor((playerCurrentStamina / playerStamina) * 100)) + "%");
-			playerArmour = Math.floor(playerArmour * 10);
+		if(playerDefend) {
+			player.recoverStamina();
+			$("#playerStaminaBar").text(player.getCurrentStamina() + "/" + player.getStamina());
+			$("#playerStaminaBar").css('width', (Math.floor((player.getCurrentStamina() /player.getStamina()) * 100)) + "%");
+			player.defend();
 			playerDamage = 0;
 		}
 		//if player didn't defend, attacks	
 		else {
+			//agility check on regular attack
+			agilityCheck();
+			
 			//player checks distance, if too far attack is failure for player
 			//only checked if player using basic attack
 			if(playerBasicAttack) {
@@ -1081,29 +1142,29 @@ $(document).ready(function(){
 			
 			//player attack sequence only happens if attack did not fail, resets after
 			if(playerAttackFailure == false) {
-				playerCurrentStamina -= 10;
-				$("#playerStaminaBar").text(playerCurrentStamina + "/" + playerStamina);
-				$("#playerStaminaBar").css('width', (Math.floor((playerCurrentStamina / playerStamina) * 100)) + "%");
+					player.applyAttackExertion();
+					$("#playerStaminaBar").text(player.getCurrentStamina() + "/" + player.getStamina());
+					$("#playerStaminaBar").css('width', (Math.floor((player.getCurrentStamina() / player.getStamina()) * 100)) + "%");
 				
 				if(enemyDefenseBroken == true) {
-					enemyArmour = 0;	
+					enemy.applyDefenseBreak();	
 				}		
 				
 				if(playerAttackPenalty != 0) {
-					playerDamage = Math.floor((playerAttack * ((100 - playerAttackPenalty) / 100) - enemyArmour));
+					playerDamage = Math.ceil((playerAttack * ((100 - playerAttackPenalty) / 100) - enemy.getArmourValue()));
 				}	
 				
 				else if(playerAttackPenalty < 0) {
-					playerDamage = Math.ceiling((playerAttack * ((100 - playerAttackPenalty) / 100) - enemyArmour));
+					playerDamage = Math.ceil((playerAttack * ((100 - playerAttackPenalty) / 100) - enemy.getArmourValue()));
 				}
 				
 				else {
-					playerDamage = playerAttack - enemyArmour;
+					playerDamage = Math.ceil(playerAttack - enemy.getArmourValue());
 				}
 				playerAttackPenalty = 0;
 				
 				if(playerDamage > 0) {
-					enemyCurrentHealth = enemyCurrentHealth - playerDamage;
+					enemyCurrentHealth = Math.ceil(enemyCurrentHealth - playerDamage);
 				} 
 				else {
 					playerDamage = 0;	
@@ -1146,17 +1207,15 @@ $(document).ready(function(){
 			if(!enemyAttackFailure) 
 				$("#enemyDamagedAmount").text("Hit: " + playerDamage);	
 		}
-		
 		//reset attack modifiers
-		if(playerDefend = true) {
-			playerArmour = Math.floor(playerArmour / 10);	
-			playerDefend = false;
+		if(playerDefend) {
+			player.stopDefend();
 		}	
 		if(enemyDefend = true) {
-			enemyArmour = Math.floor(enemyArmour / 10);	
-			enemyDefend = false;
-		}			
+			enemy.stopDefend();
+		}
 		
+		enemyDefend = false;
 		playerBasicAttack = true;
 		playerAttackFailure = false;
 		enemyAttackFailure = false;
