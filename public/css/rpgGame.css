@@ -49,7 +49,7 @@
 }	
 
 .enemyStatus {
-		font-size: 10pt;
+	font-size: 10pt;
 }
 
 #enemyHealthSquare {
@@ -137,4 +137,12 @@
 #playerCommandCenter {
 	margin-left: 0;
 	margin-right: 0;
+}
+
+#storyImage {
+	min-height: 40vh;
+}	
+
+#storyTextContent {
+	min-height: 40vh;
 }	

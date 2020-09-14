@@ -90,8 +90,7 @@
 						<div class="col">
 							<br>
 							<p>
-							Please allocate 12 points for your character.<br>
-							Each point grants a 5% bonus.
+							Assign 12 points, +5% bonus per point
 							</p>
 						</div>					
 					</div>
@@ -139,37 +138,38 @@
 					
 					<div class="row">
 						<div class="col">
-							<label for="name">Name:</label>
-							<input type="text" class="form-control" id="name">
+							<input type="text" class="form-control" id="name" placeholder="name">
 						</div>	
 					</div>
 
+					<br>
 					
 					<div class="row">
 						<div class="col">
-							<label for="gameClass">Select a class</label>
-							<select class="form-control" id="gameClass">
-								<option>Warrior</option>
+							<select class="form-control" name="gameClass" id="gameClass">
+								<option>warrior</option>
 							</select>
 						</div>	
 					</div>
 					
+					<br>
 					
 					<div class="row">
 						<div class="col">
 							<label for="race">Choose a race:</label>
 							<select name="race" id="race">
-								<option value="Human">Human</option>
-								<option value="Android">Android</option>
+								<option value="human">human</option>
+								<option value="android">android</option>
 							</select>	
 						</div>	
 					</div>
 					
 					<div class="row">
 						<div class="col">
+							<p id="characterChoice"></p> 
 							<p id="raceStats"></p>
 						</div>	
-					</div>					
+					</div>			
 					
 					<div class="row">
 						<div class="col">
@@ -182,8 +182,26 @@
 			</div>				
 
 
-			<!--story main page-->
+			<!--story page-->
 			<div id="storyMain" style="display:none">
+			
+				<div class="row" id="storyImage">
+					<div class="col" id="activeStoryBackground"></div>	
+				</div>	
+				<div class="row" id="storyTextContent">
+					<div class="col">
+						<p id="storyText"></p>
+					</div>	
+				</div>	
+				
+				<div class="row storyMenu">
+					<div class="col">
+						<div id="ctrlButtonContainer">
+							<button id="storyProgress" type="button" class="btn btn-primary active">Next</button>
+							<button style="display:none" id="storyEnd" type="button" class="btn btn-primary active"></button>
+						</div>
+					</div>	
+				</div>						
 			</div>
 			
 			<!--battle main page-->

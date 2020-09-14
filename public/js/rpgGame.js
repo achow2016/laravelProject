@@ -1,3 +1,6 @@
+//city image at story from
+//https://www.pexels.com/photo/aerial-view-and-grayscale-photography-of-high-rise-buildings-1105766/
+
 //game data
 
 var weaponObj = [{ "name":"Wood Sword" , "damage":"1" } ];
@@ -19,14 +22,29 @@ var personalityObj = [
 ];	
 	
 var enemyObj = [
-	{ "name":"Pickpocket", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"1", "skills":"Arm Smash", "avatar":"/img/enemyFace.jpg" },
-	{ "name":"Mugger", "health":"150", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"1", "avatar":"/img/enemyFace.jpg" }
+	{ "name":"Pickpocket", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":"Arm Smash", "avatar":"/img/enemyFace.jpg" },
+	{ "name":"Mugger", "health":"150", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "avatar":"/img/enemyFace.jpg" }
 ];
 
 var raceObj = [
-	{ "name":"human", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"1", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" },
-	{ "name":"android", "health":"100", "attack":"100", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"1", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }
+	{ "name":"human", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" },
+	{ "name":"android", "health":"150", "attack":"15", "stamina":"150", "staminaRegen":"15", "healthRegen":"1", "baseAttackCost":"7", "agility":"15", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }
 ];		
+
+var storyObj = [
+	{ 
+		"title":"opening", 
+		"storyImage":"/img/chapterImages/cityNight.jpg", 
+		"pageLength":"3",
+		"pages" : [
+			"Welcome to the story!",
+			"",
+			""
+		],
+		"nextState":"fight"
+	}
+
+];
 
 //stance is 000000000
 //0 is exposed to attack
@@ -456,16 +474,26 @@ class Actor {
 }
 
 /*
-init player and enemy
+init game mechanic values
+story, player, enemy
 */
+
+//ui data 
+var currentPage = 1;
+var currentChapter = 1;
+
+
+var currentConfigAlloc = 0;
+var strengthAlloc = 0;
+var enduranceAlloc = 0;
+var lifeAlloc = 0;
+var raceSelection;
 
 var player;
 var enemy;
 
 var playerPosition = 0;
 var enemyPosition = 0;
-
-
 
 var playerSkillCount = 0;
 var playerSkillArray = null;
@@ -482,11 +510,6 @@ var enemyDefenseBroken = false;
 
 
 var firstRun = true;
-
-var currentConfigAlloc = 0;
-var strengthAlloc = 0;
-var enduranceAlloc = 0;
-var lifeAlloc = 0;
 		
 var gameEnd = false;		
 		
@@ -785,7 +808,7 @@ function postAttackUpdates() {
 			break;
 	}	
 	
-	if(player.getCurrentHealth() < 1) {
+	if(player.getCurrentHealth() <= 0) {
 		$("#playerHealthBar").text(player.getCurrentHealth());
 		$("#playerHealthBar").css('width', 100 + "%");
 		$("#playerHealthBar").removeClass();
@@ -799,13 +822,12 @@ function postAttackUpdates() {
 		gameEnd = true;
 	}	
 
-	else if(enemy.getCurrentHealth() < 1) {
+	else if(enemy.getCurrentHealth() <= 0) {
 		$("#playerHealthBar").text(player.getCurrentHealth() + "/" + player.getHealth());
-		$("#playerHealthBar").css('width', (Math.floor(player.getCurrentHealth() / player.getHealth()) * 100) + "%");
+		$("#playerHealthBar").css('width', Math.floor(player.getCurrentHealth() / player.getHealth() * 100) + "%");
 		
 		$("#enemyActiveEffects").text("");
 		$("#enemyStaminaCondition").text("");				
-		
 		$("#enemyConditionTriangle").css('color', 'green');		
 		
 		$("#playerGameStatus").text("You win!");
@@ -817,7 +839,7 @@ function postAttackUpdates() {
 	}
 	else{
 		$("#playerHealthBar").text(player.getCurrentHealth() + "/" + player.getHealth());
-		$("#playerHealthBar").css('width', (Math.floor((player.getCurrentHealth() / player.getHealth()) * 100)) + "%");
+		$("#playerHealthBar").css('width', Math.floor(player.getCurrentHealth() / player.getHealth() * 100) + "%");
 	}
 }
 
@@ -846,12 +868,27 @@ function agilityCheck() {
 	}	
 }	
 
-
+//game init function
 //sets initial game mechanic values
 //called from start and on reset
 function gameInit() {
 	
 	//init player
+	for(var i = 0; i < raceObj.length; i++) {
+		if(raceObj[i].name == raceSelection) {
+			player = new Actor(
+				raceObj[i].name,
+				raceObj[i].health,
+				raceObj[i].attack,
+				raceObj[i].stamina,
+				raceObj[i].staminaRegen,
+				raceObj[i].baseAttackCost,		
+				raceObj[i].agility
+			);			
+		}	
+	}	
+	
+	/*
 	player = new Actor(
 		raceObj[0].name,
 		raceObj[0].health,
@@ -861,6 +898,7 @@ function gameInit() {
 		raceObj[0].baseAttackCost,		
 		raceObj[0].agility
 	);
+	*/
 
 	player.equipWeapon(
 		weaponObj[0].name, 
@@ -1082,6 +1120,11 @@ function gameInit() {
 	}
 
 	//game UI reset
+	
+	//reset race select
+	$("#race").prop('selectedIndex',0);
+	
+	//battle ui
 	$(".characterPosition").css('background-color', 'green');
 	$("#playerGridColumn0").css('background-color', 'gray');
 	$("#enemyGridColumn0").css('background-color', 'gray');
@@ -1122,6 +1165,41 @@ function gameInit() {
 	gameEnd = false;
 }	
 
+//populates story page after creating character
+//pulls image and first page in pages array
+function startStory() {
+	$("#storyMain").show();
+	$("#activeStoryBackground").css("background-image", "url(" + storyObj[0].storyImage + ")");
+	$("#storyText").text(storyObj[currentChapter - 1].pages[currentPage - 1]);
+}
+
+function startBattle() {
+	$("#battleMain").show();
+	$("#gameTopTab").show();
+	
+	
+	//set game text or picture values
+	player.setName($("#name").val());
+	
+	$(".playerImage").attr("src", raceObj[0].avatar);
+	$("#playerName").text("Name: " + player.getName());
+	$("#playerArmour").text(player.getArmourValue());
+	$("#playerArmourName").text("Armour: " + player.getArmourName());
+	$("#playerAttack").text(player.getAttack() + " + " + player.getWeaponDamage());
+	$("#playerAttackWeapon").text("Weapon: " + player.getWeaponName());
+	
+	$("#playerHealthBar").text(player.getCurrentHealth() + "/" + player.getHealth())
+	$("#playerStaminaBar").text(player.getCurrentStamina() + "/" + player.getStamina())
+			
+	$("#playerHealthMaximum").text("Health: " + player.getHealth());
+	$("#playerAgility").text("Agility: " + player.getAgility());
+	
+	$("#activeEnemy").attr("src", enemyObj[0].avatar);
+	//$("#enemyName").text(enemy.getName());
+	//$("#enemyArmour").text(enemyArmour);
+	//$("#enemyAttack").text(enemyAttack);		
+}	
+
 //game starting scripts	
 $(document).ready(function(){
 	
@@ -1150,34 +1228,7 @@ $(document).ready(function(){
 		$("#enduranceAlloc").text("0");
 		$("#lifeAlloc").text("0");
 		
-		
-		//show battle UI
-		$("#battleMain").show();
-		$("#gameTopTab").show();
-		
-		
-		//set game text or picture values
-		player.setName($("#name").val());
-		
-		$(".playerImage").attr("src", raceObj[0].avatar);
-		$("#playerName").text("Name: " + player.getName());
-		$("#playerArmour").text(player.getArmourValue());
-		$("#playerArmourName").text("Armour: " + player.getArmourName());
-		$("#playerAttack").text(player.getAttack() + " + " + player.getWeaponDamage());
-		$("#playerAttackWeapon").text("Weapon: " + player.getWeaponName());
-		
-		$("#playerHealthBar").text(player.getCurrentHealth() + "/" + player.getHealth())
-		$("#playerStaminaBar").text(player.getCurrentStamina() + "/" + player.getStamina())
-				
-		$("#playerHealthMaximum").text("Health: " + player.getHealth());
-		$("#playerAgility").text("Agility: " + player.getAgility());
-		
-		$("#activeEnemy").attr("src", enemyObj[0].avatar);
-		//$("#enemyName").text(enemy.getName());
-		//$("#enemyArmour").text(enemyArmour);
-		//$("#enemyAttack").text(enemyAttack);
-		
-			
+		startStory();	
 	});
 
 	//player actor configuration logic
@@ -1421,7 +1472,7 @@ $(document).ready(function(){
 		$('#menuModal').modal('toggle');
 	});	
 	
-	$("#killMenu").click(function() {
+	$("#skillMenu").click(function() {
 		$('#skillModal').modal('toggle');
 	});	
 	
@@ -1433,4 +1484,61 @@ $(document).ready(function(){
 		$('#playerModal').modal('toggle');
 	});	
 	
+	//character design page race select script
+	//on select box, populates race stats p element with race params
+	//0 = check class 1 = check race
+	$("#race").change(function () {
+		var index = 0;
+		var str = "";
+		$( "select option:selected" ).each(function() {
+			str += $( this ).text() + " ";
+			//class details
+			if(index == 0) {
+				
+			}
+			//race status details
+			if(index == 1) {
+				for(var i = 0; i < raceObj.length; i++) {
+					if(raceObj[i].name == $(this).text()) {
+						raceSelection = raceObj[i].name;
+						$("#raceStats").text("HP: " + raceObj[i].health + " " + 
+							"ATK: " + raceObj[i].attack + " " +
+							"SP: " + raceObj[i].stamina + " " +						
+							"AGL: " + raceObj[i].agility + " "					
+						);	
+					}	
+				}	
+			}	
+			index++;	
+		});
+		$("#characterChoice").text( str );
+	}).change();	
+	
+	//story progress button
+	/*
+	reads through story text to maximum number of defined pages and then 
+	displays next option
+	*/
+	$("#storyProgress").click(function() {
+		//next page if available
+		if(currentPage < parseInt(storyObj[currentChapter - 1].pageLength)) {
+			$("#storyText").text(storyObj[currentChapter - 1].pages[currentPage - 1]);
+		} 
+		//disables next button at end of chapter
+		if((currentPage + 1) == storyObj[currentChapter - 1].pageLength) {
+			//if next state is a fight, displays fight button and proceeds
+			if(storyObj[currentChapter - 1].nextState === "fight") {
+				$("#storyEnd").text("Fight!").show();
+				$("#storyEnd").click(function() {
+					$("#storyMain").hide();
+					startBattle();
+				});	
+				$("#storyProgress").prop('disabled', true);
+				if(typeof storyObj[currentChapter + 1] != 'undefined') 
+					currentChapter++;
+				currentPage= 0;
+			}
+		}	
+		currentPage++;
+	});	
 });
