@@ -34,7 +34,7 @@ var raceObj = [
 //left upper, head, right upper, left mid, torso, right mid, left leg, groin, right leg 
 
 var meleeSkillObj = [
-	{ "name":"Arm Smash", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"Attack Reduction", "debuffPercent":"10", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"10", "staminaCost":"5" },
+	{ "name":"Arm Smash", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"Attack Reduction", "debuffTarget":"lhand", "debuffPercent":"10", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"10", "staminaCost":"5" },
 	{ "name":"Advancing Swing II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Decrease Distance", "range":"2", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"0", "staminaCost":"10" },
 	{ "name":"Retreating Cut II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Increase Distance", "range":"6", "effectQuantity":"2", "percent":"100", "meleePercentagePenalty":"50", "staminaCost":"10" },
 	{ "name":"Heavy Attack", "bodyTarget":"100100000", "stanceResult":"100100110", "debuff":"none", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"-100", "staminaCost":"20" }
@@ -149,6 +149,7 @@ class Actor {
 		this.baseAttackCost = parseInt(baseAttackCost);
 		this.attackPenalty = 0;
 		this.personality = "";
+		this.debuffedParts = [];
 	}	
 	
 	getPersonality() {
@@ -430,7 +431,7 @@ class Actor {
 
 	getMeleeAttackDamage(enemy) {
 		let damage = 0;
-		if(this.attackPenalty != 0) {
+		if(this.attackPenalty > 0) {
 			damage = Math.ceil((this.getAttackValue() * ((100 - this.attackPenalty) / 100) - enemy.getArmourValue()));
 		}	
 		
@@ -442,6 +443,15 @@ class Actor {
 			damage = Math.ceil(this.getAttackValue() - enemy.getArmourValue());
 		}
 		return damage;
+	}	
+	
+	
+	addDebuffPart(part) {
+		this.debuffedParts.push(part);	
+	}	
+	
+	getDebuffParts() {
+		return this.debuffedParts;	
 	}	
 }
 
@@ -496,7 +506,7 @@ function skillEnemyAttack() {
 	for(var j = 0; j < meleeSkillObj.length; j++) {	
 	
 		//finds skill details in enemy skill array
-		if(meleeSkillObj[j].name == skills[skillChoice].name) {
+		if(meleeSkillObj[j].name === skills[skillChoice].name) {
 			enemy.setAttackPenalty(parseInt(meleeSkillObj[j].meleePercentagePenalty));
 			
 			//no agility check, enemy moves first or last determined at attack phase
@@ -558,13 +568,13 @@ function skillEnemyAttack() {
 				//set new enemy stance (yellow indicates is open)
 				//sets targeted enemy side grid by player to red 
 				enemy.setStance(meleeSkillObj[j].stanceResult);
-				for(let i = 0; i < 10; i++) {
+				for(let i = 0; i < 9; i++) {
 					if(meleeSkillObj[j].stanceResult[i] == 0)
-						$(".p" + i).css({"border": "2px solid yellow"});
+						$(".e" + (i + 1)).css({"border": "2px solid yellow"});
 				}
-				for(let i = 0; i < 10; i++) {
+				for(let i = 0; i < 9; i++) {
 					if(meleeSkillObj[j].bodyTarget[i] == 1)
-						$(".e" + i).css({"border": "2px solid red"});
+						$(".p" + (i + 1)).css({"border": "2px solid red"});
 				}			
 				
 				//check player stance to see if damage reduced
@@ -582,13 +592,20 @@ function skillEnemyAttack() {
 					$("#playerConditionTriangle").css('border-top', '20px solid red');
 					
 					//debuff list
-					if(meleeSkillObj[j].debuff === "attack reduction") {
-						if(playerDefend)
-							playerAttackPenalty = Math.floor(meleeSkillObj[j].debuffPercent / 2);
-						if(!playerDefend)
-							playerAttackPenalty = meleeSkillObj[j].debuffPercent;
-						if(playerDefenseBroken)
-							playerAttackPenalty = Math.floor(meleeSkillObj[j].debuffPercent * 1.5);						
+					let p = player.getDebuffParts();
+					
+					if(meleeSkillObj[j].debuff === "Attack Reduction") {
+						//if debuff not already applied to part, adds effect and to list
+						if(!p.indexOf(meleeSkillObj[j].debuffTarget) >= 0 ) {
+							player.addDebuffPart(meleeSkillObj[j].debuffTarget);
+							//effect at time depends on defending target			
+							if(playerDefend)
+								player.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent / 2));
+							if(!playerDefend)
+								player.setAttackPenalty(meleeSkillObj[j].debuffPercent);
+							if(playerDefenseBroken)
+								player.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent * 1.5));								
+						} 
 					}	
 				}
 				
@@ -608,23 +625,11 @@ function enemyAttack() {
 	let choice = personalityObj.indexOf(enemyPersonality);
 	let skillDecision = false;
 	
-	//check if defend
-	let defenseRoll = getRandomInteger(1, 100);
-	if(defenseRoll <= parseInt(personalityObj[choice].defendPercent)) {
-		enemyDefend = true;	
-	}	
-	
-	//if defends, increases armour and stamina
-	if(enemyDefend == true) {
-		enemy.recoverStamina();
-		enemy.defend(); 	
-		enemyDamage = 0;
-	}
-	else {
+	if(!enemyDefend) {	
 		
 		//check if use skill or regular attack
 		let attackRoll = getRandomInteger(1, 100);
-		if(attackRoll <= parseInt(personalityObj[choice].skillPercent)) {
+		if(attackRoll < parseInt(personalityObj[choice].skillPercent)) {
 			skillDecision = true;			
 		}	
 		
@@ -672,10 +677,9 @@ function enemyAttack() {
 		else {
 
 			skillEnemyAttack();
-			
 			//player attack sequence only happens if attack did not fail, resets after
 			if(enemyAttackFailure == false) {
-					enemy.applyAttackExertion();
+				enemy.applyAttackExertion();
 				
 				if(playerDefenseBroken == true) {
 					player.applyDefenseBreak();	
@@ -685,9 +689,6 @@ function enemyAttack() {
 				
 				if(enemyDamage > 0) {
 					player.applyDamage(enemyDamage);
-				} 
-				else {
-					enemyDamage = 0;	
 				}	
 			}
 		}
@@ -696,6 +697,7 @@ function enemyAttack() {
 		$("#playerGridColumn" + playerPosition).css('background-color', 'gray');
 		$("#enemyGridColumn" + enemyPosition).css('background-color', 'gray');
 	}	
+	skillDecision = false;
 	enemyAttackMade = true;
 	enemy.setAttackPenalty(0);
 }
@@ -820,21 +822,26 @@ function postAttackUpdates() {
 }
 
 function agilityCheck() {
+	
 	//speed check, enemy performs attack first if slower
 	if(player.getAgility() < enemy.getAgility()) {
-		enemyAttack();
-		postAttackUpdates();
-		enemyAttackMade = true;
+		if(!enemyDefend) {
+			enemyAttack();
+			postAttackUpdates();
+			enemyAttackMade = true;
+		}	
 	}
 	//equal a flip is made, on a 1 enemy attacks first
 	if(player.getAgility() == enemy.getAgility()) {
 		var flip = Math.random() + 1;
 		flip = Math.round(flip);
 		if(flip == 1) {
-			enemyAttack();
-			postAttackUpdates();
-			enemyAttackMade = true;
-			$("#playerStatus").text("Enemy moved first!");
+			if(!enemyDefend) {
+				enemyAttack();
+				postAttackUpdates();
+				enemyAttackMade = true;
+				$("#playerStatus").text("Enemy moved first!");
+			}	
 		}
 	}	
 }	
@@ -1023,14 +1030,14 @@ function gameInit() {
 							//set new player stance (yellow indicates is open)
 							//sets targeted enemy side grid by player to red 
 							player.setStance(meleeSkillObj[j].stanceResult);
-							for(let i = 0; i < 10; i++) {
+							for(let i = 0; i < 9; i++) {
 								if(meleeSkillObj[j].stanceResult[i] == 0)
-									$(".p" + i).css({"border": "2px solid yellow"});
+									$(".p" + (i + 1)).css({"border": "2px solid yellow"});
 							}
-							for(let i = 0; i < 10; i++) {
+							for(let i = 0; i < 9; i++) {
 								if(meleeSkillObj[j].bodyTarget[i] == 1)
 									$(".e" + i).css({"border": "2px solid red"});
-							}			
+							}
 							
 							//check enemy stance to see if damage reduced
 							let playerTargeting = meleeSkillObj[j].bodyTarget;
@@ -1041,31 +1048,28 @@ function gameInit() {
 								}	
 							}	
 
-							//applies debuff if any, does not apply it if defended against	
-							/*	
-							if(meleeSkillObj[j].debuff != "none" && enemyDefenseBroken == true) {
-								$("#enemyActiveEffects").text(meleeSkillObj[j].debuff);
-								$("#enemyConditionTriangle").css('border-top', '20px solid red');
-								if(meleeSkillObj[j].debuff === "attack reduction")
-									enemyAttackPenalty = meleeSkillObj[j].debuffPercent;
-							}
-							*/
-							//applies debuff if any, does not apply it if defended against			
+							//applies debuff if any, does not apply it fully if defended against			
 							if(meleeSkillObj[j].debuff != "none") {
 								$("#enemyActiveEffects").text(meleeSkillObj[j].debuff);
 								$("#enemyConditionTriangle").css('border-top', '20px solid red');
 								
 								//debuff list
-								if(meleeSkillObj[j].debuff === "attack reduction") {
-									if(enemyDefend)
-										enemyAttackPenalty = Math.floor(meleeSkillObj[j].debuffPercent / 2);
-									if(!enemyDefend)
-										enemyAttackPenalty = meleeSkillObj[j].debuffPercent;
-									if(enemyDefenseBroken)
-										enemyAttackPenalty = Math.floor(meleeSkillObj[j].debuffPercent * 1.5);						
-								}	
+								let e = enemy.getDebuffParts();
+								
+								if(meleeSkillObj[j].debuff === "Attack Reduction") {
+									//if debuff not already applied to part, adds effect and to list
+									if(!e.indexOf(meleeSkillObj[j].debuffTarget) >= 0 ) {
+										enemy.addDebuffPart(meleeSkillObj[j].debuffTarget);
+										//effect at time depends on defending target			
+										if(enemyDefend)
+											enemy.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent / 2));
+										if(!enemyDefend)
+											enemy.setAttackPenalty(meleeSkillObj[j].debuffPercent);
+										if(enemyDefenseBroken)
+											enemy.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent * 1.5));								
+									} 
+								}
 							}
-
 							$('#skillModal').modal('toggle');
 							playerBasicAttack = false;//is using skill
 							$("#attackButton").click();
@@ -1239,9 +1243,27 @@ $(document).ready(function(){
 			$("#playerStaminaBar").css('width', (Math.floor((player.getCurrentStamina() /player.getStamina()) * 100)) + "%");
 			player.defend();
 			playerDamage = 0;
+		}	
+		
+		//if enemy defends, increases armor and stamina
+		let enemyPersonality = enemy.getPersonality();
+		let choice = personalityObj.indexOf(enemyPersonality);
+		let skillDecision = false;
+		
+		let defenseRoll = getRandomInteger(1, 100);
+		if(defenseRoll < parseInt(personalityObj[choice].defendPercent)) {
+			enemyDefend = true;
+		}	
+		if(enemyDefend) {
+			enemy.recoverStamina();
+			enemy.defend(); 	
+			enemyDamage = 0;
+			enemyAttackMade = true;
 		}
-		//if player didn't defend, attacks	
-		else {
+		
+		//if player and enemy didn't defend, attacks happen	
+		//else {
+		if(!playerDefend) {
 			//agility check on regular attack
 			agilityCheck();
 			
@@ -1264,19 +1286,6 @@ $(document).ready(function(){
 					enemy.applyDefenseBreak();	
 				}		
 				
-				/*
-				if(player.getAttackPenalty != 0) {
-					playerDamage = Math.ceil((player.getAttackValue() * ((100 - player.getAttackPenalty()) / 100) - enemy.getArmourValue()));
-				}	
-				
-				else if(player.getAttackPenalty < 0) {
-					playerDamage = Math.ceil((player.getAttackValue() * ((100 - player.getAttackPenalty()) / 100) - enemy.getArmourValue()));
-				}
-				
-				else {
-					playerDamage = Math.ceil(player.getAttackValue() - enemy.getArmourValue());
-				}
-				*/
 				playerDamage = player.getMeleeAttackDamage(enemy);
 				
 				player.setAttackPenalty(0);
@@ -1329,11 +1338,13 @@ $(document).ready(function(){
 		if(playerDefend) {
 			player.stopDefend();
 		}	
-		if(enemyDefend = true) {
+		if(enemyDefend) {
 			enemy.stopDefend();
 		}
 		
+		//reset
 		enemyDefend = false;
+		playerDefend = false;
 		playerBasicAttack = true;
 		playerAttackFailure = false;
 		enemyAttackFailure = false;

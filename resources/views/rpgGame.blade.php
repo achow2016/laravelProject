@@ -167,6 +167,12 @@
 					
 					<div class="row">
 						<div class="col">
+							<p id="raceStats"></p>
+						</div>	
+					</div>					
+					
+					<div class="row">
+						<div class="col">
 							<div class="centered-button">
 								<button id="completeConfig" type="button" class="btn btn-primary active">Save</button>
 							</div>
@@ -256,35 +262,35 @@
 										<div class="col actorGridContainer">
 											<div class="row">
 												<div class="col-1">
-													<div class="playerBodyGrid p0" id="pUpperLeft"></div>
+													<div class="playerBodyGrid p1" id="pUpperLeft"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid p1" id="pHead"></div>
+													<div class="playerBodyGrid p2" id="pHead"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid p2" id="pUpperRight"></div>
+													<div class="playerBodyGrid p3" id="pUpperRight"></div>
 												</div>
 											</div>	
 											<div class="row">
 												<div class="col-1">
-													<div class="playerBodyGrid p3" id="pLeftHand"></div>
+													<div class="playerBodyGrid p4" id="pLeftHand">L</div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid p4" id="pTorso"></div>
+													<div class="playerBodyGrid p5" id="pTorso"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid p5" id="pRightHand"></div>
+													<div class="playerBodyGrid p6" id="pRightHand">R</div>
 												</div>
 											</div>
 											<div class="row">
 												<div class="col-1">
-													<div class="playerBodyGrid p6" id="pLeftLeg"></div>
+													<div class="playerBodyGrid p7" id="pLeftLeg"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid p7" id="pGroin"></div>
+													<div class="playerBodyGrid p8" id="pGroin"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid p8" id="pRightLeg"></div>
+													<div class="playerBodyGrid p9" id="pRightLeg"></div>
 												</div>
 											</div>	
 										</div>
@@ -304,13 +310,13 @@
 											</div>
 											<div class="row">
 												<div class="col-1">
-													<div class="playerBodyGrid e4" id="eLeftHand"></div>
+													<div class="playerBodyGrid e4" id="eLeftHand">L</div>
 												</div>
 												<div class="col-1">
 													<div class="playerBodyGrid e5" id="eTorso"></div>
 												</div>
 												<div class="col-1">
-													<div class="playerBodyGrid e6" id="eRightHand"></div>
+													<div class="playerBodyGrid e6" id="eRightHand">R</div>
 												</div>
 											</div>
 											<div class="row">
