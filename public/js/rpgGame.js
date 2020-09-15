@@ -3,27 +3,29 @@
 
 //game data
 
-var weaponObj = [{ "name":"Wood Sword" , "damage":"1" } ];
+var weaponObj = [{ "name":"wood sword" , "damage":"1" } ];
 
-var armourObj = [{ "name":"Wood armour" , "reduction":"1" } ];
+var armourObj = [{ "name":"wood armour" , "reduction":"1" } ];
 	
 //ST, EN, LI is strength(atk), endurance(sp), life(hp)	
 //for android only
 var implantObj = [
-	{ "name":"Pain Inhibitor" , "effect":"Reduce Damage", "buffPercent":"10" }, 
-	{ "name":"Fatigue Inhibitor" , "effect":"Increase agility", "buffPercent":"10" }, 
-	{ "name":"Steroid Booster" , "effect":"Increase ST-EN-LI", "buffPercent":"10" },
-	{ "name":"Battlefield Aid" , "effect":"Regenerate LI-EN", "buffPercent":"1" }
+	{ "name":"pain inhibitor" , "effect":"reduce damage", "buffPercent":"10" }, 
+	{ "name":"fatigue inhibitor" , "effect":"increase agility", "buffPercent":"10" }, 
+	{ "name":"steroid booster" , "effect":"increase ST-EN-LI", "buffPercent":"10" },
+	{ "name":"battlefield aid" , "effect":"regenerate LI-EN", "buffPercent":"1" }
 ];	
 
+//skill percent is if attacking
 var personalityObj = [
-	{ "type":"Aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"50" }, 
-	{ "type":"Defensive" , "attackPercent":"50", "defendPercent":"50", "skillPercent":"0" }
+	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"50", "staminaCautionThreshold":"4"}, 
+	{ "type":"defensive" , "attackPercent":"50", "defendPercent":"50", "skillPercent":"0", "staminaCautionThreshold":"3"},
+	{ "type":"tactical" , "attackPercent":"50", "defendPercent":"50", "skillPercent":"50", "staminaCautionThreshold":"3"}
 ];	
 	
 var enemyObj = [
-	{ "name":"Pickpocket", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":"Arm Smash", "avatar":"/img/enemyFace.jpg" },
-	{ "name":"Mugger", "health":"150", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "avatar":"/img/enemyFace.jpg" }
+	{ "name":"pickpocket", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":"Arm Smash", "avatar":"/img/enemyFace.jpg" },
+	{ "name":"mugger", "health":"150", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "avatar":"/img/enemyFace.jpg" }
 ];
 
 var raceObj = [
@@ -33,17 +35,30 @@ var raceObj = [
 
 var storyObj = [
 	{ 
-		"title":"opening", 
+		"title":"opening chapter", 
 		"storyImage":"/img/chapterImages/cityNight.jpg", 
 		"pageLength":"3",
 		"pages" : [
 			"Welcome to the story!",
-			"",
-			""
+			"Page two of story!",
+			"Final page of story, you got a regen injector!"
+		],
+		"nextState":[
+			{"battleItemGift" : "Regen Injector"},
+			{"fight" : "pickpocket"}
+		]	
+	},
+	{ 
+		"title":"chapter two", 
+		"storyImage":"/img/chapterImages/cityNight.jpg", 
+		"pageLength":"3",
+		"pages" : [
+			"Welcome to the story chapter two!",
+			"Page two of story!",
+			"Final page of story!"
 		],
 		"nextState":"fight"
-	}
-
+	},
 ];
 
 //stance is 000000000
@@ -60,8 +75,7 @@ var meleeSkillObj = [
 
 
 var battleItemObj = [
-	{ "name":"Auto-Injector: Berserker" , "effect":"Attack Increase", "effectStackLimit":"1", "buffPercent":"10" },
-	{ "name":"Auto-Injector: Clot Enzyme", "effect":"Remove Bleed", "effectStackLimit":"1" }
+	{ "name":"Regen Injector" , "effect":"Regen", "effectStackLimit":"1", "effectPercent":"5", "cost":"10", "duration":"3"}
 ];
 
 //random helper function
@@ -69,6 +83,127 @@ function getRandomInteger(min, max) {
 	return Math.floor(Math.random() * (max - min + 1) ) + min;
 }	
 
+//for storing a buff status, placed in player buff array
+class BuffStatus {
+	constructor(name, effect, stackLimit, effectPercent, duration) {
+		this.name = name;
+		this.effect = effect;
+		this.stackLimit = stackLimit;
+		this.effectPercent = effectPercent;
+		this.duration = duration;
+		this.stackCount = 1;
+	}
+	
+	getName() {
+		return this.name;	
+	}	
+	
+	setName(name) {
+		this.name = name;	
+	}	
+	
+	getEffect() {
+		return this.effect;	
+	}	
+	
+	setEffect(effect) {
+		this.effect = effect;	
+	}
+		
+	getStackCount() {
+		return this.stackCount;	
+	}	
+	
+	setStackCount(count) {
+		this.stackCount = count;	
+	}		
+	
+	incrementStackCount() {
+		this.stackCount++;;	
+	}
+	
+	getStackLimit() {
+		return this.stackLimit;	
+	}	
+	
+	setStackLimit(stackLimit) {
+		this.stackLimit = stackLimit;	
+	}
+	
+	getEffectPercent() {
+		return this.effectPercent;	
+	}	
+	
+	setEffectPercent(effectPercent) {
+		this.effectPercent = effectPercent;	
+	}		
+}
+
+//inventory item object 
+class BattleItem {
+	constructor(name, effect, stackLimit, effectPercent, cost, duration) {
+		this.name = name;
+		this.effect = effect;
+		this.stackLimit = stackLimit;
+		this.effectPercent = effectPercent;
+		this.cost = cost;
+		this.duration = duration;
+		this.quantity = 1;
+	}
+	
+	getQuantity() {
+		return this.quantity;	
+	}	
+	
+	setQuantity(quantity) {
+		this.quantity = quantity;	
+	}	
+	
+	decrementQuantity() {
+		this.quantity--;
+	}		
+	
+	getName() {
+		return this.name;	
+	}	
+	
+	setName(name) {
+		this.name = name;	
+	}	
+	
+	getEffect() {
+		return this.effect;	
+	}	
+	
+	setEffect(effect) {
+		this.effect = effect;	
+	}
+	
+	getStackLimit() {
+		return this.stackLimit;	
+	}	
+	
+	setStackLimit(stackLimit) {
+		this.stackLimit = stackLimit;	
+	}
+	
+	getEffectPercent() {
+		return this.effectPercent;	
+	}	
+	
+	setEffectPercent(effectPercent) {
+		this.effectPercent = effectPercent;	
+	}
+	
+	getCost() {
+		return this.cost;	
+	}	
+	
+	setCost(cost) {
+		this.cost = cost;	
+	}
+}	
+	
 //melee skill object
 class MeleeSkill {
 	constructor(name, effect, percent, penalty, cost, stanceResult, bodyTarget) {
@@ -168,6 +303,50 @@ class Actor {
 		this.attackPenalty = 0;
 		this.personality = "";
 		this.debuffedParts = [];
+		this.battleItemArray = [];
+		this.statusBuffArray = [];
+	}	
+	getStatusBuffArray() {
+		return this.statusBuffArray;	
+	}
+	
+	addToStatusBuffArray(buff) {
+		for(let i = 0; i < this.statusBuffArray.length; i++) {
+			//adds stack to buff if allowed
+			if(buff.getEffect() == this.statusBuffArray[i].getEffect() && 
+				this.statusBuffArray[i].getStackCount() <=  this.statusBuffArray[i].getStackLimit()) {
+				 this.statusBuffArray[i].incrementStackCount();
+			}	 
+			//push buff status object to array otherwise
+			else {
+				this.statusBuffArray.push(buff);			
+			}		
+		}
+	}	
+	
+	getBattleItemArray() {
+		return this.battleItemArray;	
+	}
+
+	addToBattleItemArray(item) {
+		for(let i = 0; i < battleItemObj.length; i++) {
+			if(battleItemObj[i].name === item) {
+				var item = new BattleItem(battleItemObj[i].name, battleItemObj[i].effect, 
+					battleItemObj[i].effectStackLimit, battleItemObj[i].effectPercent, 
+					battleItemObj[i].cost, battleItemObj[i].duration, battleItemObj[i].quantity); 
+				this.battleItemArray.push(item);
+			}	
+		}
+	}	
+	
+	removeFromBattleItemArray(item) {
+		for(let i = 0; i < this.battleItemArray.length; i++) {
+			if((this.battleItemArray[i].getName()) === item) {
+				console.log((this.battleItemArray[i]).getName());
+				let processedItemList = (this.battleItemArray).splice(i, 1);
+				this.battleItemArray = processedItemList;
+			}	
+		}
 	}	
 	
 	getPersonality() {
@@ -479,17 +658,22 @@ story, player, enemy
 */
 
 //ui data 
-var currentPage = 1;
-var currentChapter = 1;
+var currentPage = 0;
+var currentChapter = 0;
+var currentState = 0;
+var firstRun = true;
+var gameEnd = false;	
 
-
+//game settings
 var currentConfigAlloc = 0;
 var strengthAlloc = 0;
 var enduranceAlloc = 0;
 var lifeAlloc = 0;
 var raceSelection;
 
+//game variables
 var player;
+var enemyType;
 var enemy;
 
 var playerPosition = 0;
@@ -497,6 +681,7 @@ var enemyPosition = 0;
 
 var playerSkillCount = 0;
 var playerSkillArray = null;
+var playerItemArray = null;
 
 var playerAttackFailure = false;
 var enemyAttackFailure = false;
@@ -506,18 +691,14 @@ var enemyDamage;
 var playerDamage;
 
 var playerDefenseBroken = false;
-var enemyDefenseBroken = false;
-
-
-var firstRun = true;
-		
-var gameEnd = false;		
+var enemyDefenseBroken = false;	
 		
 var playerBasicAttack = true;		
 
 var playerDefend = false;
 var enemyDefend = false;
 
+var playerUseItem = false;
 
 //random enemy skill use based on what they have
 function skillEnemyAttack() {
@@ -639,11 +820,10 @@ function skillEnemyAttack() {
 	}	
 }	
 
-	
+//enemy attack function	
 function enemyAttack() {
 	
 	//check if call skill
-	//var personalityObj = [{ "type":"Aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"50" },
 	let enemyPersonality = enemy.getPersonality();
 	let choice = personalityObj.indexOf(enemyPersonality);
 	let skillDecision = false;
@@ -655,7 +835,7 @@ function enemyAttack() {
 		if(attackRoll < parseInt(personalityObj[choice].skillPercent)) {
 			skillDecision = true;			
 		}	
-		
+		//regular attack
 		if(!skillDecision) {
 			//enemy moves forward if not close enough to attack
 			//decreases player distance if enemy forward most and player at max distance
@@ -697,8 +877,8 @@ function enemyAttack() {
 					player.removeDefenseBreak();
 			}
 		}
+		//enemy uses skill
 		else {
-
 			skillEnemyAttack();
 			//player attack sequence only happens if attack did not fail, resets after
 			if(enemyAttackFailure == false) {
@@ -725,6 +905,7 @@ function enemyAttack() {
 	enemy.setAttackPenalty(0);
 }
 
+//update of ui and clean up after each turn
 function postAttackUpdates() {
 
 	//set condition text for player based on health
@@ -868,12 +1049,196 @@ function agilityCheck() {
 	}	
 }	
 
+
+//refreshes list of all player items in modal
+function refreshItems() {
+	playerItemArray = player.getBattleItemArray();
+	var itemName = null;
+	for(var i = 0; i < playerItemArray.length; i++) {
+		itemName = playerItemArray[i].getName();
+		$('#itemButtonArray').append('<input name="' + itemName + '" id=itemButton' + i +
+			' type="button" class="btn btn-primary active mb-1"></button>');								
+		
+		//item logic
+		//currently iterates over entire item list to find matching name
+		$('#itemButton' + i).prop('value',itemName + " (" + playerItemArray[i].getQuantity() + 
+			")").click({param1:itemName}, function(event) {
+			for(var j = 0; j < battleItemObj.length; j++) {	
+				//finds item details in data
+				if(battleItemObj[j].name == event.data.param1) {
+					
+					//no damage and using item
+					player.setAttackPenalty(100);
+					playerUseItem = true;
+					
+					//agility check
+					agilityCheck();
+					
+					//applies item effect
+					var buff = new BuffStatus(battleItemObj[j].name, battleItemObj[j].effect,
+						battleItemObj[j].stackLimit, battleItemObj[j].effectPercent,
+						battleItemObj[j].duration);
+					player.addToStatusBuffArray(buff);	
+					
+					//decrement item quantity, remove from player item array if zero	
+					playerItemArray[j].decrementQuantity();
+					if(playerItemArray[j].getQuantity() == 0) {
+						player.removeFromBattleItemArray(playerItemArray[j].getName());
+					}	
+			
+					$('#battleItemModal').modal('toggle');
+					refreshItems();
+					playerBasicAttack = false;//is using item
+					$("#attackButton").click();//goes to battle turn processing
+				}
+			}
+		});				
+	}	
+}	
+
+//refresh all player skills from available list in modal
+function refreshSkills() {
+	//init skill list	
+	playerSkillArray = player.getMeleeSkills();
+	var skillName = null;
+	for(var i = 0; i < playerSkillArray.length; i++) {
+		skillName = playerSkillArray[i].getName();
+		$('#skillButtonArray').append('<input name="' + skillName + '" id=skillButton' + i + ' type="button" class="btn btn-primary active mb-1"></button>');								
+		
+		//skill logic
+		//currently iterates over entire skill list to find matching name
+		
+		$('#skillButton' + i).prop('value',skillName).click({param1:skillName}, function(event) {
+			//for(var j = 0; j < Object.keys(meleeSkillObj).length; j++) {	
+			for(var j = 0; j < meleeSkillObj.length; j++) {	
+				//finds skill details in data
+				if(meleeSkillObj[j].name == event.data.param1) {
+					player.setAttackPenalty(parseInt(meleeSkillObj[j].meleePercentagePenalty));
+					
+					//agility check
+					agilityCheck();
+					
+					//checks if stamina available, if not attack fails and regular exchange happens
+					if((player.getCurrentStamina() - meleeSkillObj[j].staminaCost) < 0) {
+						$('#skillModal').modal('toggle');
+						$("#playerGameStatus").text("Stamina too low!");
+						playerAttackFailure = true;
+						$('#skillModal').modal('toggle');
+						$("#attackButton").click();
+					}
+					//next checks if target in range, if not attack fails and regular exchange happens
+					else if((playerPosition + enemyPosition) > meleeSkillObj[j].range) {
+						$("#playerGameStatus").text("Target out of range!");
+						playerAttackFailure = true;
+						$('#skillModal').modal('toggle');
+						$("#attackButton").click();
+					}
+					//if enough stamina, executes skill
+					else {					
+						player.applyStaminaSkillCost(parseInt(meleeSkillObj[j].staminaCost));
+						$("#playerStaminaBar").text(player.getCurrentStamina() + "/" + player.getStamina());
+						$("#playerStaminaBar").css('width', (Math.floor((player.getCurrentStamina() / player.getStamina()) * 100)) + "%");
+								
+						$("#playerGameStatus").text(meleeSkillObj[j].name);
+						
+						//moves back player. 
+						//if player already at +3, opponent is shifted instead
+						//+3, +3 is maximum distance in moving zone
+						if(meleeSkillObj[j].effect === "Increase Distance") {
+							if(playerPosition < 3) {
+								playerPosition = playerPosition + parseInt(meleeSkillObj[j].effectQuantity);
+								if(playerPosition > 3)
+									playerPosition = 3;	
+							}
+							if(playerPosition == 3 && enemyPosition < 3) {
+								enemyPosition = enemyPosition +  parseInt(meleeSkillObj[j].effectQuantity);
+								if(enemyPosition > 3)
+									enemyPosition = 3;
+							}	
+							$(".characterPosition").css('background-color', 'green');
+							$("#playerGridColumn" + playerPosition).css('background-color', 'gray');
+							$("#enemyGridColumn" + enemyPosition).css('background-color', 'gray');								
+						}
+						
+						//moves forward player. 
+						//if opponent already at +0, player is shifted forward instead
+						if(meleeSkillObj[j].effect === "Decrease Distance") {
+							if(enemyPosition > 0) {
+								enemyPosition = enemyPosition -  parseInt(meleeSkillObj[j].effectQuantity);
+								if(enemyPosition < 0)
+									enemyPosition = 0;										
+							}
+							if(enemyPosition == 0 && playerPosition > 0) {
+								playerPosition = playerPosition -  parseInt(meleeSkillObj[j].effectQuantity);
+								if(playerPosition < 0)
+									playerPosition = 0;	
+							}	
+							//sets grid based on distance
+							$(".characterPosition").css('background-color', 'green');
+							$("#playerGridColumn" + playerPosition).css('background-color', 'gray');
+							$("#enemyGridColumn" + enemyPosition).css('background-color', 'gray');
+						}
+						
+						//set new player stance (yellow indicates is open)
+						//sets targeted enemy side grid by player to red 
+						player.setStance(meleeSkillObj[j].stanceResult);
+						for(let i = 0; i < 9; i++) {
+							if(meleeSkillObj[j].stanceResult[i] == 0)
+								$(".p" + (i + 1)).css({"border": "2px solid yellow"});
+						}
+						for(let i = 0; i < 9; i++) {
+							if(meleeSkillObj[j].bodyTarget[i] == 1)
+								$(".e" + i).css({"border": "2px solid red"});
+						}
+						
+						//check enemy stance to see if damage reduced
+						let playerTargeting = meleeSkillObj[j].bodyTarget;
+						let enemyStance = enemy.getStance();
+						for(let i = 0; i <  playerTargeting.length; i++) {
+							if(playerTargeting[i] == 1 && enemyStance[i] == 0) {
+								enemyDefenseBroken = true;	
+							}	
+						}	
+
+						//applies debuff if any, does not apply it fully if defended against			
+						if(meleeSkillObj[j].debuff != "none") {
+							$("#enemyActiveEffects").text(meleeSkillObj[j].debuff);
+							$("#enemyConditionTriangle").css('border-top', '20px solid red');
+							
+							//debuff list
+							let e = enemy.getDebuffParts();
+							
+							if(meleeSkillObj[j].debuff === "Attack Reduction") {
+								//if debuff not already applied to part, adds effect and to list
+								if(!e.indexOf(meleeSkillObj[j].debuffTarget) >= 0 ) {
+									enemy.addDebuffPart(meleeSkillObj[j].debuffTarget);
+									//effect at time depends on defending target			
+									if(enemyDefend)
+										enemy.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent / 2));
+									if(!enemyDefend)
+										enemy.setAttackPenalty(meleeSkillObj[j].debuffPercent);
+									if(enemyDefenseBroken)
+										enemy.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent * 1.5));								
+								} 
+							}
+						}
+						$('#skillModal').modal('toggle');
+						playerBasicAttack = false;//is using skill
+						$("#attackButton").click();
+					}
+				}
+			}
+		});		
+	}
+		
+}	
+
 //game init function
 //sets initial game mechanic values
 //called from start and on reset
 function gameInit() {
 	
-	//init player
+	//init and equip player
 	for(var i = 0; i < raceObj.length; i++) {
 		if(raceObj[i].name == raceSelection) {
 			player = new Actor(
@@ -887,18 +1252,6 @@ function gameInit() {
 			);			
 		}	
 	}	
-	
-	/*
-	player = new Actor(
-		raceObj[0].name,
-		raceObj[0].health,
-		raceObj[0].attack,
-		raceObj[0].stamina,
-		raceObj[0].staminaRegen,
-		raceObj[0].baseAttackCost,		
-		raceObj[0].agility
-	);
-	*/
 
 	player.equipWeapon(
 		weaponObj[0].name, 
@@ -921,7 +1274,7 @@ function gameInit() {
 			meleeSkillObj[i].staminaCost);
 	}
 	
-	//init enemy 
+	//init and equip enemy 
 	enemy = new Actor(
 		enemyObj[0].name,
 		enemyObj[0].health,
@@ -980,142 +1333,16 @@ function gameInit() {
 	let enemyPersonalityChoice = getRandomInteger(0, (personalityObj.length - 1));
 	enemy.setPersonality(personalityObj[enemyPersonalityChoice]);
 	
-	
-	//add buttons for each skill in possession
-	//prints skill names
-	//attacks right after with modifiers applied
+	//at first run, populates skill and item list in battle
+	//add buttons for each skill and item in possession
+	//prints skill and item names
+	//selecting skill causes player attack right after with modifiers applied
+	//selecting item applies effect and player skips attack
 	if(firstRun) {
-		playerSkillArray = player.getMeleeSkills();
-		var skillName = null;
-		for(var i = 0; i < playerSkillArray.length; i++) {
-			skillName = playerSkillArray[i].getName();
-			$('#skillButtonArray').append('<input name="' + skillName + '" id=skillButton' + i + ' type="button" class="btn btn-primary active mb-1"></button>');								
-			
-			//skill logic
-			//currently iterates over entire skill list to find matching name
-			
-			$('#skillButton' + i).prop('value',skillName).click({param1:skillName}, function(event) {
-				//for(var j = 0; j < Object.keys(meleeSkillObj).length; j++) {	
-				for(var j = 0; j < meleeSkillObj.length; j++) {	
-					//finds skill details in data
-					if(meleeSkillObj[j].name == event.data.param1) {
-						player.setAttackPenalty(parseInt(meleeSkillObj[j].meleePercentagePenalty));
-						
-						//agility check
-						agilityCheck();
-						
-						//checks if stamina available, if not attack fails and regular exchange happens
-						if((player.getCurrentStamina() - meleeSkillObj[j].staminaCost) < 0) {
-							$('#skillModal').modal('toggle');
-							$("#playerGameStatus").text("Stamina too low!");
-							playerAttackFailure = true;
-							$('#skillModal').modal('toggle');
-							$("#attackButton").click();
-						}
-						//next checks if target in range, if not attack fails and regular exchange happens
-						else if((playerPosition + enemyPosition) > meleeSkillObj[j].range) {
-							$("#playerGameStatus").text("Target out of range!");
-							playerAttackFailure = true;
-							$('#skillModal').modal('toggle');
-							$("#attackButton").click();
-						}
-						//if enough stamina, executes skill
-						else {					
-							player.applyStaminaSkillCost(parseInt(meleeSkillObj[j].staminaCost));
-							$("#playerStaminaBar").text(player.getCurrentStamina() + "/" + player.getStamina());
-							$("#playerStaminaBar").css('width', (Math.floor((player.getCurrentStamina() / player.getStamina()) * 100)) + "%");
-									
-							$("#playerGameStatus").text(meleeSkillObj[j].name);
-							
-							//moves back player. 
-							//if player already at +3, opponent is shifted instead
-							//+3, +3 is maximum distance in moving zone
-							if(meleeSkillObj[j].effect === "Increase Distance") {
-								if(playerPosition < 3) {
-									playerPosition = playerPosition + parseInt(meleeSkillObj[j].effectQuantity);
-									if(playerPosition > 3)
-										playerPosition = 3;	
-								}
-								if(playerPosition == 3 && enemyPosition < 3) {
-									enemyPosition = enemyPosition +  parseInt(meleeSkillObj[j].effectQuantity);
-									if(enemyPosition > 3)
-										enemyPosition = 3;
-								}	
-								$(".characterPosition").css('background-color', 'green');
-								$("#playerGridColumn" + playerPosition).css('background-color', 'gray');
-								$("#enemyGridColumn" + enemyPosition).css('background-color', 'gray');								
-							}
-							
-							//moves forward player. 
-							//if opponent already at +0, player is shifted forward instead
-							if(meleeSkillObj[j].effect === "Decrease Distance") {
-								if(enemyPosition > 0) {
-									enemyPosition = enemyPosition -  parseInt(meleeSkillObj[j].effectQuantity);
-									if(enemyPosition < 0)
-										enemyPosition = 0;										
-								}
-								if(enemyPosition == 0 && playerPosition > 0) {
-									playerPosition = playerPosition -  parseInt(meleeSkillObj[j].effectQuantity);
-									if(playerPosition < 0)
-										playerPosition = 0;	
-								}	
-								//sets grid based on distance
-								$(".characterPosition").css('background-color', 'green');
-								$("#playerGridColumn" + playerPosition).css('background-color', 'gray');
-								$("#enemyGridColumn" + enemyPosition).css('background-color', 'gray');
-							}
-							
-							//set new player stance (yellow indicates is open)
-							//sets targeted enemy side grid by player to red 
-							player.setStance(meleeSkillObj[j].stanceResult);
-							for(let i = 0; i < 9; i++) {
-								if(meleeSkillObj[j].stanceResult[i] == 0)
-									$(".p" + (i + 1)).css({"border": "2px solid yellow"});
-							}
-							for(let i = 0; i < 9; i++) {
-								if(meleeSkillObj[j].bodyTarget[i] == 1)
-									$(".e" + i).css({"border": "2px solid red"});
-							}
-							
-							//check enemy stance to see if damage reduced
-							let playerTargeting = meleeSkillObj[j].bodyTarget;
-							let enemyStance = enemy.getStance();
-							for(let i = 0; i <  playerTargeting.length; i++) {
-								if(playerTargeting[i] == 1 && enemyStance[i] == 0) {
-									enemyDefenseBroken = true;	
-								}	
-							}	
-
-							//applies debuff if any, does not apply it fully if defended against			
-							if(meleeSkillObj[j].debuff != "none") {
-								$("#enemyActiveEffects").text(meleeSkillObj[j].debuff);
-								$("#enemyConditionTriangle").css('border-top', '20px solid red');
-								
-								//debuff list
-								let e = enemy.getDebuffParts();
-								
-								if(meleeSkillObj[j].debuff === "Attack Reduction") {
-									//if debuff not already applied to part, adds effect and to list
-									if(!e.indexOf(meleeSkillObj[j].debuffTarget) >= 0 ) {
-										enemy.addDebuffPart(meleeSkillObj[j].debuffTarget);
-										//effect at time depends on defending target			
-										if(enemyDefend)
-											enemy.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent / 2));
-										if(!enemyDefend)
-											enemy.setAttackPenalty(meleeSkillObj[j].debuffPercent);
-										if(enemyDefenseBroken)
-											enemy.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent * 1.5));								
-									} 
-								}
-							}
-							$('#skillModal').modal('toggle');
-							playerBasicAttack = false;//is using skill
-							$("#attackButton").click();
-						}
-					}
-				}
-			});		
-		}
+		//refresh items list
+		refreshItems();
+		//refresh skills list
+		refreshSkills();
 		firstRun = false;
 	}
 
@@ -1159,6 +1386,7 @@ function gameInit() {
 	
 	//show buttons again
 	$("#attackButton").show();
+	$("#itemButton").show();
 	$("#skillMenu").show();
 	
 	//reset game so buttons show
@@ -1170,13 +1398,12 @@ function gameInit() {
 function startStory() {
 	$("#storyMain").show();
 	$("#activeStoryBackground").css("background-image", "url(" + storyObj[0].storyImage + ")");
-	$("#storyText").text(storyObj[currentChapter - 1].pages[currentPage - 1]);
+	$("#storyText").text(storyObj[currentChapter].pages[currentPage]);	
 }
 
 function startBattle() {
 	$("#battleMain").show();
 	$("#gameTopTab").show();
-	
 	
 	//set game text or picture values
 	player.setName($("#name").val());
@@ -1301,10 +1528,16 @@ $(document).ready(function(){
 		let choice = personalityObj.indexOf(enemyPersonality);
 		let skillDecision = false;
 		
+		//check against personality
 		let defenseRoll = getRandomInteger(1, 100);
 		if(defenseRoll < parseInt(personalityObj[choice].defendPercent)) {
 			enemyDefend = true;
 		}	
+		//check against their stamina risk threshold, if at then enemy defends		
+		if((enemy.getStaminaThreshold() <  parseInt(personalityObj[choice].staminaCautionThreshold))) {
+			enemyDefend = false;	
+		}	
+	
 		if(enemyDefend) {
 			enemy.recoverStamina();
 			enemy.defend(); 	
@@ -1314,7 +1547,7 @@ $(document).ready(function(){
 		
 		//if player and enemy didn't defend, attacks happen	
 		//else {
-		if(!playerDefend) {
+		if(!playerDefend && !playerUseItem) {
 			//agility check on regular attack
 			agilityCheck();
 			
@@ -1404,6 +1637,7 @@ $(document).ready(function(){
 		enemy.setStance("111111111");
 		enemyDefenseBroken = false;
 		playerDefenseBroken = false;
+		playerUseItem = false;	
 			
 		//update game based on changed values
 		postAttackUpdates();
@@ -1476,6 +1710,10 @@ $(document).ready(function(){
 		$('#skillModal').modal('toggle');
 	});	
 	
+	$("#itemButton").click(function() {
+		$('#battleItemModal').modal('toggle');
+	});	
+	
 	$("#activeEnemy").click(function() {
 		$('#enemyModal').modal('toggle');
 	});	
@@ -1520,25 +1758,32 @@ $(document).ready(function(){
 	displays next option
 	*/
 	$("#storyProgress").click(function() {
-		//next page if available
-		if(currentPage < parseInt(storyObj[currentChapter - 1].pageLength)) {
-			$("#storyText").text(storyObj[currentChapter - 1].pages[currentPage - 1]);
+		//displays next page if available
+		if(currentPage < parseInt(storyObj[currentChapter].pageLength - 1)) {
+			currentPage++;
+			$("#storyText").text(storyObj[currentChapter].pages[currentPage]);
 		} 
 		//disables next button at end of chapter
-		if((currentPage + 1) == storyObj[currentChapter - 1].pageLength) {
-			//if next state is a fight, displays fight button and proceeds
-			if(storyObj[currentChapter - 1].nextState === "fight") {
+		if((currentPage + 1) == storyObj[currentChapter].pageLength) {
+			//if next state is gift, gives an item then moves to next state
+			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "battleItemGift") {
+				player.addToBattleItemArray(storyObj[currentChapter].nextState[currentState].battleItemGift);
+				refreshItems();
+				currentState++;
+			}
+			//if fight state, presents fight button
+			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "fight") {
 				$("#storyEnd").text("Fight!").show();
 				$("#storyEnd").click(function() {
 					$("#storyMain").hide();
 					startBattle();
 				});	
+				//disables next chapter button if next state is a fight
 				$("#storyProgress").prop('disabled', true);
 				if(typeof storyObj[currentChapter + 1] != 'undefined') 
 					currentChapter++;
 				currentPage= 0;
 			}
-		}	
-		currentPage++;
+		}		
 	});	
 });
