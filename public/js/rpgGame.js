@@ -24,7 +24,7 @@ var personalityObj = [
 ];	
 	
 var enemyObj = [
-	{ "name":"pickpocket", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":"Arm Smash", "avatar":"/img/enemyFace.jpg" },
+	{ "name":"pickpocket", "health":"70", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":"Arm Smash", "avatar":"/img/enemyFace.jpg" },
 	{ "name":"mugger", "health":"150", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "avatar":"/img/enemyFace.jpg" }
 ];
 
@@ -35,6 +35,7 @@ var raceObj = [
 
 var storyObj = [
 	{ 
+		"chapter":"0",
 		"title":"opening chapter", 
 		"storyImage":"/img/chapterImages/cityNight.jpg", 
 		"pageLength":"3",
@@ -49,6 +50,7 @@ var storyObj = [
 		]	
 	},
 	{ 
+		"chapter":"1",
 		"title":"chapter two", 
 		"storyImage":"/img/chapterImages/cityNight.jpg", 
 		"pageLength":"3",
@@ -57,7 +59,10 @@ var storyObj = [
 			"Page two of story!",
 			"Final page of story!"
 		],
-		"nextState":"fight"
+		"nextState":[
+			{"battleItemGift" : "Regen Injector"},
+			{"fight" : "pickpocket"}
+		]	
 	},
 ];
 
@@ -73,9 +78,8 @@ var meleeSkillObj = [
 	{ "name":"Heavy Attack", "bodyTarget":"100100000", "stanceResult":"100100110", "debuff":"none", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"-100", "staminaCost":"20" }
 ];
 
-
 var battleItemObj = [
-	{ "name":"Regen Injector" , "effect":"Regen", "effectStackLimit":"1", "effectPercent":"5", "cost":"10", "duration":"3"}
+	{ "name":"Regen Injector" , "effect":"Regen", "effectStackLimit":"1", "effectPercent":"5", "cost":"10", "duration":"10"}
 ];
 
 //random helper function
@@ -109,7 +113,19 @@ class BuffStatus {
 	setEffect(effect) {
 		this.effect = effect;	
 	}
-		
+	
+	getDuration() {
+		return this.duration;	
+	}	
+	
+	setDuration(duration) {
+		this.duration = duration;	
+	}	
+	
+	tickDuration() {
+		this.duration--;
+	}		
+	
 	getStackCount() {
 		return this.stackCount;	
 	}	
@@ -119,7 +135,7 @@ class BuffStatus {
 	}		
 	
 	incrementStackCount() {
-		this.stackCount++;;	
+		this.stackCount++;
 	}
 	
 	getStackLimit() {
@@ -305,23 +321,67 @@ class Actor {
 		this.debuffedParts = [];
 		this.battleItemArray = [];
 		this.statusBuffArray = [];
+		this.storyChapter = 0;
 	}	
+	
+	getStoryChapter() {
+		return this.storyChapter;
+	}	
+	
+	setStoryChapter(chapter) {
+		this.storyChapter = chapter;
+	}		
+	
+	advancePlayerChapter() {
+		this.storyChapter++;
+	}	
+	
+	tickBuffs() {
+		for(var i = 0; i < (this.statusBuffArray).length; i++) {
+			
+			if((this.statusBuffArray)[i].getEffect() == "Regen") {
+				this.setCurrentHealth(Math.ceil(this.currentHealth *= (1 + ((this.statusBuffArray)[i].getEffectPercent() / 100))));
+				(this.statusBuffArray)[i].tickDuration();
+				if((this.statusBuffArray)[i].getDuration() == 0) {
+					this.removeFromStatusBuffArray((this.statusBuffArray)[i].getName());
+				}
+			}	
+		}	
+	}	
+
+	setStatusBuffArray(array) {
+		this.statusBuffArray = array;	
+	}
+	
 	getStatusBuffArray() {
 		return this.statusBuffArray;	
 	}
 	
 	addToStatusBuffArray(buff) {
-		for(let i = 0; i < this.statusBuffArray.length; i++) {
-			//adds stack to buff if allowed
-			if(buff.getEffect() == this.statusBuffArray[i].getEffect() && 
-				this.statusBuffArray[i].getStackCount() <=  this.statusBuffArray[i].getStackLimit()) {
-				 this.statusBuffArray[i].incrementStackCount();
-			}	 
-			//push buff status object to array otherwise
-			else {
-				this.statusBuffArray.push(buff);			
-			}		
+		var duplicate = false;
+		for(let i = 0; i < (this.statusBuffArray).length; i++) {
+			if(buff.getEffect() == (this.statusBuffArray[i]).getEffect() && 
+				this.statusBuffArray[i].getStackCount() <  this.statusBuffArray[i].getStackLimit()) {
+				this.statusBuffArray[i].incrementStackCount();
+				duplicate = true; 
+			}	 		
 		}
+		if(!duplicate) {
+			(this.statusBuffArray).push(buff);	
+		}
+	}
+
+	removeFromStatusBuffArray(buff) {
+		for(let i = 0; i < (this.statusBuffArray).length; i++) {
+			if((this.statusBuffArray[i].getName()) === buff) {
+				var processedBuffList = (this.statusBuffArray).filter(function(value,index,arr) { return value == buff});
+				this.setStatusBuffArray(processedBuffList);
+			}	
+		}
+	}	
+	
+	setBattleItemArray(array) {
+		this.battleItemArray = array;
 	}	
 	
 	getBattleItemArray() {
@@ -342,9 +402,8 @@ class Actor {
 	removeFromBattleItemArray(item) {
 		for(let i = 0; i < this.battleItemArray.length; i++) {
 			if((this.battleItemArray[i].getName()) === item) {
-				console.log((this.battleItemArray[i]).getName());
-				let processedItemList = (this.battleItemArray).splice(i, 1);
-				this.battleItemArray = processedItemList;
+				var processedItemList = (this.battleItemArray).filter(function(value,index,arr) { return value == item});
+				this.setBattleItemArray(processedItemList);
 			}	
 		}
 	}	
@@ -997,6 +1056,10 @@ function postAttackUpdates() {
 		$("#playerActiveEffects").text("");		
 		
 		$("#playerGameStatus").text("You lose!");
+		//reset to start
+		currentPage = 0;
+		currentChapter = 0;
+		currentState = null;		
 
 		$("#attackButton").hide();
 		$("#skillMenu").hide();
@@ -1013,6 +1076,12 @@ function postAttackUpdates() {
 		
 		$("#playerGameStatus").text("You win!");
 		
+		//advance story
+		currentPage = 0;
+		currentChapter++;
+		currentState = null;		
+		
+		$("#nextChapterButton").show();
 		$("#attackButton").hide();
 		$("#skillMenu").hide();
 		
@@ -1052,6 +1121,7 @@ function agilityCheck() {
 
 //refreshes list of all player items in modal
 function refreshItems() {
+	$('#itemButtonArray').empty();
 	playerItemArray = player.getBattleItemArray();
 	var itemName = null;
 	for(var i = 0; i < playerItemArray.length; i++) {
@@ -1237,6 +1307,12 @@ function refreshSkills() {
 //sets initial game mechanic values
 //called from start and on reset
 function gameInit() {
+
+	//story reset
+	currentPage = 0;
+	currentChapter = 0;
+	currentState = 0;	
+	
 	
 	//init and equip player
 	for(var i = 0; i < raceObj.length; i++) {
@@ -1639,6 +1715,12 @@ $(document).ready(function(){
 		playerDefenseBroken = false;
 		playerUseItem = false;	
 			
+			
+		//process buffs at end of turn
+		player.tickBuffs();
+		enemy.tickBuffs();
+			
+			
 		//update game based on changed values
 		postAttackUpdates();
 		if(gameEnd) 
@@ -1684,18 +1766,6 @@ $(document).ready(function(){
 		}
 	});	
 	
-	
-	//from modal go to title
-	$("#toTitleButton").click(function() {
-		$('#menuModal').modal('toggle');
-
-		$("#gameIntroMenu").show();
-		$(".introButtons").show();
-		
-		$("#battleMain").hide();
-		$("#gameTopTab").hide();
-	});
-	
 	//from menu modal back to main website
 	//<a href="{{ route('home') }}">Home</a>
 	$(".returnButton").click(function() {
@@ -1711,6 +1781,7 @@ $(document).ready(function(){
 	});	
 	
 	$("#itemButton").click(function() {
+		refreshItems();
 		$('#battleItemModal').modal('toggle');
 	});	
 	
@@ -1780,10 +1851,40 @@ $(document).ready(function(){
 				});	
 				//disables next chapter button if next state is a fight
 				$("#storyProgress").prop('disabled', true);
-				if(typeof storyObj[currentChapter + 1] != 'undefined') 
-					currentChapter++;
-				currentPage= 0;
 			}
 		}		
+	});
+	
+	//from modal go to title
+	$("#toTitleButton").click(function() {
+		$('#menuModal').modal('toggle');
+
+		$("#gameIntroMenu").show();
+		$(".introButtons").show();
+		
+		$("#battleMain").hide();
+		$("#gameTopTab").hide();
+		
+		//save data to local storage
+		window.localStorage.setItem('player', JSON.stringify(player));
+		window.localStorage.setItem('state', currentState);
+		window.localStorage.setItem('chapter', currentChapter);
+		window.localStorage.setItem('page', currentPage);
+		
+	});
+
+
+
+	$("#continueButton").click(function() {
+		console.log(window.localStorage.getItem('player'));
+		console.log(window.localStorage.getItem('state'));
+		console.log(window.localStorage.getItem('chapter'));
+		console.log(window.localStorage.getItem('page'));
+			
+	
+	});
+	
+	$("#nextChapterButton").click(function() {
+
 	});	
 });

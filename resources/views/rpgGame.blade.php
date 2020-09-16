@@ -49,6 +49,7 @@
 				<div class="row">
 					<div class="btn-group d-flex w-100 fixed-bottom" role="group">
 						<button id="startButton" type="button" class="introButtons btn btn-primary active w-100">New Game</button>
+						<button id="continueButton" type="button" class="introButtons btn btn-primary active w-100">Continue</button>
 						<button type="button" class="introButtons returnButton btn btn-primary active w-100">home</button>
 					</div>					
 				</div>
@@ -399,6 +400,7 @@
 												<button id="itemButton" type="button" class="btn btn-primary active w-100 mr-1">Item</button>
 												<button style="display:none" id="nextTurnButton" type="button" class="btn btn-primary active w-100 mr-1">Next</button>
 												<button id="skillMenu" type="button" class="btn btn-primary active w-100" data-toggle="modal" data-target="#skillModal">Skill</button>
+												<button style="display:none" id="nextChapterButton" type="button" class="btn btn-primary active w-100 mr-1">Next Chapter</button>
 											</div>	
 										</div>
 									</div>
