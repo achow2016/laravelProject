@@ -324,18 +324,6 @@ class Actor {
 		this.storyChapter = 0;
 	}	
 	
-	getStoryChapter() {
-		return this.storyChapter;
-	}	
-	
-	setStoryChapter(chapter) {
-		this.storyChapter = chapter;
-	}		
-	
-	advancePlayerChapter() {
-		this.storyChapter++;
-	}	
-	
 	tickBuffs() {
 		for(var i = 0; i < (this.statusBuffArray).length; i++) {
 			
@@ -1469,6 +1457,55 @@ function gameInit() {
 	gameEnd = false;
 }	
 
+//reset ui elements
+//to be called from continue button
+function uiReset() {
+//game UI reset
+	
+	//reset race select
+	$("#race").prop('selectedIndex',0);
+	
+	//battle ui
+	$(".characterPosition").css('background-color', 'green');
+	$("#playerGridColumn0").css('background-color', 'gray');
+	$("#enemyGridColumn0").css('background-color', 'gray');
+	
+	$("#enemyGameStatus").text("---");
+	$("#playerGameStatus").text("---");
+	$("#playerStatus").text("---");
+	$("#playerDamagedAmount").text("---");
+	$("#enemyDamagedAmount").text("---");
+	
+	$("#playerCondition").text('Uninjured').css('color', 'green');
+	$("#playerConditionTriangle").css('border-top', '20px solid blue');
+	$("#playerHealthBar").css('width', 100 + "%");
+	$("#playerStaminaBar").css('width', 100 + "%");
+	
+	//reset health bars back to default
+	$("#playerHealthBar").removeClass();
+	$("#playerHealthBar").addClass('progress-bar');
+	
+	//reset stamina bar back to default
+	$("#playerStaminaBar").removeClass();
+	$("#playerStaminaBar").addClass('progress-bar');
+	
+	//enemy condition reset
+	$("#enemyHealthCondition").text('Uninjured').css('color', 'green');
+	$("#enemyStaminaCondition").text('Alert').css('color', 'green');
+	$("#enemyActiveEffects").text("");
+	$("#enemyStaminaCircle").css('background-color', 'blue');
+	$("#enemyConditionTriangle").css('border-top', '20px solid blue');
+	$("#enemyHealthSquare").css('background-color', 'blue');
+	
+	//show buttons again
+	$("#attackButton").show();
+	$("#itemButton").show();
+	$("#skillMenu").show();
+	
+	//reset game so buttons show
+	gameEnd = false;	
+}	
+
 //populates story page after creating character
 //pulls image and first page in pages array
 function startStory() {
@@ -1849,9 +1886,20 @@ $(document).ready(function(){
 					$("#storyMain").hide();
 					startBattle();
 				});	
-				//disables next chapter button if next state is a fight
+				//disables next page button if next state is a fight
 				$("#storyProgress").prop('disabled', true);
 			}
+			//if just to next chapter
+			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "end") {
+				$("#storyEnd").text("Next chapter!").show();
+				$("#storyEnd").click(function() {
+					currentChapter++;
+					currentPage = 0;
+					currentState = 0;
+				});	
+				//disables next page button if next state is a new chapter
+				$("#storyProgress").prop('disabled', true);
+			}			
 		}		
 	});
 	
@@ -1867,24 +1915,66 @@ $(document).ready(function(){
 		
 		//save data to local storage
 		window.localStorage.setItem('player', JSON.stringify(player));
+		window.localStorage.setItem('enemy', JSON.stringify(enemy));
 		window.localStorage.setItem('state', currentState);
 		window.localStorage.setItem('chapter', currentChapter);
 		window.localStorage.setItem('page', currentPage);
 		
 	});
 
-
-
 	$("#continueButton").click(function() {
-		console.log(window.localStorage.getItem('player'));
-		console.log(window.localStorage.getItem('state'));
-		console.log(window.localStorage.getItem('chapter'));
-		console.log(window.localStorage.getItem('page'));
+		player = JSON.parse(window.localStorage.getItem('player'));
+		enemy = JSON.parse(window.localStorage.getItem('enemy'));
+		currentState = window.localStorage.getItem('state');
+		currentChapter = window.localStorage.getItem('chapter');
+		currentPage = window.localStorage.getItem('page');
 			
-	
+		uiReset();	
+		$("#gameIntroMenu").hide();	
+		startStory();	
+			
+		//displays next page if available
+		if(currentPage < parseInt(storyObj[currentChapter].pageLength - 1)) {
+			$("#storyMain").show();
+			currentPage++;
+			$("#storyText").text(storyObj[currentChapter].pages[currentPage]);
+		} 
+		//disables next button at end of chapter
+		if((currentPage + 1) == storyObj[currentChapter].pageLength) {
+			$("#storyMain").show();
+			//if next state is gift, gives an item then moves to next state
+			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "battleItemGift") {
+				player.addToBattleItemArray(storyObj[currentChapter].nextState[currentState].battleItemGift);
+				refreshItems();
+				currentState++;
+			}
+			//if fight state, presents fight button
+			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "fight") {
+				$("#storyMain").show();
+				$("#storyEnd").text("Fight!").show();
+				$("#storyEnd").click(function() {
+					$("#storyMain").hide();
+					startBattle();
+				});	
+				//disables next chapter button if next state is a fight
+				$("#storyProgress").prop('disabled', true);
+			}
+			//if just to next chapter
+			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "end") {
+				$("#storyEnd").text("Next chapter!").show();
+				$("#storyEnd").click(function() {
+					currentChapter++;
+					currentPage = 0;
+					currentState = 0;
+				});	
+				//disables next page button if next state is a new chapter
+				$("#storyProgress").prop('disabled', true);
+			}
+		}		
 	});
 	
+	//end of battle victory and going to next page
 	$("#nextChapterButton").click(function() {
-
+		
 	});	
 });
