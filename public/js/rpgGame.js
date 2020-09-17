@@ -18,19 +18,23 @@ var implantObj = [
 
 //skill percent is if attacking
 var personalityObj = [
+	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"100", "staminaCautionThreshold":"4"}, 
+
+	/*
 	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"50", "staminaCautionThreshold":"4"}, 
 	{ "type":"defensive" , "attackPercent":"50", "defendPercent":"50", "skillPercent":"0", "staminaCautionThreshold":"3"},
 	{ "type":"tactical" , "attackPercent":"50", "defendPercent":"50", "skillPercent":"50", "staminaCautionThreshold":"3"}
+	*/
 ];	
 	
 var enemyObj = [
-	{ "name":"pickpocket", "health":"70", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":"Arm Smash", "avatar":"/img/enemyFace.jpg" },
-	{ "name":"mugger", "health":"150", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "avatar":"/img/enemyFace.jpg" }
+	{ "name":"pickpocket", "race":"human", "actorClass":"thief", "health":"170", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":"Arm Smash", "avatar":"/img/enemyFace.jpg" },
+	{ "name":"mugger", "race":"human", "actorClass":"thief", "health":"150", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "avatar":"/img/enemyFace.jpg" }
 ];
 
 var raceObj = [
-	{ "name":"human", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" },
-	{ "name":"android", "health":"150", "attack":"15", "stamina":"150", "staminaRegen":"15", "healthRegen":"1", "baseAttackCost":"7", "agility":"15", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }
+	{ "race":"human", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" },
+	{ "race":"android", "health":"150", "attack":"15", "stamina":"150", "staminaRegen":"15", "healthRegen":"1", "baseAttackCost":"7", "agility":"15", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }
 ];		
 
 var storyObj = [
@@ -294,7 +298,7 @@ class Actor {
 	//randomizers are for enemy actor and adds up to 30% each to attack and health
 	//stamina randomizer added but not used
 		//to be adjusted down to 20% each once enemy skill use is implemented
-	constructor(name,health,attack,stamina,staminaRegen,baseAttackCost,agility) {
+	constructor(name,race,actorClass,health,attack,stamina,staminaRegen,baseAttackCost,agility) {
 		this.position = 1;
 		this.name = name;
 		this.health = parseInt(health);
@@ -321,7 +325,24 @@ class Actor {
 		this.debuffedParts = [];
 		this.battleItemArray = [];
 		this.statusBuffArray = [];
-		this.storyChapter = 0;
+		this.race = race;
+		this.actorClass = actorClass;
+	}	
+	
+	getActorClass() {
+		return this.actorClass;	
+	}	
+	
+	setActorClass(actorClass) {
+		this.actorClass = actorClass;	
+	}	
+	
+	getRace() {
+		return this.race;	
+	}	
+	
+	setRace(race) {
+		this.race = race;	
 	}	
 	
 	tickBuffs() {
@@ -516,7 +537,11 @@ class Actor {
 
 	getMeleeSkills() {
 		return this.meleeSkillArray;
-	}			
+	}	
+
+	setMeleeSkills(skills) {
+		this.meleeSkillArray = skills;
+	}	
 	
 	reduceAttack(percent) {
 		this.attackMultiplier * ((100 - percent) / 100);
@@ -828,7 +853,7 @@ function skillEnemyAttack() {
 						$(".p" + (i + 1)).css({"border": "2px solid red"});
 				}			
 				
-				//check player stance to see if damage reduced
+				//check player stance to see if defense broken
 				let enemyTargeting = meleeSkillObj[j].bodyTarget;
 				let playerStance = player.getStance();
 				for(let i = 0; i <  enemyTargeting.length; i++) {
@@ -843,11 +868,12 @@ function skillEnemyAttack() {
 					$("#playerConditionTriangle").css('border-top', '20px solid red');
 					
 					//debuff list
-					let p = player.getDebuffParts();
+					let debuffPartsList = player.getDebuffParts();
 					
+					//attack reduction debuff
 					if(meleeSkillObj[j].debuff === "Attack Reduction") {
 						//if debuff not already applied to part, adds effect and to list
-						if(!p.indexOf(meleeSkillObj[j].debuffTarget) >= 0 ) {
+						if(debuffPartsList.indexOf(meleeSkillObj[j].debuffTarget) == -1 ) {
 							player.addDebuffPart(meleeSkillObj[j].debuffTarget);
 							//effect at time depends on defending target			
 							if(playerDefend)
@@ -859,7 +885,6 @@ function skillEnemyAttack() {
 						} 
 					}	
 				}
-				
 				//is using skill, next step calculates damage
 				enemyAttackMade = false;
 			}
@@ -1288,7 +1313,6 @@ function refreshSkills() {
 			}
 		});		
 	}
-		
 }	
 
 //game init function
@@ -1299,14 +1323,24 @@ function gameInit() {
 	//story reset
 	currentPage = 0;
 	currentChapter = 0;
-	currentState = 0;	
+	currentState = 0;
 	
+	//story panel reset
+	$('#storyProgress').prop('disabled', false);
+	$('#saveGame').prop('disabled', false).text("Save");
+	$('#storyEnd').css('display', 'none').text("");
+	
+	
+	let playerName = $("#name").val();
+	let className = $("#gameClass").val();
 	
 	//init and equip player
 	for(var i = 0; i < raceObj.length; i++) {
-		if(raceObj[i].name == raceSelection) {
+		if(raceObj[i].race == raceSelection) {
 			player = new Actor(
-				raceObj[i].name,
+				playerName,
+				raceObj[i].race,
+				className,
 				raceObj[i].health,
 				raceObj[i].attack,
 				raceObj[i].stamina,
@@ -1316,7 +1350,7 @@ function gameInit() {
 			);			
 		}	
 	}	
-
+	
 	player.equipWeapon(
 		weaponObj[0].name, 
 		weaponObj[0].damage
@@ -1326,8 +1360,9 @@ function gameInit() {
 		armourObj[0].name, 
 		armourObj[0].reduction
 	);
-	
+	player.setCurrentHealth(Math.ceil(player.getHealth() * (1 + (0.05 * lifeAlloc))));
 	player.setHealth(Math.ceil(player.getHealth() * (1 + (0.05 * lifeAlloc))));
+	player.setCurrentStamina(Math.ceil(player.getStamina() * (1 + (0.05 * enduranceAlloc))));
 	player.setStamina(Math.ceil(player.getStamina() * (1 + (0.05 * enduranceAlloc))));
 	player.setAttack(Math.ceil(player.getAttack() * (1 + (0.05 * strengthAlloc))));
 	
@@ -1341,6 +1376,8 @@ function gameInit() {
 	//init and equip enemy 
 	enemy = new Actor(
 		enemyObj[0].name,
+		enemyObj[0].race,
+		enemyObj[0].actorClass,
 		enemyObj[0].health,
 		enemyObj[0].attack,
 		enemyObj[0].stamina,
@@ -1519,8 +1556,6 @@ function startBattle() {
 	$("#gameTopTab").show();
 	
 	//set game text or picture values
-	player.setName($("#name").val());
-	
 	$(".playerImage").attr("src", raceObj[0].avatar);
 	$("#playerName").text("Name: " + player.getName());
 	$("#playerArmour").text(player.getArmourValue());
@@ -1542,8 +1577,18 @@ function startBattle() {
 
 //game starting scripts	
 $(document).ready(function(){
+		
+	if(localStorage.getItem("player") === null) {
+		$("#continueButton").prop('disabled', true);
+	}
 	
+	//new game selected
 	$("#startButton").click(function() {
+		//reset page progress
+		localStorage.clear();
+		currentChapter = 0;
+		currentPage = 0;
+		currentState = 0;
 		
 		//panel set for game session
 		$('[data-toggle="tooltip"]').tooltip();
@@ -1552,8 +1597,8 @@ $(document).ready(function(){
 		$("#playerConfigMenu").show();
 	});
 	
+	//saving character configuration and starting story
 	$("#completeConfig").click(function() {
-		
 		$("#playerConfigMenu").hide();
 			
 		//call set game values
@@ -1616,6 +1661,7 @@ $(document).ready(function(){
 		if(currentConfigAlloc <= 11) {
 			lifeAlloc++;
 			$("#lifeAlloc").text(lifeAlloc);
+			currentConfigAlloc++;
 		}		
 	});
 			
@@ -1625,7 +1671,7 @@ $(document).ready(function(){
 		$("#defendButton").hide();
 		$("#itemButton").hide();
 		$("#skillMenu").hide();
-		$("#nextTurnButton").show();
+		$("#nextTurnButton").show();	
 			
 		//if defends, increases armour and stamina
 		if(playerDefend) {
@@ -1661,6 +1707,14 @@ $(document).ready(function(){
 		//if player and enemy didn't defend, attacks happen	
 		//else {
 		if(!playerDefend && !playerUseItem) {
+			//if player chose to fight despite low stamina, attack fails
+			if(player.getCurrentStamina() < player.getBaseAttackCost()) {
+				playerAttackFailure = true;	
+				$("#playerDamagedAmount").text("0");
+				$("#playerDamagedAmount").text("0");
+				$("#playerGameStatus").text("Fatigued");
+			}	
+			
 			//agility check on regular attack
 			agilityCheck();
 			
@@ -1845,8 +1899,8 @@ $(document).ready(function(){
 			//race status details
 			if(index == 1) {
 				for(var i = 0; i < raceObj.length; i++) {
-					if(raceObj[i].name == $(this).text()) {
-						raceSelection = raceObj[i].name;
+					if(raceObj[i].race == $(this).text()) {
+						raceSelection = raceObj[i].race;
 						$("#raceStats").text("HP: " + raceObj[i].health + " " + 
 							"ATK: " + raceObj[i].attack + " " +
 							"SP: " + raceObj[i].stamina + " " +						
@@ -1866,6 +1920,9 @@ $(document).ready(function(){
 	displays next option
 	*/
 	$("#storyProgress").click(function() {
+		//enable save
+		$("#saveGame").prop('disabled', false).text("Save");
+		
 		//displays next page if available
 		if(currentPage < parseInt(storyObj[currentChapter].pageLength - 1)) {
 			currentPage++;
@@ -1903,34 +1960,58 @@ $(document).ready(function(){
 		}		
 	});
 	
-	//from modal go to title
-	$("#toTitleButton").click(function() {
-		$('#menuModal').modal('toggle');
-
-		$("#gameIntroMenu").show();
-		$(".introButtons").show();
-		
-		$("#battleMain").hide();
-		$("#gameTopTab").hide();
-		
-		//save data to local storage
+	//save data to local storage
+	$("#saveGame").click(function() {
 		window.localStorage.setItem('player', JSON.stringify(player));
 		window.localStorage.setItem('enemy', JSON.stringify(enemy));
 		window.localStorage.setItem('state', currentState);
 		window.localStorage.setItem('chapter', currentChapter);
-		window.localStorage.setItem('page', currentPage);
-		
+		window.localStorage.setItem('page', currentPage);		
+		$("#saveGame").text("Saved").prop('disabled', true);
+	});	
+	
+	//from modal go to title
+	$(".toTitleButton").click(function() {
+		if($('#menuModal').hasClass('show'))
+			$('#menuModal').modal('toggle');
+		if(window.localStorage.getItem('player')) {
+			$("#continueButton").prop('disabled', false);	
+		}
+		$("#nextChapterButton").hide();
+		$("#gameIntroMenu").show();
+		$(".introButtons").show();
+		$("#battleMain").hide();
+		$("#gameTopTab").hide();
+		$("#storyMain").hide();
 	});
 
+	//loads player data from local storage, battle progress not saved 
 	$("#continueButton").click(function() {
-		player = JSON.parse(window.localStorage.getItem('player'));
-		enemy = JSON.parse(window.localStorage.getItem('enemy'));
+		playerData = JSON.parse(window.localStorage.getItem('player'));
+		
+		player = new Actor(playerData.name, playerData.race, playerData.actorClass, playerData.health, 
+			playerData.attack, playerData.stamina, playerData.staminaRegen, playerData.baseAttackCost,
+			playerData.agility);			
+		
+		player.equipWeapon(
+			playerData.weaponName, 
+			playerData.weaponDamage
+		);
+
+		player.equipArmour(
+			playerData.armourName, 
+			playerData.armnourDamage
+		);	
+			
+		player.setMeleeSkills(playerData.meleeSkillArray);
+		player.setBattleItemArray(playerData.battleItemArray);
+		
 		currentState = window.localStorage.getItem('state');
 		currentChapter = window.localStorage.getItem('chapter');
 		currentPage = window.localStorage.getItem('page');
 			
 		uiReset();	
-		$("#gameIntroMenu").hide();	
+		$("#gameIntroMenu").hide();
 		startStory();	
 			
 		//displays next page if available

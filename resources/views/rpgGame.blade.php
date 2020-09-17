@@ -175,7 +175,7 @@
 					<div class="row">
 						<div class="col">
 							<div class="centered-button">
-								<button id="completeConfig" type="button" class="btn btn-primary active">Save</button>
+								<button id="completeConfig" type="button" class="btn btn-primary active">Create</button>
 							</div>
 						</div>	
 					</div>	
@@ -200,6 +200,8 @@
 						<div id="ctrlButtonContainer">
 							<button id="storyProgress" type="button" class="btn btn-primary active">Next</button>
 							<button style="display:none" id="storyEnd" type="button" class="btn btn-primary active"></button>
+							<button id="saveGame" type="button" class="btn btn-primary active">Save</button>
+							<button type="button" class="toTitleButton btn btn-primary active">Title</button>
 						</div>
 					</div>	
 				</div>						
@@ -488,7 +490,7 @@
 							</div>
 							<div class="modal-body">
 								<div class="" id="gameIntroMenu" role="group">
-									<button id="toTitleButton" type="button" class="btn btn-primary active w-100 mb-1">To Title</button>
+									<button type="button" class="toTitleButton btn btn-primary active w-100 mb-1">To Title</button>
 									<button type="button" class="returnButton btn btn-primary active w-100">Return to Website</button>
 								</div>	
 							</div>
