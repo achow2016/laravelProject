@@ -18,7 +18,7 @@ var implantObj = [
 
 //skill percent is if attacking
 var personalityObj = [
-	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"100", "staminaCautionThreshold":"4"}, 
+	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"100", "staminaCautionThreshold":"3"}, 
 
 	/*
 	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"50", "staminaCautionThreshold":"4"}, 
@@ -327,7 +327,16 @@ class Actor {
 		this.statusBuffArray = [];
 		this.race = race;
 		this.actorClass = actorClass;
+		this.fatigue = 0;
 	}	
+	
+	getFatigueStacks() {
+		return this.fatigue;	
+	}	
+	
+	setFatigueStacks(stacks) {
+		this.fatigue = stacks;	
+	}		
 	
 	getActorClass() {
 		return this.actorClass;	
@@ -499,6 +508,10 @@ class Actor {
 	
 	applyAttackExertion() {
 		this.setCurrentStamina(this.currentStamina - this.baseAttackCost);
+		if(this.getStaminaThreshold() >= 4) {
+			this.fatigue++;
+			this.attackPenalty += 5;
+		}	
 	}	
 	
 	recoverStamina() {
@@ -864,7 +877,10 @@ function skillEnemyAttack() {
 
 				//applies debuff if any, does not apply it if defended against			
 				if(meleeSkillObj[j].debuff != "none") {
-					$("#playerActiveEffects").text(meleeSkillObj[j].debuff);
+					let debuffStr = $("#playerActiveEffects").text();
+					if(debuffStr.indexOf(meleeSkillObj[j].debuff) == -1) {
+						$("#playerActiveEffects").append("<p>" + meleeSkillObj[j].debuff + "</p>");
+					}
 					$("#playerConditionTriangle").css('border-top', '20px solid red');
 					
 					//debuff list
@@ -925,12 +941,17 @@ function enemyAttack() {
 			}	
 			//close enough to attack
 			else {			
+				//apply stamina use and penalties if any
 				enemy.applyAttackExertion(); 
+				if(enemy.getStaminaThreshold() >= 4) {
+					$("#enemyActiveEffects p:contains('fatigued')").remove();
+					$("#enemyActiveEffects").append("<p>" + "Fatigued: " + enemy.getFatigueStacks() + "</p>");
+				}	
 				
 				//selects spot on player stance to target
-				let targetSquare = getRandomInteger(0,8);
+				let targetSquare = getRandomInteger(1,9);
 				let playerStance = player.getStance();
-				if(playerStance[targetSquare] == 0) {
+				if(playerStance[targetSquare - 1] == 0) {
 					playerDefenseBroken = true;	
 					player.applyDefenseBreak();
 				}	
@@ -954,7 +975,12 @@ function enemyAttack() {
 			skillEnemyAttack();
 			//player attack sequence only happens if attack did not fail, resets after
 			if(enemyAttackFailure == false) {
+				//apply stamina use and penalties if any
 				enemy.applyAttackExertion();
+				if(enemy.getStaminaThreshold() >= 4) {
+					$("#enemyActiveEffects p:contains('fatigued')").remove();
+					$("#enemyActiveEffects").append("<p>" + "Fatigued: " + enemy.getFatigueStacks() + "</p>");
+				}
 				
 				if(playerDefenseBroken == true) {
 					player.applyDefenseBreak();	
@@ -1131,7 +1157,6 @@ function agilityCheck() {
 	}	
 }	
 
-
 //refreshes list of all player items in modal
 function refreshItems() {
 	$('#itemButtonArray').empty();
@@ -1189,8 +1214,7 @@ function refreshSkills() {
 		$('#skillButtonArray').append('<input name="' + skillName + '" id=skillButton' + i + ' type="button" class="btn btn-primary active mb-1"></button>');								
 		
 		//skill logic
-		//currently iterates over entire skill list to find matching name
-		
+		//currently iterates over entire skill list to find matching name of skill
 		$('#skillButton' + i).prop('value',skillName).click({param1:skillName}, function(event) {
 			//for(var j = 0; j < Object.keys(meleeSkillObj).length; j++) {	
 			for(var j = 0; j < meleeSkillObj.length; j++) {	
@@ -1271,10 +1295,10 @@ function refreshSkills() {
 						}
 						for(let i = 0; i < 9; i++) {
 							if(meleeSkillObj[j].bodyTarget[i] == 1)
-								$(".e" + i).css({"border": "2px solid red"});
+								$(".e" + (i + 1)).css({"border": "2px solid red"});
 						}
 						
-						//check enemy stance to see if damage reduced
+						//check enemy stance to see if damage increased
 						let playerTargeting = meleeSkillObj[j].bodyTarget;
 						let enemyStance = enemy.getStance();
 						for(let i = 0; i <  playerTargeting.length; i++) {
@@ -1285,7 +1309,11 @@ function refreshSkills() {
 
 						//applies debuff if any, does not apply it fully if defended against			
 						if(meleeSkillObj[j].debuff != "none") {
-							$("#enemyActiveEffects").text(meleeSkillObj[j].debuff);
+							let debuffStr = $("#enemyActiveEffects").text();
+							if(debuffStr.indexOf(meleeSkillObj[j].debuff) == -1) {
+								$("#enemyActiveEffects").append("<p>" + meleeSkillObj[j].debuff + "</p>");
+							}
+							
 							$("#enemyConditionTriangle").css('border-top', '20px solid red');
 							
 							//debuff list
@@ -1692,9 +1720,13 @@ $(document).ready(function(){
 		if(defenseRoll < parseInt(personalityObj[choice].defendPercent)) {
 			enemyDefend = true;
 		}	
+
 		//check against their stamina risk threshold, if at then enemy defends		
 		if((enemy.getStaminaThreshold() <  parseInt(personalityObj[choice].staminaCautionThreshold))) {
 			enemyDefend = false;	
+		} 
+		else {
+			enemyDefend = true;
 		}	
 	
 		if(enemyDefend) {
@@ -1719,7 +1751,7 @@ $(document).ready(function(){
 			agilityCheck();
 			
 			//player checks distance, if too far attack is failure for player
-			//only checked if player using basic attack
+			//only checked if player using basic attack since calculated on skill use
 			if(playerBasicAttack) {
 				if((playerPosition + enemyPosition) > 0) {
 					$("#playerGameStatus").text("Target out of range!");
@@ -1729,13 +1761,30 @@ $(document).ready(function(){
 			
 			//player attack sequence only happens if attack did not fail, resets after
 			if(playerAttackFailure == false) {
+					//apply stamina use and penalties if any
 					player.applyAttackExertion();
+					if(player.getStaminaThreshold() >= 4) {
+						$("#playerActiveEffects p:contains('fatigued')").remove();
+						$("#playerActiveEffects").append("<p>" + "Fatigued: " + player.getFatigueStacks() + "</p>");
+					}	
 					$("#playerStaminaBar").text(player.getCurrentStamina() + "/" + player.getStamina());
 					$("#playerStaminaBar").css('width', (Math.floor((player.getCurrentStamina() / player.getStamina()) * 100)) + "%");
+					
+				//random square targeted by player on basic attack
+				if(playerBasicAttack) {
+					//selects spot on enemy stance to target
+					let targetSquare = getRandomInteger(1,9);
+					let enemyStance = enemy.getStance();
+					if(enemyStance[targetSquare - 1] == 0) {
+						enemyDefenseBroken = true;
+					}	
+					//target square becomes red
+					$(".e" + targetSquare).css({"border": "2px solid red"});		
+				}	
 				
 				if(enemyDefenseBroken == true) {
 					enemy.applyDefenseBreak();	
-				}		
+				}	
 				
 				playerDamage = player.getMeleeAttackDamage(enemy);
 				

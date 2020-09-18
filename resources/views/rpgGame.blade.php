@@ -437,7 +437,7 @@
 									</div>
 									<div class="row">
 										<p>Effects:</p>&nbsp;
-										<p id="enemyActiveEffects"></p>
+										<div id="enemyActiveEffects"></div>
 									</div>
 								</div>		
 							</div>
@@ -465,7 +465,7 @@
 									</div>
 									<div class="row">
 										<p>Effects:</p>&nbsp;
-										<p id="playerActiveEffects"></p>
+										<div id="playerActiveEffects"></div>
 									</div>
 								</div>	
 							</div>	
