@@ -2,6 +2,10 @@
 //https://www.pexels.com/photo/aerial-view-and-grayscale-photography-of-high-rise-buildings-1105766/
 
 //game data
+//8 x 8 tiles, defines points of interest
+var mapObj = [
+	{ "name":"intro" , "defaultTile":"/img/rpgTiles/grass.png", "startPoint":"4,9", "endPoint":"", "chest":"", "fieldBoss":"4,7" } 
+];
 
 var weaponObj = [{ "name":"wood sword" , "damage":"1" } ];
 
@@ -19,7 +23,6 @@ var implantObj = [
 //skill percent is if attacking
 var personalityObj = [
 	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"100", "staminaCautionThreshold":"3"}, 
-
 	/*
 	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"50", "staminaCautionThreshold":"4"}, 
 	{ "type":"defensive" , "attackPercent":"50", "defendPercent":"50", "skillPercent":"0", "staminaCautionThreshold":"3"},
@@ -28,8 +31,7 @@ var personalityObj = [
 ];	
 	
 var enemyObj = [
-	{ "name":"pickpocket", "race":"human", "actorClass":"thief", "health":"170", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":"Arm Smash", "avatar":"/img/enemyFace.jpg" },
-	{ "name":"mugger", "race":"human", "actorClass":"thief", "health":"150", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "avatar":"/img/enemyFace.jpg" }
+	{ "name":"guard", "race":"human", "actorClass":"none", "health":"70", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":"Arm Smash", "avatar":"/img/enemyFace.jpg" },
 ];
 
 var raceObj = [
@@ -42,15 +44,17 @@ var storyObj = [
 		"chapter":"0",
 		"title":"opening chapter", 
 		"storyImage":"/img/chapterImages/cityNight.jpg", 
-		"pageLength":"3",
+		"pageLength":"6",
 		"pages" : [
-			"Welcome to the story!",
-			"Page two of story!",
-			"Final page of story, you got a regen injector!"
+			"Welcome to rpgGame!",
+			"You are a slave working at an arena where people pay to watch slaves fight each other and wild animals for entertainment.",
+			"Despite being enslaved the slaves are well fed and looked after in order to ensure that they provide maximum entertainment for guests.",
+			"One day, while preparing to receive a shipment of food you notice that there are less guards than usual assigned to watch your work area.", 
+			"This could be opportunity to escape. Despite not being assigned to fight, you have received the same training as some of the substitute fighters in the arena.",
+			"What will you do?"			
 		],
 		"nextState":[
-			{"battleItemGift" : "Regen Injector"},
-			{"fight" : "pickpocket"}
+			{"map" : "intro"}
 		]	
 	},
 	{ 
@@ -328,7 +332,16 @@ class Actor {
 		this.race = race;
 		this.actorClass = actorClass;
 		this.fatigue = 0;
+		this.mapPosition = [];
 	}	
+	
+	getMapPosition() {
+		return this.mapPosition;
+	}	
+
+	setMapPosition(position) {
+		this.mapPosition = position;
+	}
 	
 	getFatigueStacks() {
 		return this.fatigue;	
@@ -746,6 +759,7 @@ story, player, enemy
 var currentPage = 0;
 var currentChapter = 0;
 var currentState = 0;
+var currentMap = 0;
 var firstRun = true;
 var gameEnd = false;	
 
@@ -1576,7 +1590,7 @@ function uiReset() {
 function startStory() {
 	$("#storyMain").show();
 	$("#activeStoryBackground").css("background-image", "url(" + storyObj[0].storyImage + ")");
-	$("#storyText").text(storyObj[currentChapter].pages[currentPage]);	
+	$("#storyText").text(storyObj[currentChapter].pages[currentPage]);
 }
 
 function startBattle() {
@@ -1601,6 +1615,81 @@ function startBattle() {
 	//$("#enemyName").text(enemy.getName());
 	//$("#enemyArmour").text(enemyArmour);
 	//$("#enemyAttack").text(enemyAttack);		
+}	
+
+//generates map onto main map div
+function populateMap() {
+	//generates map tiles, applies background tile image
+	for(var i = 0; i < 9; i++) {
+		for(var j = 0; j < 9; j++) {
+			$("#mapRow" + i).append("<div class='mapTile'></div>");
+		}
+	}
+	$(".mapTile").css("background-image", "url(" + mapObj[0].defaultTile + ")");
+	
+	//set player current position
+	let playerPosition = player.getMapPosition();
+	playerPosition = mapObj[currentMap].startPoint;
+	$("#mapRow" + playerPosition[2] + ".mapTile:nth-child(" + playerPosition[0] + ")".css("background-image", "url('/img/rpgTiles/actor.png')");
+	console.log(playerPosition[2]); //4,9
+	$("#mapMain").show();
+}	
+
+/*
+reads through story text to maximum number of defined pages and then 
+displays next option
+*/
+function progressStory() {
+	//enable save
+	$("#saveGame").prop('disabled', false).text("Save");
+	
+	//displays next page if available
+	if(currentPage < parseInt(storyObj[currentChapter].pageLength - 1)) {
+		currentPage++;
+		$("#storyText").text(storyObj[currentChapter].pages[currentPage]);
+	} 
+	//disables next button at end of chapter
+	//if((currentPage + 1) == storyObj[currentChapter].pageLength) {
+	if(currentPage == parseInt(storyObj[currentChapter].pageLength - 1)) {
+		//if next state is gift, gives an item then moves to next state
+		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "battleItemGift") {
+			player.addToBattleItemArray(storyObj[currentChapter].nextState[currentState].battleItemGift);
+			refreshItems();
+			currentState++;
+		}
+		//if fight state, presents fight button
+		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "fight") {
+			$("#storyEnd").text("Fight!").show();
+			$("#storyEnd").click(function() {
+				$("#storyMain").hide();
+				startBattle();
+			});	
+			//disables next page button if next state is a fight
+			$("#storyProgress").prop('disabled', true);
+		}
+		//if just to next chapter
+		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "end") {
+			$("#storyEnd").text("Next chapter!").show();
+			$("#storyEnd").click(function() {
+				currentChapter++;
+				currentPage = 0;
+				currentState = 0;
+			});	
+			//disables next page button if next state is a new chapter
+			$("#storyProgress").prop('disabled', true);
+		}
+		
+		//if map show map div
+		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "map") {
+			$("#storyEnd").text("To Map").show();
+			$("#storyEnd").click(function() {
+				$("#storyMain").hide();
+				populateMap();
+			});	
+			//disables next chapter button if next state is a fight
+			$("#storyProgress").prop('disabled', true);
+		}			
+	}		
 }	
 
 //game starting scripts	
@@ -1964,49 +2053,8 @@ $(document).ready(function(){
 	}).change();	
 	
 	//story progress button
-	/*
-	reads through story text to maximum number of defined pages and then 
-	displays next option
-	*/
 	$("#storyProgress").click(function() {
-		//enable save
-		$("#saveGame").prop('disabled', false).text("Save");
-		
-		//displays next page if available
-		if(currentPage < parseInt(storyObj[currentChapter].pageLength - 1)) {
-			currentPage++;
-			$("#storyText").text(storyObj[currentChapter].pages[currentPage]);
-		} 
-		//disables next button at end of chapter
-		if((currentPage + 1) == storyObj[currentChapter].pageLength) {
-			//if next state is gift, gives an item then moves to next state
-			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "battleItemGift") {
-				player.addToBattleItemArray(storyObj[currentChapter].nextState[currentState].battleItemGift);
-				refreshItems();
-				currentState++;
-			}
-			//if fight state, presents fight button
-			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "fight") {
-				$("#storyEnd").text("Fight!").show();
-				$("#storyEnd").click(function() {
-					$("#storyMain").hide();
-					startBattle();
-				});	
-				//disables next page button if next state is a fight
-				$("#storyProgress").prop('disabled', true);
-			}
-			//if just to next chapter
-			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "end") {
-				$("#storyEnd").text("Next chapter!").show();
-				$("#storyEnd").click(function() {
-					currentChapter++;
-					currentPage = 0;
-					currentState = 0;
-				});	
-				//disables next page button if next state is a new chapter
-				$("#storyProgress").prop('disabled', true);
-			}			
-		}		
+		progressStory();
 	});
 	
 	//save data to local storage
@@ -2062,45 +2110,7 @@ $(document).ready(function(){
 		uiReset();	
 		$("#gameIntroMenu").hide();
 		startStory();	
-			
-		//displays next page if available
-		if(currentPage < parseInt(storyObj[currentChapter].pageLength - 1)) {
-			$("#storyMain").show();
-			currentPage++;
-			$("#storyText").text(storyObj[currentChapter].pages[currentPage]);
-		} 
-		//disables next button at end of chapter
-		if((currentPage + 1) == storyObj[currentChapter].pageLength) {
-			$("#storyMain").show();
-			//if next state is gift, gives an item then moves to next state
-			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "battleItemGift") {
-				player.addToBattleItemArray(storyObj[currentChapter].nextState[currentState].battleItemGift);
-				refreshItems();
-				currentState++;
-			}
-			//if fight state, presents fight button
-			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "fight") {
-				$("#storyMain").show();
-				$("#storyEnd").text("Fight!").show();
-				$("#storyEnd").click(function() {
-					$("#storyMain").hide();
-					startBattle();
-				});	
-				//disables next chapter button if next state is a fight
-				$("#storyProgress").prop('disabled', true);
-			}
-			//if just to next chapter
-			if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "end") {
-				$("#storyEnd").text("Next chapter!").show();
-				$("#storyEnd").click(function() {
-					currentChapter++;
-					currentPage = 0;
-					currentState = 0;
-				});	
-				//disables next page button if next state is a new chapter
-				$("#storyProgress").prop('disabled', true);
-			}
-		}		
+		progressStory();
 	});
 	
 	//end of battle victory and going to next page

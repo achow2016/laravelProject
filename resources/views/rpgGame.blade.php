@@ -207,6 +207,44 @@
 				</div>						
 			</div>
 			
+			<!--world map page-->
+			<div id="mapMain" style="display:none">
+				<div class="row map" id="mapRow1">
+				</div>	
+				<div class="row map" id="mapRow2">
+				</div>	
+				<div class="row map" id="mapRow3">
+				</div>	
+				<div class="row map" id="mapRow4">
+				</div>	
+				<div class="row map" id="mapRow5">
+				</div>	
+				<div class="row map" id="mapRow6">
+				</div>	
+				<div class="row map" id="mapRow7">
+				</div>	
+				<div class="row map" id="mapRow8">
+				</div>					
+				<div class="row map" id="mapRow9">
+				</div>					
+				<div class="row mapMenu">
+					<div class="col">
+						<div id="mapCtrlButtonContainer">
+							<div class="row">
+								<button id="mapUp" type="button" class="btn btn-primary active">Up</button>
+							</div>
+							<div class="row">
+								<button id="mapLeft" type="button" class="btn btn-primary active">Left</button>
+								<button id="mapRight" type="button" class="btn btn-primary active">Right</button>
+							</div>
+							<div class="row">
+								<button id="mapDown" type="button" class="btn btn-primary active">Down</button>
+							</div>
+						</div>
+					</div>	
+				</div>						
+			</div>			
+			
 			<!--battle main page-->
 			<div id="battleMain" style="display:none">
 			
