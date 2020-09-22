@@ -73,7 +73,7 @@
 							<a class="nav-link" data-toggle="pill" href="#scorePanel">Score</a>
 						</li>					
 						<li>
-							<button id="operationMenu" type="button" class="btn btn-dark active w-100" data-toggle="modal" data-target="#menuModal">Menu</button>
+							<button id="battleGameMenu" type="button" class="btn btn-dark active w-100" data-toggle="modal" data-target="#battleMenuModal">Menu</button>
 						</li>
 					</ul>
 				</div>
@@ -200,7 +200,7 @@
 						<div id="ctrlButtonContainer">
 							<button id="storyProgress" type="button" class="btn btn-primary active">Next</button>
 							<button style="display:none" id="storyEnd" type="button" class="btn btn-primary active"></button>
-							<button id="saveGame" type="button" class="btn btn-primary active">Save</button>
+							<button type="button" class="saveGame btn btn-primary active">Save</button>
 							<button type="button" class="toTitleButton btn btn-primary active">Title</button>
 						</div>
 					</div>	
@@ -208,25 +208,33 @@
 			</div>
 			
 			<!--world map page and navigation-->
-			<div id="mapMain" style="display:none">
-				<div class="col">
-					<div class="row map" id="mapRow1">
+			<div id="mapMain" style="display:none" class="container-fluid">
+				<div class="row">
+					<div class="btn-group d-flex w-100" role="group">
+						<button type="button" class="saveGame btn btn-dark active w-100">Save</button>
+						<button type="button" class="operationMenu btn btn-dark active w-100" data-toggle="modal" data-target="#mapMenuModal">Menu</button>
 					</div>	
-					<div class="row map" id="mapRow2">
+				</div>
+				<div class="row">
+					<div class="col">
+						<div class="row map" id="mapRow8">
+						</div>	
+						<div class="row map" id="mapRow7">
+						</div>	
+						<div class="row map" id="mapRow6">
+						</div>	
+						<div class="row map" id="mapRow5">
+						</div>	
+						<div class="row map" id="mapRow4">
+						</div>	
+						<div class="row map" id="mapRow3">
+						</div>	
+						<div class="row map" id="mapRow2">
+						</div>	
+						<div class="row map" id="mapRow1">
+						</div>	
 					</div>	
-					<div class="row map" id="mapRow3">
-					</div>	
-					<div class="row map" id="mapRow4">
-					</div>	
-					<div class="row map" id="mapRow5">
-					</div>	
-					<div class="row map" id="mapRow6">
-					</div>	
-					<div class="row map" id="mapRow7">
-					</div>	
-					<div class="row map" id="mapRow8">
-					</div>	
-				</div>		
+				</div>				
 				<div class="row mapMenu">
 					<div class="col">	
 						<div id="mapCtrlButtonContainer" class="btn-group d-flex w-100 fixed-bottom" role="group">
@@ -236,7 +244,30 @@
 							<button id="mapRight" type="button" class="mapControl btn btn-primary active w-100">Right</button>
 						</div>	
 					</div>	
-				</div>						
+				</div>	
+				
+				<!--game operation modal-->
+				<!--Modal-->
+				<div class="modal fade" id="mapMenuModal" role="dialog">
+					<div class="modal-dialog">
+
+				<!--Modal content-->
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+							</div>
+							<div class="modal-body">
+								<div class="" id="gameIntroMenu" role="group">
+									<button type="button" class="toTitleButton btn btn-primary active w-100 mb-1">To Title</button>
+									<button type="button" class="returnButton btn btn-primary active w-100">Return to Website</button>
+								</div>	
+							</div>
+							<div class="modal-footer centered-button">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</div>	
+					</div>	
+				</div>
 			</div>			
 			
 			<!--battle main page-->
@@ -508,14 +539,12 @@
 					</div>	
 				</div>
 				
-				
 				<!--game operation modal-->
-					
-				<!-- Modal -->
-				<div class="modal fade" id="menuModal" role="dialog">
+				<!--Modal-->
+				<div class="modal fade" id="battleMenuModal" role="dialog">
 					<div class="modal-dialog">
 
-				<!-- Modal content-->
+				<!--Modal content-->
 						<div class="modal-content">
 							<div class="modal-header">
 								<button type="button" class="close" data-dismiss="modal">&times;</button>
