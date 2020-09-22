@@ -41,7 +41,7 @@
 				<div class="row">
 					<div class="col">
 						<div id="gameTitle">
-							<img src="/img/gameTitleTempImage.jpg" width="150px" height="150px" alt="Game Title Art"/>
+							<img class="mx-auto d-block" src="/img/gameTitleTempImage.jpg" width="150px" height="150px" alt="Game Title Art"/>
 							<h1>My Game</h1>
 						</div>
 					</div>
@@ -207,40 +207,34 @@
 				</div>						
 			</div>
 			
-			<!--world map page-->
+			<!--world map page and navigation-->
 			<div id="mapMain" style="display:none">
-				<div class="row map" id="mapRow1">
-				</div>	
-				<div class="row map" id="mapRow2">
-				</div>	
-				<div class="row map" id="mapRow3">
-				</div>	
-				<div class="row map" id="mapRow4">
-				</div>	
-				<div class="row map" id="mapRow5">
-				</div>	
-				<div class="row map" id="mapRow6">
-				</div>	
-				<div class="row map" id="mapRow7">
-				</div>	
-				<div class="row map" id="mapRow8">
-				</div>					
-				<div class="row map" id="mapRow9">
-				</div>					
+				<div class="col">
+					<div class="row map" id="mapRow1">
+					</div>	
+					<div class="row map" id="mapRow2">
+					</div>	
+					<div class="row map" id="mapRow3">
+					</div>	
+					<div class="row map" id="mapRow4">
+					</div>	
+					<div class="row map" id="mapRow5">
+					</div>	
+					<div class="row map" id="mapRow6">
+					</div>	
+					<div class="row map" id="mapRow7">
+					</div>	
+					<div class="row map" id="mapRow8">
+					</div>	
+				</div>		
 				<div class="row mapMenu">
-					<div class="col">
-						<div id="mapCtrlButtonContainer">
-							<div class="row">
-								<button id="mapUp" type="button" class="btn btn-primary active">Up</button>
-							</div>
-							<div class="row">
-								<button id="mapLeft" type="button" class="btn btn-primary active">Left</button>
-								<button id="mapRight" type="button" class="btn btn-primary active">Right</button>
-							</div>
-							<div class="row">
-								<button id="mapDown" type="button" class="btn btn-primary active">Down</button>
-							</div>
-						</div>
+					<div class="col">	
+						<div id="mapCtrlButtonContainer" class="btn-group d-flex w-100 fixed-bottom" role="group">
+							<button id="mapLeft" type="button" class="mapControl btn btn-primary active w-100">Left</button>	
+							<button id="mapUp" type="button" class="mapControl btn btn-primary active w-100">Up</button>
+							<button id="mapDown" type="button" class="mapControl btn btn-primary active w-100">Down</button>
+							<button id="mapRight" type="button" class="mapControl btn btn-primary active w-100">Right</button>
+						</div>	
 					</div>	
 				</div>						
 			</div>			

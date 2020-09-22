@@ -4,7 +4,7 @@
 //game data
 //8 x 8 tiles, defines points of interest
 var mapObj = [
-	{ "name":"intro" , "defaultTile":"/img/rpgTiles/grass.png", "startPoint":"4,9", "endPoint":"", "chest":"", "fieldBoss":"4,7" } 
+	{ "name":"intro" , "defaultTile":"/img/rpgTiles/grass.png", "startPoint":[4,8], "endPoint":[4,1], "chest":"", "fieldBoss":[4,1] } 
 ];
 
 var weaponObj = [{ "name":"wood sword" , "damage":"1" } ];
@@ -338,7 +338,15 @@ class Actor {
 	getMapPosition() {
 		return this.mapPosition;
 	}	
-
+	
+	setMapXPosition(position) {
+		this.mapPosition[0] = position;
+	}
+	
+	setMapYPosition(position) {
+		this.mapPosition[1] = position;
+	}
+	
 	setMapPosition(position) {
 		this.mapPosition = position;
 	}
@@ -1617,23 +1625,33 @@ function startBattle() {
 	//$("#enemyAttack").text(enemyAttack);		
 }	
 
+
+
 //generates map onto main map div
 function populateMap() {
-	//generates map tiles, applies background tile image
-	for(var i = 0; i < 9; i++) {
-		for(var j = 0; j < 9; j++) {
-			$("#mapRow" + i).append("<div class='mapTile'></div>");
+	//generates map tiles, applies background tile image or design
+	for(var i = 8; i > 0; i--) {
+		for(var j = 1; j < 9; j++) {
+			$("#mapRow" + i).append("<div class='mapTile col text-center' id='" + j + "-" + i + "'><p>g</p></div>");
 		}
 	}
-	$(".mapTile").css("background-image", "url(" + mapObj[0].defaultTile + ")");
+	//$(".mapTile").css("background-image", "url(" + mapObj[0].defaultTile + ")");
 	
-	//set player current position
-	let playerPosition = player.getMapPosition();
-	playerPosition = mapObj[currentMap].startPoint;
-	$("#mapRow" + playerPosition[2] + ".mapTile:nth-child(" + playerPosition[0] + ")".css("background-image", "url('/img/rpgTiles/actor.png')");
-	console.log(playerPosition[2]); //4,9
+	//set player, endpoint and enemy current position
+	let playerMapPosition = player.getMapPosition();
+	playerMapPosition = mapObj[currentMap].startPoint;
+	player.setMapPosition(playerMapPosition);
+	let enemyMapPosition = mapObj[currentMap].fieldBoss;
+	let exitMapPosition = mapObj[currentMap].endPoint;
+		
+	//change p tag in correct tiles to show player, enemy and endpoint on ui	
+	$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>C</p>").css("border", "2px solid green");
+	$("#" + enemyMapPosition[0] + "-" + enemyMapPosition[1]).empty().append("<p>E</p>").css("border", "1px solid red");
+	$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "2px solid red");
 	$("#mapMain").show();
 }	
+
+
 
 /*
 reads through story text to maximum number of defined pages and then 
@@ -2117,4 +2135,47 @@ $(document).ready(function(){
 	$("#nextChapterButton").click(function() {
 		
 	});	
+	
+	//map control buttons
+	$(".mapControl").click(function() {
+		console.log(this.id);
+		let playerMapPosition = player.getMapPosition();
+		switch (this.id) {
+			case "mapLeft": 
+				//let playerMapPosition = player.getMapPosition();
+				if(playerMapPosition[0] > 1) {
+					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>g</p>").css("border", "1px solid black");
+					player.setMapXPosition(playerMapPosition[0] - 1);
+					playerMapPosition = player.getMapPosition();
+					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>C</p>").css("border", "2px solid green");
+				}
+				break;
+			case "mapUp": 
+				if(playerMapPosition[1] > 1) {
+					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>g</p>").css("border", "1px solid black");
+					player.setMapYPosition(playerMapPosition[1] - 1);
+					playerMapPosition = player.getMapPosition();
+					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>C</p>").css("border", "2px solid green");
+				}			
+				break;
+			case "mapDown":
+				if(playerMapPosition[1] < 8) {
+					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>g</p>").css("border", "1px solid black");
+					player.setMapYPosition(playerMapPosition[1] - 1);
+					playerMapPosition = player.getMapPosition();
+					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>C</p>").css("border", "2px solid green");
+				}			
+				break;
+			case "mapRight":
+				if(playerMapPosition[0] < 8) {
+					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>g</p>").css("border", "1px solid black");
+					player.setMapXPosition(playerMapPosition[0] + 1);
+					playerMapPosition = player.getMapPosition();
+					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>C</p>").css("border", "2px solid green");
+				}			
+				break;	
+			default:
+				break;
+		}	
+	});
 });

@@ -149,5 +149,7 @@
 
 div .mapTile {
 	min-height: 5vh;
-	min-width: 5vh;	
+	min-width: 5vh;
+	border: 1px solid black;	
+	color: green;
 }	
