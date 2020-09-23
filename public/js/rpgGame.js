@@ -1378,7 +1378,7 @@ function gameInit() {
 	
 	//story panel reset
 	$('#storyProgress').prop('disabled', false);
-	$('#saveGame').prop('disabled', false).text("Save");
+	$('.saveGame').prop('disabled', false).text("Save");
 	$('#storyEnd').css('display', 'none').text("");
 	
 	
@@ -1655,6 +1655,7 @@ function populateMap() {
 			.css("background-color", "red").css("color", "black");
 		$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
 			.css("background-color", "red").css("color", "black");
+		mapLoaded = true;
 		$("#mapMain").show();	
 	}
 	else {
@@ -1668,7 +1669,7 @@ displays next option
 */
 function progressStory() {
 	//enable save
-	$("#saveGame").prop('disabled', false).text("Save");
+	$(".saveGame").prop('disabled', false).text("Save");
 	
 	//displays next page if available
 	if(currentPage < parseInt(storyObj[currentChapter].pageLength - 1)) {
@@ -2091,7 +2092,7 @@ $(document).ready(function(){
 		window.localStorage.setItem('state', currentState);
 		window.localStorage.setItem('chapter', currentChapter);
 		window.localStorage.setItem('page', currentPage);		
-		$("#saveGame").text("Saved").prop('disabled', true);
+		$(".saveGame").text("Saved").prop('disabled', true);
 	});	
 	
 	//from modal go to title
@@ -2170,6 +2171,9 @@ $(document).ready(function(){
 	
 	//map control buttons
 	$(".mapControl").click(function() {
+		//allow save
+		$(".saveGame").text("Save").prop('disabled', false);
+		
 		let exitMapPosition = mapObj[currentMap].endPoint;
 		//populates enemy and end point
 		let enemyMapPosition = enemy.getMapPosition();
@@ -2190,13 +2194,6 @@ $(document).ready(function(){
 						.css("background-color", "green").css("color", "white");
 				}
 				let exitMapPosition = mapObj[currentMap].endPoint;
-				//populates enemy and end point
-				if(!JSON.stringify(player.getMapPosition()) === JSON.stringify(enemy.getMapPosition())) {				
-					$("#" + enemyMapPosition[0] + "-" + enemyMapPosition[1]).empty().append("<p>e</p>")
-						.css("background-color", "red").css("color", "black");
-					$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
-						.css("background-color", "red").css("color", "black");
-				}		
 				break;
 			case "mapUp": 
 				if(playerMapPosition[1] < 8) {
@@ -2206,13 +2203,6 @@ $(document).ready(function(){
 					playerMapPosition = player.getMapPosition();
 					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
 						.css("background-color", "green").css("color", "white");
-				}
-				//populates enemy and end point
-				if(!JSON.stringify(player.getMapPosition()) === JSON.stringify(enemy.getMapPosition())) {				
-					$("#" + enemyMapPosition[0] + "-" + enemyMapPosition[1]).empty().append("<p>e</p>")
-						.css("background-color", "red").css("color", "black");
-					$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
-						.css("background-color", "red").css("color", "black");
 				}
 				break;
 			case "mapDown":
@@ -2224,14 +2214,6 @@ $(document).ready(function(){
 					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
 						.css("background-color", "green").css("color", "white");
 				}
-				//populates enemy and end point
-				if(!JSON.stringify(player.getMapPosition()) === JSON.stringify(enemy.getMapPosition())) {	
-					console.log("hi");				
-					$("#" + enemyMapPosition[0] + "-" + enemyMapPosition[1]).empty().append("<p>e</p>")
-						.css("background-color", "red").css("color", "black");
-					$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
-						.css("background-color", "red").css("color", "black");
-				}
 				break;
 			case "mapRight":
 				if(playerMapPosition[0] < 8) {
@@ -2242,16 +2224,18 @@ $(document).ready(function(){
 					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
 						.css("background-color", "green").css("color", "white");
 				}
-				//populates enemy and end point
-				if(!JSON.stringify(player.getMapPosition()) === JSON.stringify(enemy.getMapPosition())) {				
-					$("#" + enemyMapPosition[0] + "-" + enemyMapPosition[1]).empty().append("<p>e</p>")
-						.css("background-color", "red").css("color", "black");
-					$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
-						.css("background-color", "red").css("color", "black");
-				}
 				break;	
 			default:
 				break;
+		}
+		
+		//populates enemy and end point
+		if(!JSON.stringify(player.getMapPosition()) === JSON.stringify(enemy.getMapPosition())) {	
+			console.log("hi");				
+			$("#" + enemyMapPosition[0] + "-" + enemyMapPosition[1]).empty().append("<p>e</p>")
+				.css("background-color", "red").css("color", "black");
+			$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
+				.css("background-color", "red").css("color", "black");
 		}
 		
 		if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemy.getMapPosition())) {
