@@ -7,9 +7,17 @@ var mapObj = [
 	{ "name":"intro" , "defaultTile":"/img/rpgTiles/grass.png", "startPoint":[4,1], "endPoint":[4,8], "chest":"", "fieldBoss":[4,8] } 
 ];
 
-var weaponObj = [{ "name":"wood sword" , "damage":"1" } ];
+var weaponObj = [
+	{ "name":"wood sword" , "damage":"1" },
+	{ "name":"bronze sword" , "damage":"5" },
+	{ "name":"iron sword" , "damage":"7" }
+];
 
-var armourObj = [{ "name":"wood armour" , "reduction":"1" } ];
+var armourObj = [
+	{ "name":"cloth armour" , "reduction":"0" } 
+	{ "name":"leather armour" , "reduction":"2" } 
+	{ "name":"brigadine armour" , "reduction":"3" } 
+];
 	
 //ST, EN, LI is strength(atk), endurance(sp), life(hp)	
 //for android only
@@ -87,7 +95,11 @@ var meleeSkillObj = [
 ];
 
 var battleItemObj = [
-	{ "name":"Regen Injector" , "effect":"Regen", "effectStackLimit":"1", "effectPercent":"5", "cost":"10", "duration":"10"}
+	{ "name":"First Aid Injector" , "effect":"Regen", "effectStackLimit":"1", "effectPercent":"5", "cost":"10", "duration":"10"}
+];
+
+var globalItemObj = [
+	{ "name":"Small Medical Treatment Kit" , "effect":"Regen", "effectStackLimit":"1", "effectPercent":"30", "cost":"10", "duration":"1"}
 ];
 
 //random helper function
@@ -384,7 +396,7 @@ class Actor {
 				if((this.statusBuffArray)[i].getDuration() == 0) {
 					this.removeFromStatusBuffArray((this.statusBuffArray)[i].getName());
 				}
-			}	
+			}			
 		}	
 	}	
 
@@ -1626,28 +1638,28 @@ function startBattle() {
 	//$("#enemyAttack").text(enemyAttack);		
 }	
 
-
-
-//generates map onto main map div
+//generates map onto main map div if not loaded already
 function populateMap() {
-	if(!mapLoaded) {
-		//generates map tiles, applies background tile image or design
-		for(var i = 1; i < 9; i++) {
-			for(var j = 1; j < 9; j++) {
-				$("#mapRow" + i).append("<div class='mapTile col text-center' id='" + j + "-" + i + "'><p>g</p></div>")
-					.css("background-color", "white").css("color", "green");
-			}
+	//generates map tiles, applies background tile image or design
+	for(var i = 1; i < 9; i++) {
+		for(var j = 1; j < 9; j++) {
+			$("#mapRow" + i).append("<div class='mapTile col text-center' id='" + j + "-" + i + "'><p>g</p></div>")
+				.css("background-color", "white").css("color", "green");
 		}
-		//$(".mapTile").css("background-image", "url(" + mapObj[0].defaultTile + ")");
-		
-		//set player, endpoint and enemy current position
-		//let playerMapPosition = player.getMapPosition();
-		let playerMapPosition = mapObj[currentMap].startPoint;
+	}
+	//can use images here
+	//$(".mapTile").css("background-image", "url(" + mapObj[0].defaultTile + ")");
+	
+	//set player, endpoint and enemy current position
+	//let playerMapPosition = player.getMapPosition();
+	let playerMapPosition = mapObj[currentMap].startPoint;
+	let enemyMapPosition = mapObj[currentMap].fieldBoss;
+	let exitMapPosition = mapObj[currentMap].endPoint;
+	
+	//only sets default actor positions if not loaded already in their states
+	if(!mapLoaded) {
 		player.setMapPosition(playerMapPosition);
-		let enemyMapPosition = mapObj[currentMap].fieldBoss;
-		enemy.setMapPosition(enemyMapPosition);
-		let exitMapPosition = mapObj[currentMap].endPoint;
-			
+		enemy.setMapPosition(enemyMapPosition);		
 		//change p tag in correct tiles to show player, enemy and endpoint on ui	
 		$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
 			.css("background-color", "green").css("color", "white");
@@ -1655,12 +1667,9 @@ function populateMap() {
 			.css("background-color", "red").css("color", "black");
 		$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
 			.css("background-color", "red").css("color", "black");
-		mapLoaded = true;
-		$("#mapMain").show();	
-	}
-	else {
-		$("#mapMain").show();
-	}
+	}	
+	mapLoaded = true;
+	$("#mapMain").show();
 }
 	
 /*
@@ -1707,17 +1716,82 @@ function progressStory() {
 			$("#storyProgress").prop('disabled', true);
 		}
 		
-		//if map show map div
+		//if map state, allows go to map or loads map from save
 		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "map") {
-			$("#storyEnd").text("To Map").show();
-			$("#storyEnd").click(function() {
+			//shows go to map if it is not loaded
+			if(!mapLoaded) {
+				$("#storyEnd").text("To Map").show();
+				$("#storyEnd").click(function() {
+					$("#storyMain").hide();
+					populateMap();
+				});					
+				//disables next chapter button if next state is a map
+				$("#storyProgress").prop('disabled', true);
+			}
+			else {
 				$("#storyMain").hide();
-				populateMap();
-			});	
-			//disables next chapter button if next state is a fight
-			$("#storyProgress").prop('disabled', true);
+				if($("#mapRow1").children().length > 0) {
+					updateMap(null, null);
+					updateMap("player", null);
+					$("#mapMain").show();
+				}	
+				else {
+					populateMap();
+					updateMap(null, null);
+					updateMap("player", null);
+					$("#mapMain").show();
+				}	
+			}		
 		}			
 	}		
+}	
+
+//helper function for switch calling map update
+function updateMap(actor, direction) {
+	let exitMapPosition = mapObj[currentMap].endPoint;
+	let enemyMapPosition = enemy.getMapPosition();
+	let playerMapPosition = player.getMapPosition();
+	
+	if(actor === "player") {
+		if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemy.getMapPosition())) {	
+			//populates enemy position instead of map default if on same spot		
+			$("#" + enemyMapPosition[0] + "-" + enemyMapPosition[1]).empty().append("<p>e</p>")
+				.css("background-color", "red").css("color", "black");
+			$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
+				.css("background-color", "red").css("color", "black");				
+		} 
+		else {
+		$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>g</p>")
+			.css("border", "1px solid black").css("background-color", "white").css("color", "green");
+		}	
+
+		if(direction === "mapLeft")
+			player.setMapXPosition(playerMapPosition[0] - 1);
+		if(direction === "mapRight")
+			player.setMapXPosition(playerMapPosition[0] + 1);
+		if(direction === "mapUp")
+			player.setMapYPosition(playerMapPosition[1] + 1);
+		if(direction === "mapDown")
+			player.setMapYPosition(playerMapPosition[1] - 1);
+		
+		//get new location of player and update
+		playerMapPosition = player.getMapPosition();
+		//update map status tag based on what the player is going to be walking on
+		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "g")
+			$("#mapStatus").text("You are walking on a grassy field.");
+		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "e")
+			$("#mapStatus").text("There is someone here...");	
+		//updates new spot to player marker
+		$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
+			.css("background-color", "green").css("color", "white");
+	}
+	else {
+		//populates enemy position and exit point		
+		$("#" + enemyMapPosition[0] + "-" + enemyMapPosition[1]).empty().append("<p>e</p>")
+			.css("background-color", "red").css("color", "black");
+		$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
+			.css("background-color", "red").css("color", "black");		
+	}
 }	
 
 //game starting scripts	
@@ -2091,7 +2165,8 @@ $(document).ready(function(){
 		window.localStorage.setItem('enemy', JSON.stringify(enemy));
 		window.localStorage.setItem('state', currentState);
 		window.localStorage.setItem('chapter', currentChapter);
-		window.localStorage.setItem('page', currentPage);		
+		window.localStorage.setItem('page', currentPage);
+		window.localStorage.setItem('mapLoaded', mapLoaded);			
 		$(".saveGame").text("Saved").prop('disabled', true);
 	});	
 	
@@ -2134,6 +2209,7 @@ $(document).ready(function(){
 			
 		player.setMeleeSkills(playerData.meleeSkillArray);
 		player.setBattleItemArray(playerData.battleItemArray);
+		player.setMapPosition(playerData.mapPosition);	
 
 		//enemy
 		enemyData = JSON.parse(window.localStorage.getItem('enemy'));
@@ -2153,12 +2229,13 @@ $(document).ready(function(){
 			
 		enemy.setMeleeSkills(enemyData.meleeSkillArray);
 		enemy.setBattleItemArray(enemyData.battleItemArray);
+		enemy.setMapPosition(enemyData.mapPosition);		
 				
 		currentState = window.localStorage.getItem('state');
 		currentChapter = window.localStorage.getItem('chapter');
 		currentPage = window.localStorage.getItem('page');
-			
-		uiReset();	
+		mapLoaded = window.localStorage.getItem('mapLoaded');
+		uiReset();
 		$("#gameIntroMenu").hide();
 		startStory();	
 		progressStory();
@@ -2169,77 +2246,52 @@ $(document).ready(function(){
 		
 	});	
 	
-	//map control buttons
-	$(".mapControl").click(function() {
-		//allow save
+	//map directional control buttons
+	$(".mapDirControl").click(function() {
+		//allow save on movement
 		$(".saveGame").text("Save").prop('disabled', false);
 		
-		let exitMapPosition = mapObj[currentMap].endPoint;
-		//populates enemy and end point
-		let enemyMapPosition = enemy.getMapPosition();
-		$("#" + enemyMapPosition[0] + "-" + enemyMapPosition[1]).empty().append("<p>e</p>")
-			.css("background-color", "red").css("color", "black");
-		$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
-			.css("background-color", "red").css("color", "black");			
 		//populates player new position	
 		let playerMapPosition = player.getMapPosition();
 		switch (this.id) {
 			case "mapLeft": 
 				if(playerMapPosition[0] > 1) {
-					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>g</p>")
-						.css("border", "1px solid black").css("background-color", "white").css("color", "green");
-					player.setMapXPosition(playerMapPosition[0] - 1);
-					playerMapPosition = player.getMapPosition();
-					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
-						.css("background-color", "green").css("color", "white");
+					updateMap("player", this.id);
 				}
-				let exitMapPosition = mapObj[currentMap].endPoint;
 				break;
 			case "mapUp": 
 				if(playerMapPosition[1] < 8) {
-					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>g</p>")
-						.css("border", "1px solid black").css("background-color", "white").css("color", "green");
-					player.setMapYPosition(playerMapPosition[1] + 1);
-					playerMapPosition = player.getMapPosition();
-					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
-						.css("background-color", "green").css("color", "white");
+					updateMap("player", this.id);
 				}
 				break;
 			case "mapDown":
 				if(playerMapPosition[1] > 1) {
-					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>g</p>")
-						.css("border", "1px solid black").css("background-color", "white").css("color", "green");
-					player.setMapYPosition(playerMapPosition[1] - 1);
-					playerMapPosition = player.getMapPosition();
-					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
-						.css("background-color", "green").css("color", "white");
+					updateMap("player", this.id);
 				}
 				break;
 			case "mapRight":
 				if(playerMapPosition[0] < 8) {
-					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>g</p>")
-						.css("border", "1px solid black").css("background-color", "white").css("color", "green");
-					player.setMapXPosition(playerMapPosition[0] + 1);
-					playerMapPosition = player.getMapPosition();
-					$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
-						.css("background-color", "green").css("color", "white");
+					updateMap("player", this.id);
 				}
 				break;	
 			default:
 				break;
 		}
-		
-		//populates enemy and end point
-		if(!JSON.stringify(player.getMapPosition()) === JSON.stringify(enemy.getMapPosition())) {	
-			console.log("hi");				
-			$("#" + enemyMapPosition[0] + "-" + enemyMapPosition[1]).empty().append("<p>e</p>")
-				.css("background-color", "red").css("color", "black");
-			$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
-				.css("background-color", "red").css("color", "black");
-		}
-		
-		if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemy.getMapPosition())) {
-			console.log("hi");
-		}	
 	});
+	
+	//map fight button
+	$("#mapFight").click(function() {
+	});
+
+	//map examine button
+	$("#mapExamine").click(function() {
+	});
+	
+	//map item button
+	$("#mapItem").click(function() {
+	});
+	
+	//map equip button
+	$("#mapItem").click(function() {
+	});	
 });

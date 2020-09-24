@@ -211,8 +211,8 @@
 			<div id="mapMain" style="display:none" class="container-fluid">
 				<div class="row">
 					<div class="btn-group d-flex w-100" role="group">
-						<button type="button" class="saveGame btn btn-dark active w-100">Save</button>
-						<button type="button" class="operationMenu btn btn-dark active w-100" data-toggle="modal" data-target="#mapMenuModal">Menu</button>
+						<button type="button" class="saveGame btn btn-primary active w-100">Save</button>
+						<button type="button" class="operationMenu btn btn-primary active w-100" data-toggle="modal" data-target="#mapMenuModal">Menu</button>
 					</div>	
 				</div>
 				<div class="row">
@@ -236,12 +236,23 @@
 					</div>	
 				</div>				
 				<div class="row mapMenu">
-					<div class="col">	
+					<div class="col">
+						<div class="btn-group d-flex w-100 mt-1" role="group">
+							<button id="mapFight" type="button" class="mapControl btn btn-primary active w-100 mr-1">Fight</button>
+							<button id="mapExamine" type="button" class="mapControl btn btn-primary active w-100 ml-1 mr-1">Examine</button>
+							<button id="mapItem" type="button" class="mapControl btn btn-primary active w-100 ml-1 mr-1">Item</button>
+							<button id="mapEquip" type="button" class="mapControl btn btn-primary active w-100 ml-1">Equip</button>
+						</div>	
+						
+						<div class="d-flex w-100 mt-1">
+							<p id="mapStatus"></p>
+						</div>
+					
 						<div id="mapCtrlButtonContainer" class="btn-group d-flex w-100 fixed-bottom" role="group">
-							<button id="mapLeft" type="button" class="mapControl btn btn-primary active w-100">Left</button>	
-							<button id="mapUp" type="button" class="mapControl btn btn-primary active w-100">Up</button>
-							<button id="mapDown" type="button" class="mapControl btn btn-primary active w-100">Down</button>
-							<button id="mapRight" type="button" class="mapControl btn btn-primary active w-100">Right</button>
+							<button id="mapLeft" type="button" class="mapDirControl btn btn-primary active w-100">Left</button>	
+							<button id="mapUp" type="button" class="mapDirControl btn btn-primary active w-100">Up</button>
+							<button id="mapDown" type="button" class="mapDirControl btn btn-primary active w-100">Down</button>
+							<button id="mapRight" type="button" class="mapDirControl btn btn-primary active w-100">Right</button>
 						</div>	
 					</div>	
 				</div>	
