@@ -14,8 +14,8 @@ var weaponObj = [
 ];
 
 var armourObj = [
-	{ "name":"cloth armour" , "reduction":"0" } 
-	{ "name":"leather armour" , "reduction":"2" } 
+	{ "name":"cloth armour" , "reduction":"0" }, 
+	{ "name":"leather armour" , "reduction":"2" }, 
 	{ "name":"brigadine armour" , "reduction":"3" } 
 ];
 	
@@ -1724,6 +1724,8 @@ function progressStory() {
 				$("#storyEnd").click(function() {
 					$("#storyMain").hide();
 					populateMap();
+					updateMap(null, null);
+					updateMap("player", null);
 				});					
 				//disables next chapter button if next state is a map
 				$("#storyProgress").prop('disabled', true);
