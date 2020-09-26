@@ -238,7 +238,7 @@
 				<div class="row mapMenu">
 					<div class="col">
 						<div class="btn-group d-flex w-100 mt-1" role="group">
-							<button id="mapFight" type="button" class="mapControl btn btn-primary active w-100 mr-1">Fight</button>
+							<button disabled id="mapFight" type="button" class="mapControl btn btn-primary active w-100 mr-1">Fight</button>
 							<button id="mapExamine" type="button" class="mapControl btn btn-primary active w-100 ml-1 mr-1">Examine</button>
 							<button id="mapItem" type="button" class="mapControl btn btn-primary active w-100 ml-1 mr-1">Item</button>
 							<button id="mapEquip" type="button" class="mapControl btn btn-primary active w-100 ml-1">Equip</button>
@@ -272,6 +272,60 @@
 									<button type="button" class="toTitleButton btn btn-primary active w-100 mb-1">To Title</button>
 									<button type="button" class="returnButton btn btn-primary active w-100">Return to Website</button>
 								</div>	
+							</div>
+							<div class="modal-footer centered-button">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</div>	
+					</div>	
+				</div>
+				
+				<!--item modal-->
+					
+				<!-- Modal -->
+				<div class="modal fade" id="mapItemModal" role="dialog">
+					<div class="modal-dialog">
+
+				<!-- Modal content-->
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+							</div>
+							<div class="modal-body">
+								<div class="itemButtonArray btn-group-vertical centered-button"></div>
+							</div>
+							<div class="modal-footer centered-button">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</div>	
+					</div>	
+				</div>
+				
+				<!--examine modal-->
+					
+				<!-- Modal -->
+				<div class="modal fade" id="mapExamineModal" role="dialog">
+					<div class="modal-dialog">
+
+				<!-- Modal content-->
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+							</div>
+							<div class="modal-body">
+								<div id="examineSelfData">
+									<p class="playerName" data-toggle="tooltip" title=""></p>
+									<p class="playerHealth" data-toggle="tooltip" title=""></p>
+									<p class="playerArmourName" data-toggle="tooltip" title=""></p>
+									<p class="playerArmour" data-toggle="tooltip" title=""></p>
+									<p class="playerAttackWeapon" data-toggle="tooltip" title=""></p>
+									<p class="playerAttack" data-toggle="tooltip" title=""></p>	
+									<p class="playerAgility" data-toggle="tooltip" title=""></p>	
+								</div>
+								<div id="examineOtherData">
+									<p id="mapTerrain" data-toggle="tooltip" title=""></p>
+									<p id="mapActor" data-toggle="tooltip" title=""></p>
+								</div>
 							</div>
 							<div class="modal-footer centered-button">
 								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -598,7 +652,7 @@
 				<!--battle item modal-->
 					
 				<!-- Modal -->
-				<div class="modal fade" id="battleItemModal" role="dialog">
+				<div class="modal fade" id="itemModal" role="dialog">
 					<div class="modal-dialog">
 
 				<!-- Modal content-->
@@ -607,7 +661,7 @@
 								<button type="button" class="close" data-dismiss="modal">&times;</button>
 							</div>
 							<div class="modal-body">
-								<div id="itemButtonArray" class="btn-group-vertical centered-button">
+								<div class="itemButtonArray btn-group-vertical centered-button">
 								</div>
 							</div>
 							<div class="modal-footer centered-button">
@@ -626,13 +680,13 @@
 				
 				<div id="playerPanel" class="container tab-pane fade">
 					<img src="data:," alt="Player Image" class="playerImage" height="80px" width="80px">
-					<p id="playerName" data-toggle="tooltip" title=""></p>
-					<p id="playerHealthMaximum" data-toggle="tooltip" title=""></p>
-					<p id="playerArmourName" data-toggle="tooltip" title=""></p>
-					<p id="playerArmour" data-toggle="tooltip" title=""></p>
-					<p id="playerAttackWeapon" data-toggle="tooltip" title=""></p>
-					<p id="playerAttack" data-toggle="tooltip" title=""></p>	
-					<p id="playerAgility" data-toggle="tooltip" title=""></p>
+					<p class="playerName" data-toggle="tooltip" title=""></p>
+					<p class="playerHealth" data-toggle="tooltip" title=""></p>
+					<p class="playerArmourName" data-toggle="tooltip" title=""></p>
+					<p class="playerArmour" data-toggle="tooltip" title=""></p>
+					<p class="playerAttackWeapon" data-toggle="tooltip" title=""></p>
+					<p class="playerAttack" data-toggle="tooltip" title=""></p>	
+					<p class="playerAgility" data-toggle="tooltip" title=""></p>
 				</div>
 				
 				<!--
