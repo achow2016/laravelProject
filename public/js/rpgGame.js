@@ -4,7 +4,7 @@
 //game data
 //8 x 8 tiles, defines points of interest
 var mapObj = [
-	{ "name":"intro" , "defaultTile":"/img/rpgTiles/grass.png", "startPoint":[4,1], "endPoint":[4,8], "chest":"", "fieldBoss":[[4,8]] } 
+	{ "name":"intro" , "defaultTile":"/img/rpgTiles/grass.png", "startPoint":[4,1], "endPoint":[4,8], "chest":"" } 
 ];
 
 var weaponObj = [
@@ -53,9 +53,13 @@ var storyObj = [
 		"title":"opening chapter", 
 		"storyImage":"/img/chapterImages/cityNight.jpg", 
 		"pageLength":"6",
+		"enemyCount":"2",
 		"enemy": [
+			"guard",
 			"guard"
 		],
+		"enemyEquipmentTier" :"0",
+		"enemyCoords":[[4,8],[4,4]],
 		"pages" : [
 			"Welcome to rpgGame!",
 			"You are a slave working at an arena where people pay to watch slaves fight each other and wild animals for entertainment.",
@@ -772,6 +776,7 @@ class Actor {
 }
 
 /*
+global vars
 init game mechanic values
 story, player, enemy
 */
@@ -786,6 +791,7 @@ var enemyCount = 0;
 var firstRun = true;
 var gameEnd = false;	
 var mapLoaded = false;
+var currentEnemy = null; //stores at fight time to load proper enemy from array
 
 //game settings
 var currentConfigAlloc = 0;
@@ -796,8 +802,7 @@ var raceSelection;
 
 //game variables
 var player;
-var enemyType;
-var enemy;
+var enemies = [];
 
 var playerPosition = 0;
 var enemyPosition = 0;
@@ -1396,22 +1401,77 @@ function refreshSkills() {
 	}
 }	
 
-//game init function
-//sets initial game mechanic values
-//called from start and on reset
-function gameInit() {
+//enemy initialization
+function enemyInit() {
+	let enemyCount = parseInt(storyObj[currentChapter].enemyCount);
+	for(var i = 0; i < enemyCount; i++) {
+		//finds matching enemy in enemyObj
+		let selectedEnemy = enemyObj.findIndex(function(item, j){
+			return item.name === "guard"
+		});
+		
+		//set enemy equipment tier
+		let enemyTier = parseInt(storyObj[currentChapter].enemyEquipmentTier);
+		//init and equip enemy 
+		let enemy = new Actor(
+			enemyObj[selectedEnemy].name,
+			enemyObj[selectedEnemy].race,
+			enemyObj[selectedEnemy].actorClass,
+			enemyObj[selectedEnemy].health,
+			enemyObj[selectedEnemy].attack,
+			enemyObj[selectedEnemy].stamina,
+			enemyObj[selectedEnemy].staminaRegen,
+			enemyObj[selectedEnemy].baseAttackCost,
+			enemyObj[selectedEnemy].agility		
+		);
+		
+		enemy.equipWeapon(
+			weaponObj[enemyTier].name, 
+			weaponObj[enemyTier].damage
+		);
 
-	//story reset
-	currentPage = 0;
-	currentChapter = 0;
-	currentState = 0;
+		enemy.equipArmour(
+			armourObj[enemyTier].name, 
+			armourObj[enemyTier].reduction
+		);
+
+		//assign enemy list of skills
+		//first pulls skills from data as array
+		var enemySkillList = enemyObj[selectedEnemy].skills;
+		enemySkillList = enemySkillList.split(",");
+
+		for(var k = 0; k < meleeSkillObj.length; k++) {
+			if(enemySkillList.includes(meleeSkillObj[k].name)) {
+				enemy.addMeleeSkill(meleeSkillObj[k].name, meleeSkillObj[k].effect,
+					meleeSkillObj[k].percent, meleeSkillObj[k].penalty,
+					meleeSkillObj[k].staminaCost);
+			}	
+		}
+		
+		//randomize personality
+		let choice = getRandomInteger(0, personalityObj.length - 1);
+		enemy.setPersonality(personalityObj[choice]);
+		
+		
+		//randomize attack and health values
+		//player.randomizeHealth();
+		//player.randomizeAttack();
+		enemy.randomizeHealth();
+		enemy.randomizeAttack();
+		
+		//resets stances at beginning and grids
+		enemy.setStance("111111111");
 	
-	//story panel reset
-	$('#storyProgress').prop('disabled', false);
-	$('.saveGame').prop('disabled', false).text("Save");
-	$('#storyEnd').css('display', 'none').text("");
-	
-	
+		//sets enemy personality at beginning
+		let enemyPersonalityChoice = getRandomInteger(0, (personalityObj.length - 1));
+		enemy.setPersonality(personalityObj[enemyPersonalityChoice]);
+
+		enemies.push(enemy);
+	}
+}	
+
+//player initialization
+function playerInit() {
 	let playerName = $("#name").val();
 	let className = $("#gameClass").val();
 	
@@ -1431,12 +1491,10 @@ function gameInit() {
 			);			
 		}	
 	}	
-	
 	player.equipWeapon(
 		weaponObj[0].name, 
 		weaponObj[0].damage
 	);
-
 	player.equipArmour(
 		armourObj[0].name, 
 		armourObj[0].reduction
@@ -1454,66 +1512,34 @@ function gameInit() {
 			meleeSkillObj[i].staminaCost);
 	}
 	
-	//init and equip enemy 
-	enemy = new Actor(
-		enemyObj[0].name,
-		enemyObj[0].race,
-		enemyObj[0].actorClass,
-		enemyObj[0].health,
-		enemyObj[0].attack,
-		enemyObj[0].stamina,
-		enemyObj[0].staminaRegen,
-		enemyObj[0].baseAttackCost,
-		enemyObj[0].agility		
-	);
-	
-	enemy.equipWeapon(
-		weaponObj[0].name, 
-		weaponObj[0].damage
-	);
-
-	enemy.equipArmour(
-		armourObj[0].name, 
-		armourObj[0].reduction
-	);
-	
-		
-	//assign enemy list of skills
-	//first pulls skills from data as array
-	var enemySkillList = enemyObj[0].skills;
-	enemySkillList = enemySkillList.split(",");
-
-	for(var i = 0; i < meleeSkillObj.length; i++) {
-		if(enemySkillList.includes(meleeSkillObj[i].name)) {
-			enemy.addMeleeSkill(meleeSkillObj[i].name, meleeSkillObj[i].effect,
-				meleeSkillObj[i].percent, meleeSkillObj[i].penalty,
-				meleeSkillObj[i].staminaCost);
-		}	
-	}
-	
-	//randomize personality
-	let choice = getRandomInteger(0, personalityObj.length - 1);
-	enemy.setPersonality(personalityObj[choice]);
-	
-	
-	//randomize attack and health values
-	//player.randomizeHealth();
-	//player.randomizeAttack();
-	enemy.randomizeHealth();
-	enemy.randomizeAttack();
-
-	
 	//resets stances at beginning and grids
 	player.setStance("111111111");
-	enemy.setStance("111111111");
+}	
+
+//game init function
+//sets initial game mechanic values
+//inits player here
+//called from start and on reset
+function gameInit() {
+
+	//story reset
+	currentPage = 0;
+	currentChapter = 0;
+	currentState = 0;
+	
+	//story panel reset
+	$('#storyProgress').prop('disabled', false);
+	$('.saveGame').prop('disabled', false).text("Save");
+	$('#storyEnd').css('display', 'none').text("");
+	
+	//initialize player actor
+	playerInit();
+	
+	//reset body grids for fight
 	for(let i = 0; i < 10; i++) {
 		$(".p" + i).css({"border": "1px solid black"});
 		$(".e" + i).css({"border": "1px solid black"});
 	}
-
-	//sets enemy personality at beginning
-	let enemyPersonalityChoice = getRandomInteger(0, (personalityObj.length - 1));
-	enemy.setPersonality(personalityObj[enemyPersonalityChoice]);
 	
 	//at first run, populates skill and item list in battle
 	//add buttons for each skill and item in possession
@@ -1548,7 +1574,6 @@ function gameInit() {
 	$("#playerConditionTriangle").css('border-top', '20px solid blue');
 	$("#playerHealthBar").css('width', 100 + "%");
 	$("#playerStaminaBar").css('width', 100 + "%");
-	
 	
 	//reset health bars back to default
 	$("#playerHealthBar").removeClass();
@@ -1626,10 +1651,17 @@ function uiReset() {
 
 //populates story page after creating character
 //pulls image and first page in pages array
+//initializes all enemies present in story chapter
 function startStory() {
 	$("#storyMain").show();
 	$("#activeStoryBackground").css("background-image", "url(" + storyObj[0].storyImage + ")");
 	$("#storyText").text(storyObj[currentChapter].pages[currentPage]);
+	if(enemies.length == 0)
+		enemyInit();
+	if(mapLoaded) {
+		$("#toTitleButton").prop("disabled", "false");
+		progressStory();	
+	}	
 }
 
 //called at map and in battle to populate player status fields
@@ -1674,21 +1706,29 @@ function populateMap() {
 	//set player, endpoint and enemy current position
 	//let playerMapPosition = player.getMapPosition();
 	let playerMapPosition = mapObj[currentMap].startPoint;
-	let enemyMapPosition = mapObj[currentMap].fieldBoss;
+	let enemyCount = parseInt(storyObj[currentChapter].enemyCount);
+	let enemyMapPosition = storyObj[currentMap].enemyCoords;
 	let exitMapPosition = mapObj[currentMap].endPoint;
 	
 	//only sets default actor positions if not loaded already in their states
 	if(!mapLoaded) {
 		player.setMapPosition(playerMapPosition);
-		enemy.setMapPosition(enemyMapPosition);		
+		
+		//enemy positions added to enemy objs from story obj listing
+		for(var k = 0; k < enemyCount; k++) {
+			enemies[k].setMapPosition(enemyMapPosition[k]);
+		}		
 		//change p tag in correct tiles to show player, enemy and endpoint on ui	
 		$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
 			.css("background-color", "green").css("color", "white");
 			
+		//populates map with enemies only if their health is above zero	
 		for(var i = 0; i < enemyMapPosition.length; i++) {
-			let temp = enemyMapPosition[i];
-			$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">e</p>")
-				.css("background-color", "red").css("color", "black");
+			if(enemies[i].currentHealth > 0) {
+				let temp = enemyMapPosition[i];
+				$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">e</p>")
+					.css("background-color", "red").css("color", "black");
+			}
 		}	
 		$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
 			.css("background-color", "red").css("color", "black");
@@ -1781,7 +1821,7 @@ function progressStory() {
 function updateMap(actor, direction) {
 	let exitMapPosition = mapObj[currentMap].endPoint;
 	//let enemyMapPosition = enemy.getMapPosition();
-	let enemyMapPosition = mapObj[currentMap].fieldBoss;
+	let enemyMapPosition = storyObj[currentMap].enemyCoords;
 	let playerMapPosition = player.getMapPosition();
 	
 	if(actor === "player") {
@@ -1789,7 +1829,7 @@ function updateMap(actor, direction) {
 		for(var i = 0; i < enemyMapPosition.length; i++) {
 			if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemyMapPosition[i])) {	
 				let temp = enemyMapPosition[i];	
-				$("#" + temp[0] + "-" + temp[1]).empty().append("<p>e</p>")
+				$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">e</p>")
 					.css("background-color", "red").css("color", "black");				
 			} 
 			else if (JSON.stringify(player.getMapPosition()) === JSON.stringify(exitMapPosition)) {
@@ -1812,7 +1852,7 @@ function updateMap(actor, direction) {
 		if(direction === "mapDown")
 			player.setMapYPosition(playerMapPosition[1] - 1);
 		
-		//get new location of player and update
+		//get new location of player and update detail text
 		playerMapPosition = player.getMapPosition();
 		$("#mapFight").prop("disabled", true);
 		//update map status tag based on what the player is going to be walking on
@@ -1822,25 +1862,38 @@ function updateMap(actor, direction) {
 			$("#mapStatus").text("There is someone here...");	
 			$("#mapFight").prop("disabled", false);
 		}	
-		//updates new spot to player marker
-		$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
+
+		//updates new spot to player marker and preserves enemy id		
+		let enemyMapId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id');
+ 		if(enemyMapId != undefined) {
+			$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p id=" + enemyMapId + ">c</p>")
 			.css("background-color", "green").css("color", "white");
+		}
+		else {
+			$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
+			.css("background-color", "green").css("color", "white");
+		}	
 	}
 	else {
-		//populates enemy position and exit point		
+		//populates enemy position if health greater trhan zero and exit point		
 		for(var i = 0; i < enemyMapPosition.length; i++) {
-			$("#" + enemyMapPosition[0] + "-" + enemyMapPosition[1]).empty().append("<p>e</p>")
-				.css("background-color", "red").css("color", "black");
-		}		
+			if(enemies[i].currentHealth > 0) {
+				let temp = enemyMapPosition[i];
+				$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">e</p>")
+					.css("background-color", "red").css("color", "black");
+			}
+		}	
+		
 		$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
 			.css("background-color", "red").css("color", "black");		
 	}
 }	
 //populates examine modal depending on where player is standing
 function examinationResults() {
-	//populate name from enemy obj if on same square and examine using story obj
+	playerMapPosition = player.getMapPosition();
+	//populates enemy name information using square id enemy[x] and story obj
 	if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "e") {
-		storyObj[currentChapter].enemy[0]
+			
 	}		
 }	
 
@@ -2214,12 +2267,11 @@ $(document).ready(function(){
 	//save data to local storage
 	$(".saveGame").click(function() {
 		window.localStorage.setItem('player', JSON.stringify(player));
-		window.localStorage.setItem('enemy', JSON.stringify(enemy));
+		window.localStorage.setItem('enemies', JSON.stringify(enemies));
 		window.localStorage.setItem('state', currentState);
 		window.localStorage.setItem('chapter', currentChapter);
 		window.localStorage.setItem('page', currentPage);
-		window.localStorage.setItem('mapLoaded', mapLoaded);		
-		window.localStorage.setItem('enemyCount', enemyCount);
+		window.localStorage.setItem('mapLoaded', mapLoaded);
 		window.localStorage.setItem('currentEnemy', currentEnemy);
 		$(".saveGame").text("Saved").prop('disabled', true);
 	});	
@@ -2266,31 +2318,36 @@ $(document).ready(function(){
 		player.setMapPosition(playerData.mapPosition);	
 
 		//enemy
-		enemyData = JSON.parse(window.localStorage.getItem('enemy'));
-		enemy = new Actor(enemyData.name, enemyData.race, enemyData.actorClass, enemyData.health, 
-			enemyData.attack, enemyData.stamina, enemyData.staminaRegen, enemyData.baseAttackCost,
-			enemyData.agility);			
-		
-		enemy.equipWeapon(
-			enemyData.weaponName, 
-			enemyData.weaponDamage
-		);
-
-		enemy.equipArmour(
-			enemyData.armourName, 
-			enemyData.armnourDamage
-		);	
+		enemies.length = 0;
+		enemyData = JSON.parse(window.localStorage.getItem('enemies'));
+		let enemyCount = parseInt(storyObj[currentChapter].enemyCount);
+		for(var i = 0; i < enemyCount; i++) {
+			enemy = new Actor(enemyData[i].name, enemyData[i].race, enemyData[i].actorClass, enemyData[i].health, 
+				enemyData[i].attack, enemyData[i].stamina, enemyData[i].staminaRegen, enemyData[i].baseAttackCost,
+				enemyData[i].agility);			
 			
-		enemy.setMeleeSkills(enemyData.meleeSkillArray);
-		enemy.setItemInventory(enemyData.itemInventory);
-		enemy.setMapPosition(enemyData.mapPosition);		
+			enemy.equipWeapon(
+				enemyData[i].weaponName, 
+				enemyData[i].weaponDamage
+			);
+
+			enemy.equipArmour(
+				enemyData[i].armourName, 
+				enemyData[i].armnourDamage
+			);	
 				
+			enemy.setMeleeSkills(enemyData[i].meleeSkillArray);
+			enemy.setItemInventory(enemyData[i].itemInventory);
+			enemy.setMapPosition(enemyData[i].mapPosition);		
+			
+			enemies.push(enemy);
+		}
+		
 		currentState = window.localStorage.getItem('state');
 		currentChapter = window.localStorage.getItem('chapter');
 		currentPage = window.localStorage.getItem('page');
 		mapLoaded = window.localStorage.getItem('mapLoaded');
 		currentEnemy = window.localStorage.getItem('currentEnemy');
-		enemyCount = window.localStorage.getItem('enemyCount');
 		uiReset();
 		$("#gameIntroMenu").hide();
 		startStory();	
