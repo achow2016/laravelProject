@@ -325,7 +325,10 @@
 								<div id="examineOtherData">
 									<p id="mapTerrain" data-toggle="tooltip" title=""></p>
 									<p id="mapActor" data-toggle="tooltip" title=""></p>
-								</div>
+									<p id="otherName" data-toggle="tooltip" title=""></p>
+									<p id="otherArmourName" data-toggle="tooltip" title=""></p>
+									<p id="otherAttackWeapon" data-toggle="tooltip" title=""></p>
+								</div>								
 							</div>
 							<div class="modal-footer centered-button">
 								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -531,6 +534,7 @@
 												<button style="display:none" id="nextTurnButton" type="button" class="btn btn-primary active w-100 mr-1">Next</button>
 												<button id="skillMenu" type="button" class="btn btn-primary active w-100" data-toggle="modal" data-target="#skillModal">Skill</button>
 												<button style="display:none" id="nextChapterButton" type="button" class="btn btn-primary active w-100 mr-1">Next Chapter</button>
+												<button style="display:none" id="battleReturnMap" type="button" class="btn btn-primary active w-100 mr-1">Map</button>
 											</div>	
 										</div>
 									</div>
@@ -617,7 +621,8 @@
 							<div class="modal-body">
 								<div class="" id="gameIntroMenu" role="group">
 									<button type="button" class="toTitleButton btn btn-primary active w-100 mb-1">To Title</button>
-									<button type="button" class="returnButton btn btn-primary active w-100">Return to Website</button>
+									<button type="button" class="returnButton btn btn-primary active w-100 mb-1">Return to Website</button>
+									<button type="button" class="saveGame btn btn-primary active w-100">Save</button>
 								</div>	
 							</div>
 							<div class="modal-footer centered-button">

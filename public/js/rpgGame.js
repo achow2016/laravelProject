@@ -319,7 +319,7 @@ class Actor {
 	//randomizers are for enemy actor and adds up to 30% each to attack and health
 	//stamina randomizer added but not used
 		//to be adjusted down to 20% each once enemy skill use is implemented
-	constructor(name,race,actorClass,health,attack,stamina,staminaRegen,baseAttackCost,agility) {
+	constructor(name,race,actorClass,health,attack,stamina,staminaRegen,baseAttackCost,agility,avatar) {
 		this.position = 1;
 		this.name = name;
 		this.health = parseInt(health);
@@ -350,6 +350,15 @@ class Actor {
 		this.actorClass = actorClass;
 		this.fatigue = 0;
 		this.mapPosition = [];
+		this.avatar = avatar;
+	}	
+	
+	getAvatar() {
+		return this.avatar;
+	}	
+	
+	setAvatar(url) {
+		this.avatar = url;	
 	}	
 	
 	getMapPosition() {
@@ -802,7 +811,10 @@ var raceSelection;
 
 //game variables
 var player;
-var enemies = [];
+var enemiesLeft; 
+var enemies = []; //all enemies in chapter
+var enemy; //stores current enemy being fought
+var currentEnemy; //stores index of current enemy being fought
 
 var playerPosition = 0;
 var enemyPosition = 0;
@@ -1150,7 +1162,11 @@ function postAttackUpdates() {
 		gameEnd = true;
 	}	
 	//player wins
+	//decrement enemy count
 	else if(enemy.getCurrentHealth() <= 0) {
+		enemyCount--; 
+		enemies[currentEnemy] = enemy; //assign updated value to enemy array
+		enemy = null; //clears enemy
 		$("#playerHealthBar").text(player.getCurrentHealth() + "/" + player.getHealth());
 		$("#playerHealthBar").css('width', Math.floor(player.getCurrentHealth() / player.getHealth() * 100) + "%");
 		
@@ -1160,20 +1176,26 @@ function postAttackUpdates() {
 		
 		$("#playerGameStatus").text("You win!");
 		
-		//advance story if no more enemies
-		if(currentEnemy == enemyCount) {
+		//advance story to next chapter if no more enemies
+		if(enemiesLeft == 0) {
 			currentPage = 0;
 			currentChapter++;
-			currentState = null;		
-			$("#nextChapterButton").show();
+			currentState = null;	
 			$("#attackButton").hide();
-			$("#skillMenu").hide();
+			$("#defendButton").hide();
+			$("#itemButton").hide();
+			$("#skillMenu").hide();		
+			$("#nextTurnButton").hide();			
+			$("#nextChapterButton").show();
 		}
-		//go back to map if some remain
+		//offers option to go back to map on winning
 		else {
-			$("#battleMain").hide();
-			$("#gameTopTab").hide();
-			$("#mapMain").show();
+			$("#attackButton").hide();
+			$("#defendButton").hide();
+			$("#itemButton").hide();
+			$("#skillMenu").hide();
+			$("#nextTurnButton").hide();
+			$("#battleReturnMap").show();
 		}	
 	}
 	else{
@@ -1422,7 +1444,8 @@ function enemyInit() {
 			enemyObj[selectedEnemy].stamina,
 			enemyObj[selectedEnemy].staminaRegen,
 			enemyObj[selectedEnemy].baseAttackCost,
-			enemyObj[selectedEnemy].agility		
+			enemyObj[selectedEnemy].agility,
+			enemyObj[selectedEnemy].avatar
 		);
 		
 		enemy.equipWeapon(
@@ -1451,7 +1474,6 @@ function enemyInit() {
 		//randomize personality
 		let choice = getRandomInteger(0, personalityObj.length - 1);
 		enemy.setPersonality(personalityObj[choice]);
-		
 		
 		//randomize attack and health values
 		//player.randomizeHealth();
@@ -1487,10 +1509,12 @@ function playerInit() {
 				raceObj[i].stamina,
 				raceObj[i].staminaRegen,
 				raceObj[i].baseAttackCost,		
-				raceObj[i].agility
+				raceObj[i].agility,
+				raceObj[i].avatar
 			);			
 		}	
 	}	
+	
 	player.equipWeapon(
 		weaponObj[0].name, 
 		weaponObj[0].damage
@@ -1680,10 +1704,18 @@ function printPlayerStatus() {
 
 //sets ui to battle or fight state
 function startBattle() {
+	//getting correct enemy
+	temp = player.getMapPosition();
+	//enemy1 -> 1
+	currentEnemy = $("#" + temp[0] + "-" + temp[1]).children().attr('id').match(/\d+/)[0];
+		
+	$("#mapMain").hide();
+	enemy = enemies[currentEnemy];
+	printPlayerStatus();
+	$("#activeEnemy").attr("src", enemies[currentEnemy].avatar);
 	$("#battleMain").show();
 	$("#gameTopTab").show();
-	printPlayerStatus();
-	$("#activeEnemy").attr("src", enemyObj[0].avatar);
+	
 	//$("#enemyName").text(enemy.getName());
 	//$("#enemyArmour").text(enemyArmour);
 	//$("#enemyAttack").text(enemyAttack);		
@@ -1719,7 +1751,7 @@ function populateMap() {
 			enemies[k].setMapPosition(enemyMapPosition[k]);
 		}		
 		//change p tag in correct tiles to show player, enemy and endpoint on ui	
-		$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
+		$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p id='player'>c</p>")
 			.css("background-color", "green").css("color", "white");
 			
 		//populates map with enemies only if their health is above zero	
@@ -1813,7 +1845,12 @@ function progressStory() {
 					$("#mapMain").show();
 				}
 			}			
-		}			
+		}	
+		
+		//if in a fight goes there instead
+		if(enemy != null) {
+			startBattle();	
+		}	
 	}		
 }	
 
@@ -1825,12 +1862,20 @@ function updateMap(actor, direction) {
 	let playerMapPosition = player.getMapPosition();
 	
 	if(actor === "player") {
-		//if was on same spot, restores square to enemy or end marker
+		//if was on same spot, restores square to enemy, corpse or end marker
 		for(var i = 0; i < enemyMapPosition.length; i++) {
 			if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemyMapPosition[i])) {	
-				let temp = enemyMapPosition[i];	
-				$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">e</p>")
-					.css("background-color", "red").css("color", "black");				
+				if(enemies[i].currentHealth > 0) {
+					let temp = enemyMapPosition[i];
+					$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">e</p>")
+						.css("background-color", "red").css("color", "black");
+				}
+				else {
+					let temp = enemyMapPosition[i];
+					$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=corpse" + i + ">e</p>")
+						.css("background-color", "black").css("color", "white");	
+				}	
+			
 			} 
 			else if (JSON.stringify(player.getMapPosition()) === JSON.stringify(exitMapPosition)) {
 				$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
@@ -1859,8 +1904,20 @@ function updateMap(actor, direction) {
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "g")
 			$("#mapStatus").text("You are walking on a grassy field.");
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "e") {
-			$("#mapStatus").text("There is someone here...");	
-			$("#mapFight").prop("disabled", false);
+			
+			if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
+				let tempName = "";
+				for(var i = 0; i < enemyMapPosition.length; i++) {
+					if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemyMapPosition[i])) {
+						tempName = enemies[i].name;
+					}
+				}
+				$("#mapStatus").text("There is a corpse of a " + tempName + " here.");
+			}	
+			else {
+				$("#mapStatus").text("There is someone here...");	
+				$("#mapFight").prop("disabled", false);
+			}	
 		}	
 
 		//updates new spot to player marker and preserves enemy id		
@@ -1870,7 +1927,7 @@ function updateMap(actor, direction) {
 			.css("background-color", "green").css("color", "white");
 		}
 		else {
-			$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>c</p>")
+			$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p id='player'>c</p>")
 			.css("background-color", "green").css("color", "white");
 		}	
 	}
@@ -1882,6 +1939,11 @@ function updateMap(actor, direction) {
 				$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">e</p>")
 					.css("background-color", "red").css("color", "black");
 			}
+			else {
+				let temp = enemyMapPosition[i];
+				$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=corpse" + i + ">e</p>")
+					.css("background-color", "black").css("color", "white");	
+			}	
 		}	
 		
 		$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
@@ -1889,15 +1951,26 @@ function updateMap(actor, direction) {
 	}
 }	
 //populates examine modal depending on where player is standing
-function examinationResults() {
-	playerMapPosition = player.getMapPosition();
+function getExaminationResults() {
+	let enemyMapPosition = storyObj[currentMap].enemyCoords;
+	let playerMapPosition = player.getMapPosition();
 	//populates enemy name information using square id enemy[x] and story obj
-	if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "e") {
-			
-	}		
+	for(var i = 0; i < enemyMapPosition.length; i++) {
+		if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemyMapPosition[i])) {
+			let enemyId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/)[0];
+			$("#otherName").text("Enemy: " + enemies[enemyId].getName());							
+			$("#otherArmourName").text("Wearing: " +enemies[enemyId].getArmourName());								
+			$("#otherAttackWeapon").text("Holding: " + enemies[enemyId].getWeaponName());
+		}
+	}	
+	//examining a corpse loots it
+	if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
+		
+	}	
 }	
 
-//game starting scripts	
+//game starting scripts
+//button functions	
 $(document).ready(function(){
 		
 	if(localStorage.getItem("player") === null) {
@@ -1991,6 +2064,9 @@ $(document).ready(function(){
 			
 	//calculates damages, updates fields on attack button
 	function battleTurn() {
+		console.log(enemy);
+
+		$(".saveGame").text("Save").prop('disabled', false);
 		$("#attackButton").hide();
 		$("#defendButton").hide();
 		$("#itemButton").hide();
@@ -2007,13 +2083,15 @@ $(document).ready(function(){
 		}	
 		
 		//if enemy defends, increases armor and stamina
+		//checks against personality
 		let enemyPersonality = enemy.getPersonality();
-		let choice = personalityObj.indexOf(enemyPersonality);
+		let personalityType = enemyPersonality.type;
+		let choice = personalityObj.indexOf(personalityType);
+
+		let enemyDefendChance = parseInt(personalityObj[choice].defendPercent);
 		let skillDecision = false;
-		
-		//check against personality
 		let defenseRoll = getRandomInteger(1, 100);
-		if(defenseRoll < parseInt(personalityObj[choice].defendPercent)) {
+		if(defenseRoll < enemyDefendChance) {
 			enemyDefend = true;
 		}	
 
@@ -2267,6 +2345,7 @@ $(document).ready(function(){
 	//save data to local storage
 	$(".saveGame").click(function() {
 		window.localStorage.setItem('player', JSON.stringify(player));
+		window.localStorage.setItem('enemy', JSON.stringify(enemy));
 		window.localStorage.setItem('enemies', JSON.stringify(enemies));
 		window.localStorage.setItem('state', currentState);
 		window.localStorage.setItem('chapter', currentChapter);
@@ -2296,12 +2375,16 @@ $(document).ready(function(){
 
 	//loads player data from local storage, battle progress not saved 
 	$("#continueButton").click(function() {
+		//enable buttons
+		$(".toTitleButton").prop('disabled', false);
+		$(".saveGame").text("Save").prop('disabled', false);
+
 		//player
 		playerData = JSON.parse(window.localStorage.getItem('player'));
 		
 		player = new Actor(playerData.name, playerData.race, playerData.actorClass, playerData.health, 
 			playerData.attack, playerData.stamina, playerData.staminaRegen, playerData.baseAttackCost,
-			playerData.agility);			
+			playerData.agility, playerData.avatar);			
 		
 		player.equipWeapon(
 			playerData.weaponName, 
@@ -2317,14 +2400,14 @@ $(document).ready(function(){
 		player.setItemInventory(playerData.itemInventory);
 		player.setMapPosition(playerData.mapPosition);	
 
-		//enemy
+		//enemies
 		enemies.length = 0;
 		enemyData = JSON.parse(window.localStorage.getItem('enemies'));
 		let enemyCount = parseInt(storyObj[currentChapter].enemyCount);
 		for(var i = 0; i < enemyCount; i++) {
 			enemy = new Actor(enemyData[i].name, enemyData[i].race, enemyData[i].actorClass, enemyData[i].health, 
 				enemyData[i].attack, enemyData[i].stamina, enemyData[i].staminaRegen, enemyData[i].baseAttackCost,
-				enemyData[i].agility);			
+				enemyData[i].agility, enemyData[i].avatar);			
 			
 			enemy.equipWeapon(
 				enemyData[i].weaponName, 
@@ -2339,15 +2422,19 @@ $(document).ready(function(){
 			enemy.setMeleeSkills(enemyData[i].meleeSkillArray);
 			enemy.setItemInventory(enemyData[i].itemInventory);
 			enemy.setMapPosition(enemyData[i].mapPosition);		
-			
+			enemy.setPersonality(enemyData[i].personality);			
+
 			enemies.push(enemy);
 		}
+		
+		//current enemy
+		currentEnemy = window.localStorage.getItem('currentEnemy');
+		enemy = enemies[currentEnemy];
 		
 		currentState = window.localStorage.getItem('state');
 		currentChapter = window.localStorage.getItem('chapter');
 		currentPage = window.localStorage.getItem('page');
 		mapLoaded = window.localStorage.getItem('mapLoaded');
-		currentEnemy = window.localStorage.getItem('currentEnemy');
 		uiReset();
 		$("#gameIntroMenu").hide();
 		startStory();	
@@ -2394,13 +2481,24 @@ $(document).ready(function(){
 	});
 	
 	//map fight button
-	$("#mapFight").click(function() {
+	$("#mapFight").click(function() {	
+		startBattle();
 	});
-
+	
+	//exit fight button on victory
+	//calls update to remove enemy from square cleared
+	$("#battleReturnMap").click(function() {	
+		updateMap(null, null);
+		updateMap("player", null);
+		$("#battleMain").hide();
+		$("#gameTopTab").hide();
+		$("#mapMain").show();	
+	});
+	
 	//map examine button
 	$("#mapExamine").click(function() {
 		printPlayerStatus();
-		examinationResults();
+		getExaminationResults();
 		$('#mapExamineModal').modal('toggle');
 	});
 	
