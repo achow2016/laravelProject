@@ -282,11 +282,11 @@ class MeleeSkill {
 	}	
 	
 	getPenalty() {
-		return this.penalty;
+		return this.powerPenalty;
 	}
 
 	setPenalty(penalty) {
-		this.penalty = penalty;
+		this.powerPenalty = penalty;
 	}	
 	
 	
@@ -311,7 +311,7 @@ class MeleeSkill {
 	}	
 	
 	setPercent(percent) {
-			this.percent = percent;
+		this.percent = percent;
 	}
 }	
 
@@ -337,12 +337,11 @@ class Actor {
 		this.currentStamina = stamina;
 		this.agility = parseInt(agility);
 		this.stance = "111111111";
-		this.personality = null;
 		this.limbHealth = "1111";
 		this.staminaRegen = parseInt(staminaRegen);
 		this.baseAttackCost = parseInt(baseAttackCost);
 		this.attackPenalty = 0;
-		this.personality = "";
+		this.personality = null;
 		this.debuffedParts = [];
 		this.itemInventory = [];
 		this.statusBuffArray = [];
