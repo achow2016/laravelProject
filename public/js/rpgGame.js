@@ -351,6 +351,35 @@ class Actor {
 		this.mapPosition = [];
 		this.avatar = avatar;
 	}	
+
+	considerRest() {
+		let personalityType = this.getPersonality().type;
+		let choice = personalityObj.findIndex(function(personality, i) {
+			return personality.type == personalityType;
+		});
+		if((this.getStaminaThreshold() <  parseInt(personalityObj[choice].staminaCautionThreshold))) {
+			return false;
+		} 
+		else {
+			return true;
+		}	
+	}
+
+	considerDefense() {
+		let personalityType = this.getPersonality().type;
+		let choice = personalityObj.findIndex(function(personality, i) {
+			return personality.type == personalityType;
+		});
+		let defendChance = parseInt(personalityObj[choice].defendPercent);
+		let defenseRoll = getRandomInteger(1, 100);
+		
+		if(defenseRoll < defendChance) {
+			return true;
+		} 
+		else {
+			return false;
+		}
+	}
 	
 	getAvatar() {
 		return this.avatar;
@@ -794,7 +823,6 @@ var currentPage = 0;
 var currentChapter = 0;
 var currentState = 0;
 var currentMap = 0;
-var currentEnemy = 0;
 var enemyCount = 0;
 var firstRun = true;
 var gameEnd = false;	
@@ -813,7 +841,6 @@ var player;
 var enemiesLeft; 
 var enemies = []; //all enemies in chapter
 var enemy; //stores current enemy being fought
-var currentEnemy; //stores index of current enemy being fought
 
 var playerPosition = 0;
 var enemyPosition = 0;
@@ -967,7 +994,11 @@ function enemyAttack() {
 	
 	//check if call skill
 	let enemyPersonality = enemy.getPersonality();
-	let choice = personalityObj.indexOf(enemyPersonality);
+	let personalityType = enemyPersonality.type;
+	let choice = personalityObj.findIndex(function(personality, i) {
+		return personality.type == personalityType;
+	});
+
 	let skillDecision = false;
 	
 	if(!enemyDefend) {	
@@ -1152,7 +1183,7 @@ function postAttackUpdates() {
 		//reset to start
 		currentPage = 0;
 		currentChapter = 0;
-		currentEnemy = 0;
+		currentEnemy = null;
 		enemyCount = 0;
 		currentState = null;		
 
@@ -1626,7 +1657,131 @@ function gameInit() {
 //reset ui elements
 //to be called from continue button
 function uiReset() {
-//game UI reset
+	//reset body grids		
+	for(let i = 0; i < 10; i++) {
+		$(".p" + i).css({"border": "1px solid black"});
+		$(".e" + i).css({"border": "1px solid black"});
+	}
+
+	//if player not at full health and stamina sets ui properly
+	if((player.getCurrentHealth() / player.getHealth()) != 1) {
+		$("#playerHealthBar").text(player.getCurrentHealth() + "/" + player.getHealth());
+		$("#playerHealthBar").css('width', Math.floor(player.getCurrentHealth() / player.getHealth() * 100) + "%");
+		switch (player.getHealthThreshold()) {
+			case 0:
+				$("#playerCondition").text("Uninjured").css('color', 'blue');
+				break;
+			case 1:
+				$("#playerCondition").text("Lightly Injured").css('color', 'green');
+				$("#playerHealthBar").removeClass();
+				$("#playerHealthBar").addClass("progress-bar");
+				break;
+			case 2:
+				$("#playerCondition").text("Injured").css('color', 'orange');
+				$("#playerHealthBar").removeClass();
+				$("#playerHealthBar").addClass("progress-bar bg-warning");
+				break;
+			case 3:
+				$("#playerCondition").text("Heavy Injuries").css('color', 'brown');
+				break;
+			case 4:
+				$("#playerCondition").text("Near Death").css('color', 'gray');
+				$("#playerHealthBar").removeClass();
+				$("#playerHealthBar").addClass("progress-bar bg-dark");	
+				break;
+			case 5:
+				$("#playerCondition").text("Dead").css('color', 'black');
+				break;	
+		}
+	}
+	if((player.getCurrentStamina() / player.getStamina()) != 1) {
+		$("#playerStaminaBar").text(player.getCurrentStamina() + "/" + player.getStamina());
+		$("#playerStaminaBar").css('width', (Math.floor((player.getCurrentStamina() /player.getStamina()) * 100)) + "%");
+	}
+	if((player.getCurrentHealth() / player.getHealth()) == 1 && (player.getCurrentStamina() / player.getStamina()) == 1) {
+
+		//condition check here
+		$("#playerCondition").text('Uninjured').css('color', 'green');
+		$("#playerConditionTriangle").css('border-top', '20px solid blue');
+		
+		$("#playerHealthBar").css('width', 100 + "%");
+		$("#playerStaminaBar").css('width', 100 + "%");
+
+		//reset health bars back to default
+		$("#playerHealthBar").removeClass();
+		$("#playerHealthBar").addClass('progress-bar');
+
+		//reset stamina bar back to default
+		$("#playerStaminaBar").removeClass();
+		$("#playerStaminaBar").addClass('progress-bar');
+	}
+
+	//enemy update if load from save
+	if(enemy != null) {
+		if((enemy.getCurrentHealth() / enemy.getHealth()) != 1) {
+			switch (enemy.getHealthThreshold()) {
+				case 0:
+					$("#enemyHealthCondition").text("Uninjured").css('color', 'blue');
+					break;
+				case 1:
+					$("#enemyHealthCondition").text("Lightly Injured").css('color', 'green');
+					$("#enemyHealthSquare").css('background-color', 'green');
+					break;
+				case 2:
+					$("#enemyHealthCondition").text("Injured").css('color', 'orange');
+					$("#enemyHealthSquare").css('background-color', 'orange');
+					break;
+				case 3:
+					$("#enemyHealthCondition").text("Heavy Injuries").css('color', 'brown');
+					$("#enemyHealthSquare").css('background-color', 'brown');
+					break;
+				case 4:
+					$("#enemyHealthCondition").text("Near Death").css('color', 'gray');
+					$("#enemyHealthSquare").css('background-color', 'gray');
+					break;
+				case 5:
+					$("#enemyHealthCondition").text("Dead").css('color', 'black');
+					$("#enemyHealthSquare").css('background-color', 'black');
+					break;
+			}
+		}
+		if((enemy.getCurrentStamina() / enemy.getStamina()) != 1) {
+			switch (enemy.getStaminaThreshold()) {
+				case 0:
+					$("#enemyStaminaCondition").text("Alert").css('color', 'blue');
+					break;
+				case 1:
+					$("#enemyStaminaCondition").text("Somewhat Tired").css('color', 'green');
+					$("#enemyStaminaCircle").css('background-color', 'green');
+					break;
+				case 2:
+					$("#enemyStaminaCondition").text("Tired").css('color', 'red');
+					$("#enemyStaminaCircle").css('background-color', 'red');
+					break;
+				case 3:
+					$("#enemyStaminaCondition").text("Exhausted").css('color', 'brown');
+					$("#enemyStaminaCircle").css('background-color', 'brown');
+					break;
+				case 4:
+					$("#enemyStaminaCondition").text("Nearly Spent").css('color', 'gray');
+					$("#enemyStaminaCircle").css('background-color', 'gray');
+					break;
+				case 5:
+					$("#enemyStaminaCondition").text("Completely Exhausted").css('color', 'black');
+					$("#enemyStaminaCircle").css('background-color', 'black');
+					break;
+			}
+		}
+		if((enemy.getCurrentHealth() / enemy.getHealth()) == 1 && (enemy.getCurrentStamina() / enemy.getStamina()) == 1) {
+			//condition check here
+			$("#enemyHealthCondition").text('Uninjured').css('color', 'green');
+			$("#enemyStaminaCondition").text('Alert').css('color', 'green');
+			$("#enemyActiveEffects").text("");
+			$("#enemyStaminaCircle").css('background-color', 'blue');
+			$("#enemyConditionTriangle").css('border-top', '20px solid blue');
+			$("#enemyHealthSquare").css('background-color', 'blue');
+		}	
+	}		
 	
 	//reset race select
 	$("#race").prop('selectedIndex',0);
@@ -1640,28 +1795,7 @@ function uiReset() {
 	$("#playerGameStatus").text("---");
 	$("#playerStatus").text("---");
 	$("#playerDamagedAmount").text("---");
-	$("#enemyDamagedAmount").text("---");
-	
-	$("#playerCondition").text('Uninjured').css('color', 'green');
-	$("#playerConditionTriangle").css('border-top', '20px solid blue');
-	$("#playerHealthBar").css('width', 100 + "%");
-	$("#playerStaminaBar").css('width', 100 + "%");
-	
-	//reset health bars back to default
-	$("#playerHealthBar").removeClass();
-	$("#playerHealthBar").addClass('progress-bar');
-	
-	//reset stamina bar back to default
-	$("#playerStaminaBar").removeClass();
-	$("#playerStaminaBar").addClass('progress-bar');
-	
-	//enemy condition reset
-	$("#enemyHealthCondition").text('Uninjured').css('color', 'green');
-	$("#enemyStaminaCondition").text('Alert').css('color', 'green');
-	$("#enemyActiveEffects").text("");
-	$("#enemyStaminaCircle").css('background-color', 'blue');
-	$("#enemyConditionTriangle").css('border-top', '20px solid blue');
-	$("#enemyHealthSquare").css('background-color', 'blue');
+	$("#enemyDamagedAmount").text("---");	
 	
 	//show buttons again
 	$("#attackButton").show();
@@ -1816,8 +1950,12 @@ function progressStory() {
 		
 		//if map state, allows go to map or loads map from save
 		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "map") {
-			$(".saveGame").prop('disabled', true);
-			$(".toTitleButton").prop('disabled', true);
+			uiReset();
+			//if in battle does not disable
+			if(enemy != null) {
+				$(".saveGame").prop('disabled', false);
+				$(".toTitleButton").prop('disabled', false);
+			}
 			//shows go to map if it is not loaded
 			if(!mapLoaded) {
 				$("#storyEnd").text("To Map").show();
@@ -2063,8 +2201,6 @@ $(document).ready(function(){
 			
 	//calculates damages, updates fields on attack button
 	function battleTurn() {
-		console.log(enemy);
-
 		$(".saveGame").text("Save").prop('disabled', false);
 		$("#attackButton").hide();
 		$("#defendButton").hide();
@@ -2083,24 +2219,10 @@ $(document).ready(function(){
 		
 		//if enemy defends, increases armor and stamina
 		//checks against personality
-		let enemyPersonality = enemy.getPersonality();
-		let personalityType = enemyPersonality.type;
-		let choice = personalityObj.indexOf(personalityType);
+		enemyDefend = enemy.considerDefense();
 
-		let enemyDefendChance = parseInt(personalityObj[choice].defendPercent);
-		let skillDecision = false;
-		let defenseRoll = getRandomInteger(1, 100);
-		if(defenseRoll < enemyDefendChance) {
-			enemyDefend = true;
-		}	
-
-		//check against their stamina risk threshold, if at then enemy defends		
-		if((enemy.getStaminaThreshold() <  parseInt(personalityObj[choice].staminaCautionThreshold))) {
-			enemyDefend = false;	
-		} 
-		else {
-			enemyDefend = true;
-		}	
+		//check against their stamina risk threshold, if at then enemy defends	
+		enemyDefend = enemy.considerRest();
 	
 		if(enemyDefend) {
 			enemy.recoverStamina();
@@ -2356,6 +2478,8 @@ $(document).ready(function(){
 	
 	//from modal go to title
 	$(".toTitleButton").click(function() {
+		$(".toTitleButton").prop('disabled', false);
+		$(".saveGame").text("Save").prop('disabled', false);
 		if($('#battleMenuModal').hasClass('show'))
 			$('#battleMenuModal').modal('toggle');
 		if($('#mapMenuModal').hasClass('show'))
@@ -2395,6 +2519,9 @@ $(document).ready(function(){
 			playerData.armnourDamage
 		);	
 			
+
+		player.setCurrentHealth(playerData.currentHealth);
+		player.setCurrentStamina(playerData.currentStamina);
 		player.setMeleeSkills(playerData.meleeSkillArray);
 		player.setItemInventory(playerData.itemInventory);
 		player.setMapPosition(playerData.mapPosition);	
@@ -2416,8 +2543,10 @@ $(document).ready(function(){
 			enemy.equipArmour(
 				enemyData[i].armourName, 
 				enemyData[i].armnourDamage
-			);	
-				
+			);
+
+			enemy.setCurrentHealth(enemyData[i].currentHealth);
+			enemy.setCurrentStamina(enemyData[i].currentStamina);	
 			enemy.setMeleeSkills(enemyData[i].meleeSkillArray);
 			enemy.setItemInventory(enemyData[i].itemInventory);
 			enemy.setMapPosition(enemyData[i].mapPosition);		
@@ -2486,7 +2615,8 @@ $(document).ready(function(){
 	
 	//exit fight button on victory
 	//calls update to remove enemy from square cleared
-	$("#battleReturnMap").click(function() {	
+	$("#battleReturnMap").click(function() {
+		uiReset();	
 		updateMap(null, null);
 		updateMap("player", null);
 		$("#battleMain").hide();
