@@ -96,7 +96,7 @@ var storyObj = [
 //left upper, head, right upper, left mid, torso, right mid, left leg, groin, right leg 
 
 var meleeSkillObj = [
-	{ "name":"Arm Smash", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"Attack Reduction", "debuffTarget":"lhand", "debuffPercent":"10", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"10", "staminaCost":"5" },
+	{ "name":"Arm Smash", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"Attack Reduction", "debuffPercent":"10", "debuffDuration":"10", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"10", "staminaCost":"5" },
 	{ "name":"Advancing Swing II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Decrease Distance", "range":"2", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"0", "staminaCost":"10" },
 	{ "name":"Retreating Cut II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Increase Distance", "range":"6", "effectQuantity":"2", "percent":"100", "meleePercentagePenalty":"50", "staminaCost":"10" },
 	{ "name":"Heavy Attack", "bodyTarget":"100100000", "stanceResult":"100100110", "debuff":"none", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"-100", "staminaCost":"20" }
@@ -342,7 +342,6 @@ class Actor {
 		this.baseAttackCost = parseInt(baseAttackCost);
 		this.attackPenalty = 0;
 		this.personality = null;
-		this.debuffedParts = [];
 		this.itemInventory = [];
 		this.statusBuffArray = [];
 		this.race = race;
@@ -430,15 +429,22 @@ class Actor {
 	}	
 	
 	tickBuffs() {
-		for(var i = 0; i < (this.statusBuffArray).length; i++) {
-			
+		for(var i = 0; i < (this.statusBuffArray).length; i++) {		
 			if((this.statusBuffArray)[i].getEffect() == "Regen") {
 				this.setCurrentHealth(Math.ceil(this.currentHealth *= (1 + ((this.statusBuffArray)[i].getEffectPercent() / 100))));
 				(this.statusBuffArray)[i].tickDuration();
 				if((this.statusBuffArray)[i].getDuration() == 0) {
 					this.removeFromStatusBuffArray((this.statusBuffArray)[i].getName());
 				}
-			}			
+			}	
+			if((this.statusBuffArray)[i].getEffect() == "Reduced Attack Arms") {
+				this.setAttackPenalty((this.statusBuffArray)[i].getEffectPercent() * 
+					this.statusBuffArray[i].getStackCount());
+				(this.statusBuffArray)[i].tickDuration();
+				if((this.statusBuffArray)[i].getDuration() == 0) {
+					this.removeFromStatusBuffArray((this.statusBuffArray)[i].getName());
+				}
+			}
 		}	
 	}	
 
@@ -454,8 +460,10 @@ class Actor {
 		var duplicate = false;
 		for(let i = 0; i < (this.statusBuffArray).length; i++) {
 			if(buff.getEffect() == (this.statusBuffArray[i]).getEffect() && 
-				this.statusBuffArray[i].getStackCount() <  this.statusBuffArray[i].getStackLimit()) {
+			this.statusBuffArray[i].getStackCount() < this.statusBuffArray[i].getStackLimit() || 
+			this.statusBuffArray[i].getStackLimit() == 0) {
 				this.statusBuffArray[i].incrementStackCount();
+				this.statusBuffArray[i].setDuration(buff.getDuration());
 				duplicate = true; 
 			}	 		
 		}
@@ -788,27 +796,13 @@ class Actor {
 
 	getMeleeAttackDamage(enemy) {
 		let damage = 0;
-		if(this.attackPenalty > 0) {
-			damage = Math.ceil((this.getAttackValue() * ((100 - this.attackPenalty) / 100) - enemy.getArmourValue()));
-		}	
-		
-		else if(this.attackPenalty < 0) {
+		if(this.attackPenalty != 0) {
 			damage = Math.ceil((this.getAttackValue() * ((100 - this.attackPenalty) / 100) - enemy.getArmourValue()));
 		}
-		
 		else {
 			damage = Math.ceil(this.getAttackValue() - enemy.getArmourValue());
 		}
 		return damage;
-	}	
-	
-	
-	addDebuffPart(part) {
-		this.debuffedParts.push(part);	
-	}	
-	
-	getDebuffParts() {
-		return this.debuffedParts;	
 	}	
 }
 
@@ -956,30 +950,21 @@ function skillEnemyAttack() {
 					}	
 				}	
 
-				//applies debuff if any, does not apply it if defended against			
+				//applies debuff if any, does not apply it if defended against or duplicate name and stack limit hit			
 				if(meleeSkillObj[j].debuff != "none") {
-					let debuffStr = $("#playerActiveEffects").text();
-					if(debuffStr.indexOf(meleeSkillObj[j].debuff) == -1) {
-						$("#playerActiveEffects").append("<p>" + meleeSkillObj[j].debuff + "</p>");
-					}
-					$("#playerConditionTriangle").css('border-top', '20px solid red');
-					
-					//debuff list
-					let debuffPartsList = player.getDebuffParts();
-					
 					//attack reduction debuff
 					if(meleeSkillObj[j].debuff === "Attack Reduction") {
-						//if debuff not already applied to part, adds effect and to list
-						if(debuffPartsList.indexOf(meleeSkillObj[j].debuffTarget) == -1 ) {
-							player.addDebuffPart(meleeSkillObj[j].debuffTarget);
-							//effect at time depends on defending target			
-							if(playerDefend)
-								player.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent / 2));
-							if(!playerDefend)
-								player.setAttackPenalty(meleeSkillObj[j].debuffPercent);
-							if(playerDefenseBroken)
-								player.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent * 1.5));								
-						} 
+						let penalty = 0;					
+						//effect at time depends on defending target			
+						if(playerDefend)
+							penalty = (Math.floor(meleeSkillObj[j].debuffPercent / 2));
+						if(!playerDefend)
+							penalty = (meleeSkillObj[j].debuffPercent);
+						if(playerDefenseBroken)
+							penalty = (Math.floor(meleeSkillObj[j].debuffPercent * 1.5));								
+
+						let newDebuff = new BuffStatus("Attack Reduction", "Reduced Attack Arms", 0, penalty, meleeSkillObj[j].debuffDuration);
+						player.addToStatusBuffArray(newDebuff);
 					}	
 				}
 				//is using skill, next step calculates damage
@@ -1090,6 +1075,20 @@ function enemyAttack() {
 
 //update of ui and clean up after each turn
 function postAttackUpdates() {
+	//set status conditions
+	let tempBuffArray = player.getStatusBuffArray();
+	let buffStr;
+	$("#playerActiveEffects").empty();
+	
+	for(let i = 0; i < tempBuffArray.length; i++) {
+		buffStr = tempBuffArray[i].getName() + " " + tempBuffArray[i].getEffect() + " " +
+			tempBuffArray[i].getEffectPercent() + "% x" + tempBuffArray[i].getStackCount() + " " +
+			tempBuffArray[i].getDuration() + " left";
+		$("#playerActiveEffects").append("<p>" + buffStr + "</p>");
+	};
+	if(tempBuffArray.length != 0)
+		$("#playerConditionTriangle").css('border-top', '20px solid yellow');
+	
 
 	//set condition text for player based on health
 	switch (player.getHealthThreshold()) {
@@ -1202,7 +1201,7 @@ function postAttackUpdates() {
 		
 		$("#enemyActiveEffects").text("");
 		$("#enemyStaminaCondition").text("");				
-		$("#enemyConditionTriangle").css('color', 'green');		
+		$("#enemyConditionTriangle").css('border-top', '20px solid blue');	
 		
 		$("#playerGameStatus").text("You win!");
 		
@@ -1264,18 +1263,22 @@ function refreshItems() {
 	$('.itemButtonArray').empty();
 	playerItemArray = player.getItemInventory();
 	var itemName = null;
+	var itemQty = null;
 	for(var i = 0; i < playerItemArray.length; i++) {
-		itemName = playerItemArray[i].getName();
-		$('.itemButtonArray').append('<input name="' + itemName + '" id=itemButton' + i +
-			' type="button" class="btn btn-primary active mb-1"></button>');								
-		
+		let itemName = playerItemArray[i].getName();
+		let itemQty = playerItemArray[i].getQuantity(); 
+		$('.itemButtonArray').append('<div class="row"><input value=' + '"' + itemName + '"' +
+			' type="button" class="itemButton' + i + ' btn btn-primary active mb-1"></button><p class="ml-1">' +
+			itemQty + '</p></div>');
 		//item logic
 		//currently iterates over entire item list to find matching name
-		$('#itemButton' + i).prop('value',itemName + " (" + playerItemArray[i].getQuantity() + 
-			")").click({param1:itemName}, function(event) {
+		//$('#itemButton' + i).prop('value',itemName + " (" + playerItemArray[i].getQuantity() + 
+		//	")").click({param1:itemName}, function(event) {
+		//$('#itemButton' + i).prop('value',itemName).click({param1:itemName}, function(event) {
+		$('.itemButton' + i).click(function() {
 			for(var j = 0; j < itemObj.length; j++) {	
 				//finds item details in data
-				if(itemObj[j].name == event.data.param1) {
+				if(itemObj[j].name == $(this).attr("value")) {
 										
 					//applies item effect
 					var buff = new BuffStatus(itemObj[j].name, itemObj[j].effect,
@@ -1290,7 +1293,8 @@ function refreshItems() {
 					}	
 
 					//fight specific
-					if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "fight") {
+					//if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "fight") {
+					if(enemy != null) {	
 						//no damage and using item
 						player.setAttackPenalty(100);
 						playerUseItem = true;
@@ -1304,9 +1308,14 @@ function refreshItems() {
 						$("#attackButton").click();//goes to battle turn processing
 					}
 					//map specific
-					if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "map") {
-						$('#mapItemModal').modal('toggle');
+					//if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "map") {
+					if(enemy == null) {	
 						refreshItems();
+						//$('#mapItemModal').modal('toggle');
+						if($('#mapItemModal').hasClass('show'))
+							$('#mapItemModal').modal('toggle');
+						if($('#itemModal').hasClass('show'))
+							$('#itemModal').modal('toggle');
 					}
 				}
 			}
@@ -1419,28 +1428,17 @@ function refreshSkills() {
 
 						//applies debuff if any, does not apply it fully if defended against			
 						if(meleeSkillObj[j].debuff != "none") {
-							let debuffStr = $("#enemyActiveEffects").text();
-							if(debuffStr.indexOf(meleeSkillObj[j].debuff) == -1) {
-								$("#enemyActiveEffects").append("<p>" + meleeSkillObj[j].debuff + "</p>");
-							}
-							
-							$("#enemyConditionTriangle").css('border-top', '20px solid red');
-							
-							//debuff list
-							let e = enemy.getDebuffParts();
-							
 							if(meleeSkillObj[j].debuff === "Attack Reduction") {
-								//if debuff not already applied to part, adds effect and to list
-								if(!e.indexOf(meleeSkillObj[j].debuffTarget) >= 0 ) {
-									enemy.addDebuffPart(meleeSkillObj[j].debuffTarget);
-									//effect at time depends on defending target			
-									if(enemyDefend)
-										enemy.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent / 2));
-									if(!enemyDefend)
-										enemy.setAttackPenalty(meleeSkillObj[j].debuffPercent);
-									if(enemyDefenseBroken)
-										enemy.setAttackPenalty(Math.floor(meleeSkillObj[j].debuffPercent * 1.5));								
-								} 
+								let penalty = 0;
+								//effect at time depends on defending target			
+								if(enemyDefend)
+									penalty = (Math.floor(meleeSkillObj[j].debuffPercent / 2));
+								if(!enemyDefend)
+									penalty = (meleeSkillObj[j].debuffPercent);
+								if(enemyDefenseBroken)
+									penalty = (Math.floor(meleeSkillObj[j].debuffPercent * 1.5));								
+								let newDebuff = new BuffStatus("Attack Reduction", "Reduced Attack Arms", 0, penalty, 0);
+								enemy.addToStatusBuffArray(newDebuff);
 							}
 						}
 						$('#skillModal').modal('toggle');
@@ -1568,6 +1566,7 @@ function playerInit() {
 	
 	//resets stances at beginning and grids
 	player.setStance("111111111");
+	player.setMapPosition([]);
 }	
 
 //game init function
@@ -1579,8 +1578,8 @@ function gameInit() {
 	//story reset
 	currentPage = 0;
 	currentChapter = 0;
-	currentState = 0;
-	
+	currentState = 0;	
+
 	//story panel reset
 	$('#storyProgress').prop('disabled', false);
 	$('.saveGame').prop('disabled', false).text("Save");
@@ -1593,6 +1592,12 @@ function gameInit() {
 	for(let i = 0; i < 10; i++) {
 		$(".p" + i).css({"border": "1px solid black"});
 		$(".e" + i).css({"border": "1px solid black"});
+	}
+
+	//map reset
+	mapLoaded = false;
+	for(let j = 1; j < 9; j++) {
+		$("#mapRow" + j).empty().removeAttr("style");
 	}
 	
 	//at first run, populates skill and item list in battle
@@ -1652,6 +1657,7 @@ function gameInit() {
 	
 	//reset game so buttons show
 	gameEnd = false;
+	enemy = null;
 }	
 
 //reset ui elements
@@ -1810,15 +1816,11 @@ function uiReset() {
 //pulls image and first page in pages array
 //initializes all enemies present in story chapter
 function startStory() {
+	currentChapter = 0;
 	$("#storyMain").show();
 	$("#activeStoryBackground").css("background-image", "url(" + storyObj[0].storyImage + ")");
 	$("#storyText").text(storyObj[currentChapter].pages[currentPage]);
-	if(enemies.length == 0)
-		enemyInit();
-	if(mapLoaded) {
-		$("#toTitleButton").prop("disabled", "false");
-		progressStory();	
-	}	
+	progressStory();
 }
 
 //called at map and in battle to populate player status fields
@@ -1837,15 +1839,19 @@ function printPlayerStatus() {
 
 //sets ui to battle or fight state
 function startBattle() {
-	//getting correct enemy
-	temp = player.getMapPosition();
-	//enemy1 -> 1
-	currentEnemy = $("#" + temp[0] + "-" + temp[1]).children().attr('id').match(/\d+/)[0];
-		
+	//getting correct enemy if needed
+	if(enemy == null) {
+		temp = player.getMapPosition();
+		//enemy1 -> 1
+		currentEnemy = $("#" + temp[0] + "-" + temp[1]).children().attr('id').match(/\d+/)[0];
+		enemy = enemies[currentEnemy];
+		$("#activeEnemy").attr("src", enemies[currentEnemy].getAvatar());
+	} 
+	else {
+		$("#activeEnemy").attr("src", enemy.getAvatar());
+	}
 	$("#mapMain").hide();
-	enemy = enemies[currentEnemy];
 	printPlayerStatus();
-	$("#activeEnemy").attr("src", enemies[currentEnemy].avatar);
 	$("#battleMain").show();
 	$("#gameTopTab").show();
 	
@@ -1854,13 +1860,15 @@ function startBattle() {
 	//$("#enemyAttack").text(enemyAttack);		
 }	
 
-//generates map onto main map div if not loaded already
+//generates map onto main map div
 function populateMap() {
 	//enable save and title buttons
 	$(".saveGame").prop('disabled', false);
 	$(".toTitleButton").prop('disabled', false);
+
 	//generates map tiles, applies background tile image or design
 	for(var i = 1; i < 9; i++) {
+		$("#mapRow" + i).empty().removeAttr("style");
 		for(var j = 1; j < 9; j++) {
 			$("#mapRow" + i).append("<div class='mapTile col text-center' id='" + j + "-" + i + "'><p>g</p></div>")
 				.css("background-color", "white").css("color", "green");
@@ -1869,36 +1877,36 @@ function populateMap() {
 	//can use images here
 	//$(".mapTile").css("background-image", "url(" + mapObj[0].defaultTile + ")");
 	//set player, endpoint and enemy current position
-	//let playerMapPosition = player.getMapPosition();
-	let playerMapPosition = mapObj[currentMap].startPoint;
+	
+	//change p tag in correct tiles to show player, enemy and endpoint on ui	
+	let playerMapPosition = [];
+	playerMapPosition = playerMapPosition.concat(storyObj[currentChapter].startPoint);	
+	$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p id='player'>c</p>")
+		.css("background-color", "green").css("color", "white");
+			
 	let enemyCount = parseInt(storyObj[currentChapter].enemyCount);
 	let enemyMapPosition = storyObj[currentMap].enemyCoords;
 	let exitMapPosition = mapObj[currentMap].endPoint;
 	
-	//only sets default actor positions if not loaded already in their states
-	if(!mapLoaded) {
-		player.setMapPosition(playerMapPosition);
+	//enemy positions added to enemy objs from story obj listing
+	for(var k = 0; k < enemyCount; k++) {
+		enemies[k].setMapPosition(enemyMapPosition[k]);
+	}		
+	//change p tag in correct tiles to show player, enemy and endpoint on ui	
+	$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p id='player'>c</p>")
+		.css("background-color", "green").css("color", "white");
 		
-		//enemy positions added to enemy objs from story obj listing
-		for(var k = 0; k < enemyCount; k++) {
-			enemies[k].setMapPosition(enemyMapPosition[k]);
-		}		
-		//change p tag in correct tiles to show player, enemy and endpoint on ui	
-		$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p id='player'>c</p>")
-			.css("background-color", "green").css("color", "white");
-			
-		//populates map with enemies only if their health is above zero	
-		for(var i = 0; i < enemyMapPosition.length; i++) {
-			if(enemies[i].currentHealth > 0) {
-				let temp = enemyMapPosition[i];
-				$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">e</p>")
-					.css("background-color", "red").css("color", "black");
-			}
-		}	
-		$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
-			.css("background-color", "red").css("color", "black");
+	//populates map with enemies only if their health is above zero	
+	for(var i = 0; i < enemyMapPosition.length; i++) {
+		if(enemies[i].currentHealth > 0) {
+			let temp = enemyMapPosition[i];
+			$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">e</p>")
+				.css("background-color", "red").css("color", "black");
+		}
 	}	
-	mapLoaded = true;
+	$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
+		.css("background-color", "red").css("color", "black");
+	
 	$("#mapMain").show();
 }
 	
@@ -1955,9 +1963,17 @@ function progressStory() {
 			if(enemy != null) {
 				$(".saveGame").prop('disabled', false);
 				$(".toTitleButton").prop('disabled', false);
+				startBattle();
 			}
-			//shows go to map if it is not loaded
-			if(!mapLoaded) {
+
+			//shows go to map if not currently in a battle (load in)
+			if(player.getMapPosition().length == 0) {
+				if(enemies.length == 0)
+					enemyInit();
+				let playerMapPosition = [];
+				let startPoint = mapObj[currentChapter].startPoint;
+				let newPosition = playerMapPosition.concat(startPoint);
+				player.setMapPosition(newPosition);
 				$("#storyEnd").text("To Map").show();
 				$("#storyEnd").click(function() {
 					$("#storyMain").hide();
@@ -1966,28 +1982,16 @@ function progressStory() {
 					updateMap("player", null);
 				});					
 				//disables next chapter button if next state is a map
-				$("#storyProgress").prop('disabled', true);
+				$("#storyProgress").prop('disabled', true);	
 			}
 			else {
 				$("#storyMain").hide();
-				if($("#mapRow1").children().length > 0) {
-					updateMap(null, null);
-					updateMap("player", null);
-					$("#mapMain").show();
-				}	
-				else {
-					populateMap();
-					updateMap(null, null);
-					updateMap("player", null);
-					$("#mapMain").show();
-				}
-			}			
-		}	
-		
-		//if in a fight goes there instead
-		if(enemy != null) {
-			startBattle();	
-		}	
+				populateMap();
+				updateMap(null, null);
+				updateMap("player", null);
+				$("#mapMain").show();
+			}	
+		}		
 	}		
 }	
 
@@ -2103,7 +2107,7 @@ function getExaminationResults() {
 	//examining a corpse loots it
 	if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
 		
-	}	
+	}
 }	
 
 //game starting scripts
@@ -2121,7 +2125,7 @@ $(document).ready(function(){
 		currentChapter = 0;
 		currentPage = 0;
 		currentState = 0;
-		currentEnemy = 0;
+		currentEnemy = null;
 		enemyCount = 0;
 		
 		//panel set for game session
@@ -2516,7 +2520,7 @@ $(document).ready(function(){
 
 		player.equipArmour(
 			playerData.armourName, 
-			playerData.armnourDamage
+			playerData.armourValue
 		);	
 			
 
@@ -2542,7 +2546,7 @@ $(document).ready(function(){
 
 			enemy.equipArmour(
 				enemyData[i].armourName, 
-				enemyData[i].armnourDamage
+				enemyData[i].armourValue
 			);
 
 			enemy.setCurrentHealth(enemyData[i].currentHealth);
@@ -2565,6 +2569,7 @@ $(document).ready(function(){
 		mapLoaded = window.localStorage.getItem('mapLoaded');
 		uiReset();
 		$("#gameIntroMenu").hide();
+
 		startStory();	
 	});
 	
