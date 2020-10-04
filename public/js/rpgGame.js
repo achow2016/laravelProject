@@ -69,7 +69,7 @@ var storyObj = [
 			"What will you do?"			
 		],
 		"nextState":[
-			{"itemGift" : "First Aid Injector"},
+			{"itemGift" : [{"name":"First Aid Injector", "quantity":"1"}]},
 			{"map" : "intro"}
 		]	
 	},
@@ -110,7 +110,34 @@ var itemObj = [
 //random helper function
 function getRandomInteger(min, max) {
 	return Math.floor(Math.random() * (max - min + 1) ) + min;
-}	
+}
+
+//equipment class
+class equipment {
+	constructor(name, type, amount) {
+		this.name = name;
+		this.type = type;
+		this.amount = amount;
+	}
+	getName() {
+		return this.name;
+	}
+	setname() {
+		this.name = name;
+	}	
+	getType() {
+		return this.type;
+	}
+	setType() {
+		this.type = type;
+	}
+	getAmount() {
+		return this.amount;
+	}
+	setAmount() {
+		this.amount = amount;
+	}
+}
 
 //for storing a buff status, placed in player buff array
 class BuffStatus {
@@ -182,14 +209,14 @@ class BuffStatus {
 
 //inventory item object 
 class Item {
-	constructor(name, effect, stackLimit, effectPercent, cost, duration) {
+	constructor(name, effect, stackLimit, effectPercent, cost, duration, quantity) {
 		this.name = name;
 		this.effect = effect;
 		this.stackLimit = stackLimit;
 		this.effectPercent = effectPercent;
 		this.cost = cost;
 		this.duration = duration;
-		this.quantity = 1;
+		this.quantity = quantity;
 	}
 	
 	getQuantity() {
@@ -349,6 +376,18 @@ class Actor {
 		this.fatigue = 0;
 		this.mapPosition = [];
 		this.avatar = avatar;
+		this.equipmentArray = [];
+	}
+
+	addToEquipmentInventory(item) {
+		for(let i = 0; i < itemObj.length; i++) {
+			if(itemObj[i].name === item) {
+				var item = new Item(itemObj[i].name, itemObj[i].effect, 
+					itemObj[i].effectStackLimit, itemObj[i].effectPercent, 
+					itemObj[i].cost, itemObj[i].duration, qty); 
+				this.itemInventory.push(item);
+			}	
+		}	
 	}	
 
 	considerRest() {
@@ -431,19 +470,32 @@ class Actor {
 	tickBuffs() {
 		for(var i = 0; i < (this.statusBuffArray).length; i++) {		
 			if((this.statusBuffArray)[i].getEffect() == "Regen") {
-				this.setCurrentHealth(Math.ceil(this.currentHealth *= (1 + ((this.statusBuffArray)[i].getEffectPercent() / 100))));
-				(this.statusBuffArray)[i].tickDuration();
-				if((this.statusBuffArray)[i].getDuration() == 0) {
-					this.removeFromStatusBuffArray((this.statusBuffArray)[i].getName());
+				let targetHealth = (Math.ceil(this.currentHealth *= (1 + ((this.statusBuffArray)[i].getEffectPercent() / 100))));
+				if(targetHealth < this.health) { 
+					this.setCurrentHealth(Math.ceil(this.currentHealth *= (1 + ((this.statusBuffArray)[i].getEffectPercent() / 100))));
+					(this.statusBuffArray)[i].tickDuration();
+					if((this.statusBuffArray)[i].getDuration() == 0) {
+						this.removeFromStatusBuffArray((this.statusBuffArray)[i].getName());
+					}
+				} 
+				else {
+					this.currentHealth = this.health;
+					(this.statusBuffArray)[i].tickDuration();
+					if((this.statusBuffArray)[i].getDuration() == 0) {
+						this.removeFromStatusBuffArray((this.statusBuffArray)[i].getName());
+					}
 				}
 			}	
-			if((this.statusBuffArray)[i].getEffect() == "Reduced Attack Arms") {
+			else if((this.statusBuffArray)[i].getEffect() == "Reduced Attack Arms") {
 				this.setAttackPenalty((this.statusBuffArray)[i].getEffectPercent() * 
 					this.statusBuffArray[i].getStackCount());
 				(this.statusBuffArray)[i].tickDuration();
 				if((this.statusBuffArray)[i].getDuration() == 0) {
 					this.removeFromStatusBuffArray((this.statusBuffArray)[i].getName());
 				}
+			}
+			else {
+				return;
 			}
 		}	
 	}	
@@ -489,16 +541,51 @@ class Actor {
 		return this.itemInventory;	
 	}
 
-	addToItemInventory(item) {
-		for(let i = 0; i < itemObj.length; i++) {
-			if(itemObj[i].name === item) {
-				var item = new Item(itemObj[i].name, itemObj[i].effect, 
-					itemObj[i].effectStackLimit, itemObj[i].effectPercent, 
-					itemObj[i].cost, itemObj[i].duration, itemObj[i].quantity); 
-				this.itemInventory.push(item);
-			}	
+	addToItemInventory(item, qty) {
+		//if received item is an object or zero quantity
+		if(typeof item != 'string' || qty == 0) {
+			this.itemInventory.push(item);
+		}
+        else {
+			//check if item exists and add to it if found
+			for(let i = 0; i < this.itemInventory.length; i++) {
+				if((this.itemInventory[i].getName()) === item) {
+					(this.itemInventory[i]).setQuantity(this.itemInventory[i].getQuantity() + qty);
+					itemAdded = true;
+					return;
+				}
+			}
+			
+			//if no match found, finds item entry and pushes new item to inventory
+			for(let i = 0; i < itemObj.length; i++) {
+				if(itemObj[i].name === item) {
+					var item = new Item(itemObj[i].name, itemObj[i].effect, 
+						itemObj[i].effectStackLimit, itemObj[i].effectPercent, 
+						itemObj[i].cost, itemObj[i].duration, qty); 
+					this.itemInventory.push(item);
+				}	
+			}
 		}
 	}	
+
+	useItem(item) {
+		for(var j = 0; j < this.itemInventory.length; j++) {
+			if((this.itemInventory[j].getName()) === item) {
+				//applies item effect
+				var buff = new BuffStatus(this.itemInventory[j].name, this.itemInventory[j].effect,
+					this.itemInventory[j].stackLimit, this.itemInventory[j].effectPercent,
+					this.itemInventory[j].duration);
+
+				player.addToStatusBuffArray(buff);	
+				
+				//decrement item quantity, remove from item array if zero	
+				this.itemInventory[j].decrementQuantity();
+				if(this.itemInventory[j].getQuantity() == 0) {
+					this.removeFromItemInventory(this.itemInventory[j].getName());
+				}	
+			}
+		}
+	}
 	
 	removeFromItemInventory(item) {
 		for(let i = 0; i < this.itemInventory.length; i++) {
@@ -963,7 +1050,8 @@ function skillEnemyAttack() {
 						if(playerDefenseBroken)
 							penalty = (Math.floor(meleeSkillObj[j].debuffPercent * 1.5));								
 
-						let newDebuff = new BuffStatus("Attack Reduction", "Reduced Attack Arms", 0, penalty, meleeSkillObj[j].debuffDuration);
+						let newDebuff = new BuffStatus("Attack Reduction", "Reduced Attack Arms", 0, 
+							penalty, meleeSkillObj[j].debuffDuration);
 						player.addToStatusBuffArray(newDebuff);
 					}	
 				}
@@ -1075,11 +1163,12 @@ function enemyAttack() {
 
 //update of ui and clean up after each turn
 function postAttackUpdates() {
-	//set status conditions
+
+	//set status conditions player
 	let tempBuffArray = player.getStatusBuffArray();
 	let buffStr;
 	$("#playerActiveEffects").empty();
-	
+
 	for(let i = 0; i < tempBuffArray.length; i++) {
 		buffStr = tempBuffArray[i].getName() + " " + tempBuffArray[i].getEffect() + " " +
 			tempBuffArray[i].getEffectPercent() + "% x" + tempBuffArray[i].getStackCount() + " " +
@@ -1087,7 +1176,19 @@ function postAttackUpdates() {
 		$("#playerActiveEffects").append("<p>" + buffStr + "</p>");
 	};
 	if(tempBuffArray.length != 0)
-		$("#playerConditionTriangle").css('border-top', '20px solid yellow');
+		$("#playerConditionTriangle").css('border-top', '20px solid orange');
+
+	//set status conditions enemy
+	tempBuffArray = enemy.getStatusBuffArray();
+	$("#enemyActiveEffects").empty();
+	for(let i = 0; i < tempBuffArray.length; i++) {
+		buffStr = tempBuffArray[i].getName() + " " + tempBuffArray[i].getEffect() + " " +
+			tempBuffArray[i].getEffectPercent() + "% x" + tempBuffArray[i].getStackCount() + " " +
+			tempBuffArray[i].getDuration() + " left";
+		$("#enemyActiveEffects").append("<p>" + buffStr + "</p>");
+	};
+	if(tempBuffArray.length != 0)
+		$("#enemyConditionTriangle").css('border-top', '20px solid orange');
 	
 
 	//set condition text for player based on health
@@ -1271,29 +1372,13 @@ function refreshItems() {
 			' type="button" class="itemButton' + i + ' btn btn-primary active mb-1"></button><p class="ml-1">' +
 			itemQty + '</p></div>');
 		//item logic
-		//currently iterates over entire item list to find matching name
-		//$('#itemButton' + i).prop('value',itemName + " (" + playerItemArray[i].getQuantity() + 
-		//	")").click({param1:itemName}, function(event) {
-		//$('#itemButton' + i).prop('value',itemName).click({param1:itemName}, function(event) {
 		$('.itemButton' + i).click(function() {
 			for(var j = 0; j < itemObj.length; j++) {	
 				//finds item details in data
 				if(itemObj[j].name == $(this).attr("value")) {
-										
-					//applies item effect
-					var buff = new BuffStatus(itemObj[j].name, itemObj[j].effect,
-						itemObj[j].stackLimit, itemObj[j].effectPercent,
-						itemObj[j].duration);
-					player.addToStatusBuffArray(buff);	
-					
-					//decrement item quantity, remove from player item array if zero	
-					playerItemArray[j].decrementQuantity();
-					if(playerItemArray[j].getQuantity() == 0) {
-						player.removeFromItemInventory(playerItemArray[j].getName());
-					}	
-
+					//calls helper function in class
+					player.useItem(itemObj[j].name);
 					//fight specific
-					//if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "fight") {
 					if(enemy != null) {	
 						//no damage and using item
 						player.setAttackPenalty(100);
@@ -1308,7 +1393,6 @@ function refreshItems() {
 						$("#attackButton").click();//goes to battle turn processing
 					}
 					//map specific
-					//if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "map") {
 					if(enemy == null) {	
 						refreshItems();
 						//$('#mapItemModal').modal('toggle');
@@ -1437,7 +1521,8 @@ function refreshSkills() {
 									penalty = (meleeSkillObj[j].debuffPercent);
 								if(enemyDefenseBroken)
 									penalty = (Math.floor(meleeSkillObj[j].debuffPercent * 1.5));								
-								let newDebuff = new BuffStatus("Attack Reduction", "Reduced Attack Arms", 0, penalty, 0);
+								let newDebuff = new BuffStatus("Attack Reduction", "Reduced Attack Arms", 0, 
+									penalty, meleeSkillObj[j].debuffDuration);
 								enemy.addToStatusBuffArray(newDebuff);
 							}
 						}
@@ -1928,7 +2013,10 @@ function progressStory() {
 	if(currentPage == parseInt(storyObj[currentChapter].pageLength - 1)) {
 		//if next state is gift, gives an item then moves to next state
 		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "itemGift") {
-			player.addToItemInventory(storyObj[currentChapter].nextState[currentState].itemGift);
+			let giftArray = storyObj[currentChapter].nextState[currentState].itemGift;
+			for(var i = 0; i < giftArray.length; i++) {
+				player.addToItemInventory(giftArray[i].name, giftArray[i].quantity);
+			}
 			refreshItems();
 			currentState++;
 		}
@@ -2093,6 +2181,23 @@ function updateMap(actor, direction) {
 }	
 //populates examine modal depending on where player is standing
 function getExaminationResults() {
+
+	//populate player conditions
+	let tempBuffArray = player.getStatusBuffArray();
+	let buffStr;
+	$("#playerMapConditions").empty();
+
+	for(let i = 0; i < tempBuffArray.length; i++) {
+		buffStr = tempBuffArray[i].getName() + " " + tempBuffArray[i].getEffect() + " " +
+			tempBuffArray[i].getEffectPercent() + "% x" + tempBuffArray[i].getStackCount() + " " +
+			tempBuffArray[i].getDuration() + " left";
+		$("#playerMapConditions").append("<p>" + buffStr + "</p>");
+	};
+
+	if($("#playerMapConditions").children().length < 1) {
+		$("#playerMapConditions").append("<p class='col'>normal</p>");
+	}
+
 	let enemyMapPosition = storyObj[currentMap].enemyCoords;
 	let playerMapPosition = player.getMapPosition();
 	//populates enemy name information using square id enemy[x] and story obj
@@ -2507,8 +2612,8 @@ $(document).ready(function(){
 		$(".saveGame").text("Save").prop('disabled', false);
 
 		//player
-		playerData = JSON.parse(window.localStorage.getItem('player'));
-		
+		playerData = JSON.parse(window.localStorage.getItem('player'))
+		console.log(playerData);
 		player = new Actor(playerData.name, playerData.race, playerData.actorClass, playerData.health, 
 			playerData.attack, playerData.stamina, playerData.staminaRegen, playerData.baseAttackCost,
 			playerData.agility, playerData.avatar);			
@@ -2522,12 +2627,19 @@ $(document).ready(function(){
 			playerData.armourName, 
 			playerData.armourValue
 		);	
-			
 
 		player.setCurrentHealth(playerData.currentHealth);
 		player.setCurrentStamina(playerData.currentStamina);
 		player.setMeleeSkills(playerData.meleeSkillArray);
-		player.setItemInventory(playerData.itemInventory);
+
+		for(var i = 0; i < (playerData.itemInventory).length; i++) {
+			let tempItem = new Item((playerData.itemInventory)[i].name, (playerData.itemInventory)[i].effect, 
+				(playerData.itemInventory)[i].stackLimit, (playerData.itemInventory)[i].effectPercent, 
+				(playerData.itemInventory)[i].cost, (playerData.itemInventory)[i].duration,
+				(playerData.itemInventory)[i].quantity);
+			player.addToItemInventory(tempItem, 0);
+		}
+
 		player.setMapPosition(playerData.mapPosition);	
 
 		//enemies

@@ -315,6 +315,9 @@
 							<div class="modal-body">
 								<div id="examineSelfData">
 									<p class="playerName" data-toggle="tooltip" title=""></p>
+									<p data-toggle="tooltip" title="">Status:</p>
+									<div class="row text-center" id="playerMapConditions">
+									</div>
 									<p class="playerHealth" data-toggle="tooltip" title=""></p>
 									<p class="playerArmourName" data-toggle="tooltip" title=""></p>
 									<p class="playerArmour" data-toggle="tooltip" title=""></p>
@@ -323,8 +326,6 @@
 									<p class="playerAgility" data-toggle="tooltip" title=""></p>	
 								</div>
 								<div id="examineOtherData">
-									<p id="mapTerrain" data-toggle="tooltip" title=""></p>
-									<p id="mapActor" data-toggle="tooltip" title=""></p>
 									<p id="otherName" data-toggle="tooltip" title=""></p>
 									<p id="otherArmourName" data-toggle="tooltip" title=""></p>
 									<p id="otherAttackWeapon" data-toggle="tooltip" title=""></p>
