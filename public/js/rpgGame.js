@@ -30,7 +30,7 @@ var implantObj = [
 
 //skill percent is if attacking
 var personalityObj = [
-	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"100", "staminaCautionThreshold":"3"}, 
+	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"25", "staminaCautionThreshold":"3"}, 
 	/*
 	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"50", "staminaCautionThreshold":"4"}, 
 	{ "type":"defensive" , "attackPercent":"50", "defendPercent":"50", "skillPercent":"0", "staminaCautionThreshold":"3"},
@@ -1935,6 +1935,7 @@ function startBattle() {
 	else {
 		$("#activeEnemy").attr("src", enemy.getAvatar());
 	}
+	uiReset();
 	$("#mapMain").hide();
 	printPlayerStatus();
 	$("#battleMain").show();
@@ -1989,8 +1990,8 @@ function populateMap() {
 				.css("background-color", "red").css("color", "black");
 		}
 	}	
-	$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
-		.css("background-color", "red").css("color", "black");
+	$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "	1px dotted white");
+	//	.css("background-color", "red").css("color", "black");
 	
 	$("#mapMain").show();
 }
@@ -2094,7 +2095,7 @@ function updateMap(actor, direction) {
 		//if was on same spot, restores square to enemy, corpse or end marker
 		for(var i = 0; i < enemyMapPosition.length; i++) {
 			if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemyMapPosition[i])) {	
-				if(enemies[i].currentHealth > 0) {
+				if(enemies[i].getCurrentHealth() > 0) {
 					let temp = enemyMapPosition[i];
 					$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">e</p>")
 						.css("background-color", "red").css("color", "black");
@@ -2107,8 +2108,8 @@ function updateMap(actor, direction) {
 			
 			} 
 			else if (JSON.stringify(player.getMapPosition()) === JSON.stringify(exitMapPosition)) {
-				$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
-					.css("background-color", "red").css("color", "black");	
+				$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px dotted white");
+				//	.css("background-color", "black").css("color", "white");	
 			}	
 			else {
 			$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>g</p>")
@@ -2116,7 +2117,7 @@ function updateMap(actor, direction) {
 			}					
 		}	
 		
-		//set player new posiiton
+		//set player new position
 		if(direction === "mapLeft")
 			player.setMapXPosition(playerMapPosition[0] - 1);
 		if(direction === "mapRight")
@@ -2129,9 +2130,13 @@ function updateMap(actor, direction) {
 		//get new location of player and update detail text
 		playerMapPosition = player.getMapPosition();
 		$("#mapFight").prop("disabled", true);
+
 		//update map status tag based on what the player is going to be walking on
-		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "g")
+		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "g") {
 			$("#mapStatus").text("You are walking on a grassy field.");
+			
+			//add logic for if grass but exit point
+		}
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "e") {
 			
 			if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
@@ -2146,7 +2151,8 @@ function updateMap(actor, direction) {
 			else {
 				$("#mapStatus").text("There is someone here...");	
 				$("#mapFight").prop("disabled", false);
-			}	
+			}
+			//logic for if corpse but exit point
 		}	
 
 		//updates new spot to player marker and preserves enemy id		
@@ -2161,9 +2167,9 @@ function updateMap(actor, direction) {
 		}	
 	}
 	else {
-		//populates enemy position if health greater trhan zero and exit point		
+		//populates enemy position if health greater than zero and exit point		
 		for(var i = 0; i < enemyMapPosition.length; i++) {
-			if(enemies[i].currentHealth > 0) {
+			if(enemies[i].getCurrentHealth() > 0) {
 				let temp = enemyMapPosition[i];
 				$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">e</p>")
 					.css("background-color", "red").css("color", "black");
@@ -2175,8 +2181,10 @@ function updateMap(actor, direction) {
 			}	
 		}	
 		
-		$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
-			.css("background-color", "red").css("color", "black");		
+		//$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px solid red")
+		//	.css("background-color", "red").css("color", "black");	
+		$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).css("border", "1px dotted white");
+		//	.css("background-color", "black").css("color", "white");	
 	}
 }	
 //populates examine modal depending on where player is standing
@@ -2733,6 +2741,7 @@ $(document).ready(function(){
 	//exit fight button on victory
 	//calls update to remove enemy from square cleared
 	$("#battleReturnMap").click(function() {
+		$("#battleReturnMap").hide();
 		uiReset();	
 		updateMap(null, null);
 		updateMap("player", null);
