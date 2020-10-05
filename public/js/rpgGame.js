@@ -273,6 +273,7 @@ class Item {
 }	
 	
 //melee skill object
+/*
 class MeleeSkill {
 	constructor(name, effect, percent, penalty, cost, stanceResult, bodyTarget) {
 		this.name = name;
@@ -340,7 +341,8 @@ class MeleeSkill {
 	setPercent(percent) {
 		this.percent = percent;
 	}
-}	
+}
+*/	
 
 class Actor {
 	//randomizers are for enemy actor and adds up to 30% each to attack and health
@@ -713,9 +715,11 @@ class Actor {
 		return this.stamina;
 	}				
 	
-	addMeleeSkill(name,effect,percent) {
-		var skill = new MeleeSkill(name,effect,percent);
-		this.meleeSkillArray.push(skill);
+	//addMeleeSkill(name,effect,percent) {
+	addMeleeSkill(name) {
+		//var skill = new MeleeSkill(name,effect,percent);
+		//this.meleeSkillArray.push(skill);
+		this.meleeSkillArray.push({'name':name});
 	}
 
 	getMeleeSkills() {
@@ -1413,7 +1417,8 @@ function refreshSkills() {
 	playerSkillArray = player.getMeleeSkills();
 	var skillName = null;
 	for(var i = 0; i < playerSkillArray.length; i++) {
-		skillName = playerSkillArray[i].getName();
+		//skillName = playerSkillArray[i].getName();
+		skillName = playerSkillArray[i].name;
 		$('#skillButtonArray').append('<input name="' + skillName + '" id=skillButton' + i + ' type="button" class="btn btn-primary active mb-1"></button>');								
 		
 		//skill logic
