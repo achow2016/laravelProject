@@ -2297,13 +2297,17 @@ function getExaminationResults() {
 
 	let enemyMapPosition = storyObj[currentMap].enemyCoords;
 	let playerMapPosition = player.getMapPosition();
-	let enemyId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/)[0];
-	let otherArmour = enemies[enemyId].getArmourName();
-	let otherWeapon = enemies[enemyId].getWeaponName();
+	let enemyId;
+	let otherArmour;
+	let otherWeapon;
 		
 	//populates enemy name information using square id enemy[x] and story obj
 	for(var i = 0; i < enemyMapPosition.length; i++) {
 		if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemyMapPosition[i])) {
+			enemyId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/)[0];
+			otherArmour = enemies[enemyId].getArmourName();
+			otherWeapon = enemies[enemyId].getWeaponName();	
+
 			$("#otherName").text("Enemy: " + enemies[enemyId].getName());
 			if(otherArmour != null)
 				$("#otherArmourName").text("Wearing: " + enemies[enemyId].getArmourName());	
