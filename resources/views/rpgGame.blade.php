@@ -238,6 +238,7 @@
 				<div class="row mapMenu">
 					<div class="col">
 						<div class="btn-group d-flex w-100 mt-1" role="group">
+							<button disabled id="mapExit" type="button" class="mapControl btn btn-primary active w-100 mr-1">Exit</button>
 							<button disabled id="mapFight" type="button" class="mapControl btn btn-primary active w-100 mr-1">Fight</button>
 							<button id="mapExamine" type="button" class="mapControl btn btn-primary active w-100 ml-1 mr-1">Examine</button>
 							<button id="mapItem" type="button" class="mapControl btn btn-primary active w-100 ml-1 mr-1">Item</button>
