@@ -9,13 +9,13 @@ var mapObj = [
 
 var weaponObj = [
 	{ "name":"wood sword" , "damage":"1" },
-	{ "name":"bronze sword" , "damage":"5" },
+	{ "name":"bronze sword" , "damage":"2" },
 	{ "name":"iron sword" , "damage":"7" }
 ];
 
 var armourObj = [
 	{ "name":"cloth armour" , "reduction":"0" }, 
-	{ "name":"leather armour" , "reduction":"2" }, 
+	{ "name":"leather armour" , "reduction":"1" }, 
 	{ "name":"brigadine armour" , "reduction":"3" } 
 ];
 	
@@ -58,7 +58,7 @@ var storyObj = [
 			"guard",
 			"guard"
 		],
-		"enemyEquipmentTier" :"0",
+		"enemyEquipmentTier" :"1",
 		"enemyCoords":[[4,8],[4,4]],
 		"pages" : [
 			"Welcome to rpgGame!",
@@ -110,33 +110,6 @@ var itemObj = [
 //random helper function
 function getRandomInteger(min, max) {
 	return Math.floor(Math.random() * (max - min + 1) ) + min;
-}
-
-//equipment class
-class equipment {
-	constructor(name, type, amount) {
-		this.name = name;
-		this.type = type;
-		this.amount = amount;
-	}
-	getName() {
-		return this.name;
-	}
-	setname() {
-		this.name = name;
-	}	
-	getType() {
-		return this.type;
-	}
-	setType() {
-		this.type = type;
-	}
-	getAmount() {
-		return this.amount;
-	}
-	setAmount() {
-		this.amount = amount;
-	}
 }
 
 //for storing a buff status, placed in player buff array
@@ -381,15 +354,35 @@ class Actor {
 		this.equipmentArray = [];
 	}
 
-	addToEquipmentInventory(item) {
-		for(let i = 0; i < itemObj.length; i++) {
-			if(itemObj[i].name === item) {
-				var item = new Item(itemObj[i].name, itemObj[i].effect, 
-					itemObj[i].effectStackLimit, itemObj[i].effectPercent, 
-					itemObj[i].cost, itemObj[i].duration, qty); 
-				this.itemInventory.push(item);
+	setEquipment(equipment) {
+		this.equipmentArray = equipment;
+	}
+
+	removeEquipment(item) {
+		for(let i = 0; i < (this.equipmentArray).length; i++) {
+			if((this.equipmentArray[i].name) === item.name) {
+				var processedEquipList = (this.equipmentArray).filter(function(value,index,arr) { return value.name == item.name});
+				this.setEquipment(processedEquipList);
 			}	
-		}	
+		}
+	}
+
+	addEquipment(item) {
+		var duplicate = false;
+		for(let i = 0; i < (this.equipmentArray).length; i++) {
+			if(item.name === (this.equipmentArray[i].name)) {
+				duplicate = true; 
+				return duplicate;
+			}	 		
+		}
+		if(!duplicate) {
+			(this.equipmentArray).push(item);
+			return duplicate;
+		}			
+	}	
+
+	getEquipment() {
+		return this.equipmentArray;
 	}	
 
 	considerRest() {
@@ -777,6 +770,10 @@ class Actor {
 	
 	getArmourValue() {
 		return parseInt(this.armourValue);
+	}
+
+	getWeaponValue() {
+		return parseInt(this.weaponDamage);
 	}
 	
 	equipWeapon(weaponName, weaponDamage) {
@@ -1409,7 +1406,46 @@ function refreshItems() {
 			}
 		});				
 	}	
-}	
+}
+
+//refreshes list of all player equipment in modal
+function refreshEquipment() {
+	$('#equipButtonArray').empty();
+	playerEquipmentArray = player.getEquipment();
+	for(var i = 0; i < playerEquipmentArray.length; i++) {
+		let itemName = playerEquipmentArray[i].name;
+		let value = playerEquipmentArray[i].value;
+		$('#equipButtonArray').append('<div class="row"><input value=' + '"' + itemName + '"' +
+			' type="button" id="equipButton' + i + '" class="btn btn-primary active mb-1"></button><p class="ml-1 mt-1">' +
+			value + '</p></div>');
+		//equip logic
+		$('#equipButton' + i).click(function() {
+			//check weapons
+			for(var j = 0; j < weaponObj.length; j++) {	
+				//finds item details in data
+				if(weaponObj[j].name == $(this).attr("value")) {
+					//calls helper function in class
+					player.equipWeapon(weaponObj[j].name, weaponObj[j].damage);
+					//map specific
+					if($('#equipModal').hasClass('show'))
+						$('#equipModal').modal('toggle');
+					return;
+				}
+			}
+			for(var j = 0; j < armourObj.length; j++) {
+				//finds item details in data
+				if(armourObj[j].name == $(this).attr("value")) {
+					//calls helper function in class
+					player.equipWeapon(armourObj[j].name, armourObj[j].reduction);
+					//map specific
+					if($('#equipModal').hasClass('show'))
+						$('#equipModal').modal('toggle');
+					return;
+				}
+			}	
+		});				
+	}	
+}		
 
 //refresh all player skills from available list in modal
 function refreshSkills() {
@@ -1543,7 +1579,7 @@ function refreshSkills() {
 
 //enemy initialization
 function enemyInit() {
-	let enemyCount = parseInt(storyObj[currentChapter].enemyCount);
+	enemyCount = parseInt(storyObj[currentChapter].enemyCount);
 	for(var i = 0; i < enemyCount; i++) {
 		//finds matching enemy in enemyObj
 		let selectedEnemy = enemyObj.findIndex(function(item, j){
@@ -1633,10 +1669,15 @@ function playerInit() {
 		}	
 	}	
 	
+	player.addEquipment({name: weaponObj[0].name, value: weaponObj[0].damage});
+
 	player.equipWeapon(
 		weaponObj[0].name, 
 		weaponObj[0].damage
 	);
+
+	player.addEquipment({name: armourObj[0].name, value: armourObj[0].reduction});
+
 	player.equipArmour(
 		armourObj[0].name, 
 		armourObj[0].reduction
@@ -1696,10 +1737,9 @@ function gameInit() {
 	//selecting skill causes player attack right after with modifiers applied
 	//selecting item applies effect and player skips attack
 	if(firstRun) {
-		//refresh items list
 		refreshItems();
-		//refresh skills list
 		refreshSkills();
+		refreshEquipment();
 		firstRun = false;
 	}
 
@@ -2153,9 +2193,12 @@ function updateMap(actor, direction) {
 
 		//exit point, update text and shows exit button
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "exit") {
-			$("#mapStatus").text("You are walking on a grassy field. You see a way out of this area.");
-			$("#mapFight").hide();
-			$("#mapExit").show().prop('disabled', false);
+			$("#mapStatus").text("You are walking on a grassy field. There is a path leading out of this area.");
+			$("#mapFight").hide();	
+			if(enemyCount <= 0)	
+				$("#mapExit").show().prop('disabled', false);
+			else 
+				$("#mapExit").show().prop('disabled', true);
 		}
 			
 
@@ -2217,8 +2260,12 @@ function updateMap(actor, direction) {
 					.css("background-color", "green").css("color", "black");
 					
 				}
-				else if(temp.every((val, index) => val === playerMapPosition[index])) {
+				else if(temp.every((val, index) => val === playerMapPosition[index]) && enemies[i].getCurrentHealth() > 0) {
 					$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">ce</p>")
+					.css("background-color", "green").css("color", "black");
+				}
+				else if(temp.every((val, index) => val === playerMapPosition[index]) && enemies[i].getCurrentHealth() <= 0) {
+					$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=corpse" + i + ">ce</p>")
 					.css("background-color", "green").css("color", "black");
 				}
 				else {
@@ -2250,18 +2297,35 @@ function getExaminationResults() {
 
 	let enemyMapPosition = storyObj[currentMap].enemyCoords;
 	let playerMapPosition = player.getMapPosition();
+	let enemyId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/)[0];
+	let otherArmour = enemies[enemyId].getArmourName();
+	let otherWeapon = enemies[enemyId].getWeaponName();
+		
 	//populates enemy name information using square id enemy[x] and story obj
 	for(var i = 0; i < enemyMapPosition.length; i++) {
 		if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemyMapPosition[i])) {
-			let enemyId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/)[0];
-			$("#otherName").text("Enemy: " + enemies[enemyId].getName());							
-			$("#otherArmourName").text("Wearing: " +enemies[enemyId].getArmourName());								
-			$("#otherAttackWeapon").text("Holding: " + enemies[enemyId].getWeaponName());
+			$("#otherName").text("Enemy: " + enemies[enemyId].getName());
+			if(otherArmour != null)
+				$("#otherArmourName").text("Wearing: " + enemies[enemyId].getArmourName());	
+			else
+				$("#otherArmourName").text("Wearing: none");
+			if(otherWeapon != null)
+				$("#otherAttackWeapon").text("Holding: " + enemies[enemyId].getWeaponName());
+			else
+				$("#otherAttackWeapon").text("Holding: none");
 		}
 	}	
 	//examining a corpse loots it
 	if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
-		
+		let otherArmourValue = enemies[enemyId].getArmourValue();
+		if(otherArmour != null)
+			if(!player.addEquipment({name: otherArmour, value: otherArmourValue}))
+				enemies[enemyId].unequipArmour();
+		let otherWeapon = enemies[enemyId].getWeaponName();
+		let otherWeaponvalue = enemies[enemyId].getWeaponValue();
+		if(otherWeapon != null)	
+			if(!player.addEquipment({name: otherWeapon, value: otherWeaponvalue}))
+				enemies[enemyId].unequipWeapon();
 	}
 }	
 
@@ -2662,8 +2726,7 @@ $(document).ready(function(){
 		$(".saveGame").text("Save").prop('disabled', false);
 
 		//player
-		playerData = JSON.parse(window.localStorage.getItem('player'))
-		console.log(playerData);
+		playerData = JSON.parse(window.localStorage.getItem('player'));
 		player = new Actor(playerData.name, playerData.race, playerData.actorClass, playerData.health, 
 			playerData.attack, playerData.stamina, playerData.staminaRegen, playerData.baseAttackCost,
 			playerData.agility, playerData.avatar);			
@@ -2688,6 +2751,11 @@ $(document).ready(function(){
 				(playerData.itemInventory)[i].cost, (playerData.itemInventory)[i].duration,
 				(playerData.itemInventory)[i].quantity);
 			player.addToItemInventory(tempItem, 0);
+		}
+
+		for(var i = 0; i < (playerData.equipmentArray).length; i++) {
+			player.addEquipment({name: (playerData.equipmentArray)[i].name, 
+				value: (playerData.equipmentArray)[i].value});
 		}
 
 		player.setMapPosition(playerData.mapPosition);	
@@ -2804,11 +2872,12 @@ $(document).ready(function(){
 	});
 	
 	//map item button
-	$("#mapItem").click(function() {
-		
+	$("#mapEquip").click(function() {
+		refreshEquipment();
+		$('#equipModal').modal('toggle');
 	});
 	
-	//map equip button
+	//map item button
 	$("#mapItem").click(function() {
 		refreshItems();
 		$('#mapItemModal').modal('toggle');

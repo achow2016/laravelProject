@@ -338,7 +338,30 @@
 						</div>	
 					</div>	
 				</div>
-			</div>			
+			</div>
+
+			<!--equipment modal-->
+					
+			<!-- Modal -->
+			<div class="modal fade" id="equipModal" role="dialog">
+				<div class="modal-dialog">
+
+			<!-- Modal content-->
+					<div class="modal-content">
+						<div class="modal-header">
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+						</div>
+						<div class="modal-body">
+							<div id="equipButtonArray" class="btn-group-vertical centered-button"></div>
+						</div>
+						<div class="modal-footer centered-button">
+							<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+						</div>
+					</div>	
+				</div>	
+			</div>
+
+						
 			
 			<!--battle main page-->
 			<div id="battleMain" style="display:none">
