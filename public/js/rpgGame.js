@@ -2142,7 +2142,6 @@ function progressStory() {
 		//if next state is gift, gives an item then moves to next state
 		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "itemGift") {
 			let giftArray = storyObj[currentChapter].nextState[currentState].itemGift;
-			console.log(giftArray);
 			for(var i = 0; i < giftArray.length; i++) {
 				player.addToItemInventory(giftArray[i].name, parseInt(giftArray[i].quantity));
 			}
@@ -2378,10 +2377,10 @@ function getExaminationResults() {
 
 	let enemyMapPosition = storyObj[currentMap].enemyCoords;
 	let playerMapPosition = player.getMapPosition();
-	let enemyId;
-	let otherArmour;
-	let otherWeapon;
-		
+	let enemyId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/)[0];
+	let otherArmour = enemies[enemyId].getArmourName();
+	let otherWeapon = enemies[enemyId].getWeaponName();	
+
 	printOthersExamination();
 
 	//examining a corpse loots it
