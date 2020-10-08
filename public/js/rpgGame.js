@@ -69,7 +69,11 @@ var storyObj = [
 			"What will you do?"			
 		],
 		"nextState":[
-			{"itemGift" : [{"name":"First Aid Injector", "quantity":"1"}]},
+			{"itemGift" : [
+				{"name":"First Aid Injector", "quantity":"1"},
+				{"name":"Small Treatment Kit", "quantity":"1"},
+				{"name":"Throwing Stone", "quantity":"1"},
+			]},
 			{"map" : "intro"}
 		]	
 	},
@@ -104,7 +108,8 @@ var meleeSkillObj = [
 
 var itemObj = [
 	{ "name":"First Aid Injector" , "effect":"Regen", "effectStackLimit":"1", "effectPercent":"5", "cost":"10", "duration":"10"},
-	{ "name":"Small Medical Treatment Kit" , "effect":"Regen", "effectStackLimit":"1", "effectPercent":"30", "cost":"10", "duration":"1"}
+	{ "name":"Small Treatment Kit" , "effect":"Regen", "effectStackLimit":"1", "effectPercent":"30", "cost":"10", "duration":"1"},
+	{ "name":"Throwing Stone" , "effect":"Direct Damage", "effectStackLimit":"1", "effectPercent":"100", "cost":"0", "duration":"1"}
 ];
 
 //random helper function
@@ -121,8 +126,17 @@ class BuffStatus {
 		this.effectPercent = effectPercent;
 		this.duration = duration;
 		this.stackCount = 1;
+		this.effectNumberAmount = 0;
 	}
 	
+	setEffectNumberAmount(amount) {
+		this.effectNumberAmount = amount;	
+	}
+
+	getEffectNumberAmount() {
+		return this.effectNumberAmount;	
+	}	
+
 	getName() {
 		return this.name;	
 	}	
@@ -462,7 +476,7 @@ class Actor {
 		this.race = race;	
 	}	
 	
-	tickBuffs() {
+	tickBuffs(targetOption) {
 		for(var i = 0; i < (this.statusBuffArray).length; i++) {		
 			if((this.statusBuffArray)[i].getEffect() == "Regen") {
 				let targetHealth = (Math.ceil(this.currentHealth *= (1 + ((this.statusBuffArray)[i].getEffectPercent() / 100))));
@@ -488,6 +502,15 @@ class Actor {
 				if((this.statusBuffArray)[i].getDuration() == 0) {
 					this.removeFromStatusBuffArray((this.statusBuffArray)[i].getName());
 				}
+			}
+			else if((this.statusBuffArray)[i].getEffect() == "Direct Damage") {
+				let damage = (this.statusBuffArray)[i].getEffectNumberAmount() - parseInt(this.armourValue);
+				let targetHealth = this.currentHealth -= damage;
+				(this.statusBuffArray)[i].tickDuration();
+				if((this.statusBuffArray)[i].getDuration() == 0) {
+					this.removeFromStatusBuffArray((this.statusBuffArray)[i].getName());
+				}
+				$("#enemyDamagedAmount").text("Item: " + damage);
 			}
 			else {
 				return;
@@ -538,7 +561,7 @@ class Actor {
 
 	addToItemInventory(item, qty) {
 		//if received item is an object or zero quantity
-		if(typeof item != 'string' || qty == 0) {
+		if(qty == 0) {
 			this.itemInventory.push(item);
 		}
         else {
@@ -556,39 +579,58 @@ class Actor {
 				if(itemObj[i].name === item) {
 					var item = new Item(itemObj[i].name, itemObj[i].effect, 
 						itemObj[i].effectStackLimit, itemObj[i].effectPercent, 
-						itemObj[i].cost, itemObj[i].duration, qty); 
+						itemObj[i].cost, itemObj[i].duration, qty);
 					this.itemInventory.push(item);
 				}	
 			}
 		}
 	}	
 
-	useItem(item) {
-		for(var j = 0; j < this.itemInventory.length; j++) {
-			if((this.itemInventory[j].getName()) === item) {
-				//applies item effect
-				var buff = new BuffStatus(this.itemInventory[j].name, this.itemInventory[j].effect,
-					this.itemInventory[j].stackLimit, this.itemInventory[j].effectPercent,
-					this.itemInventory[j].duration);
+	useItem(item, actor) {
+		if(actor === "enemy") {
+			for(var j = 0; j < this.itemInventory.length; j++) {
+				if((this.itemInventory[j].getName()) === item) {
+					//applies item effect
+					var buff;
+					if(this.itemInventory[j].effect === "Direct Damage") {
+						buff = new BuffStatus(this.itemInventory[j].name, this.itemInventory[j].effect,
+							this.itemInventory[j].stackLimit, this.itemInventory[j].effectPercent,
+							this.itemInventory[j].duration);
+						
+						buff.setEffectNumberAmount(this.getAttackValue());
+						enemy.addToStatusBuffArray(buff);	
+					}
+					//decrement item quantity, remove from item array if zero	
+					this.itemInventory[j].decrementQuantity();
+					if(this.itemInventory[j].getQuantity() == 0) {
+						this.removeEmptyFromItemInventory();
+					}	
+				}
+			}
+		}
+		if(actor === "player") {
+			for(var j = 0; j < this.itemInventory.length; j++) {
+				if((this.itemInventory[j].getName()) === item) {
+					//applies item effect
+					var buff = new BuffStatus(this.itemInventory[j].name, this.itemInventory[j].effect,
+						this.itemInventory[j].stackLimit, this.itemInventory[j].effectPercent,
+						this.itemInventory[j].duration);
 
-				player.addToStatusBuffArray(buff);	
-				
-				//decrement item quantity, remove from item array if zero	
-				this.itemInventory[j].decrementQuantity();
-				if(this.itemInventory[j].getQuantity() == 0) {
-					this.removeFromItemInventory(this.itemInventory[j].getName());
-				}	
+					player.addToStatusBuffArray(buff);	
+					
+					//decrement item quantity, remove from item array if zero	
+					this.itemInventory[j].decrementQuantity();
+					if(this.itemInventory[j].getQuantity() == 0) {
+						this.removeEmptyFromItemInventory(this.itemInventory[j].getName());
+					}	
+				}
 			}
 		}
 	}
 	
-	removeFromItemInventory(item) {
-		for(let i = 0; i < this.itemInventory.length; i++) {
-			if((this.itemInventory[i].getName()) === item) {
-				var processedItemList = (this.itemInventory).filter(function(value,index,arr) { return value == item});
-				this.setItemInventory(processedItemList);
-			}	
-		}
+	removeEmptyFromItemInventory() {
+		var processedItemList = (this.itemInventory).filter(item => item.getQuantity() != 0);
+		this.setItemInventory(processedItemList);
 	}	
 	
 	getPersonality() {
@@ -1378,7 +1420,12 @@ function refreshItems() {
 				//finds item details in data
 				if(itemObj[j].name == $(this).attr("value")) {
 					//calls helper function in class
-					player.useItem(itemObj[j].name);
+					if(itemObj[j].effect === "Direct Damage") {
+						player.useItem(itemObj[j].name, "enemy");
+					}
+					else {
+						player.useItem(itemObj[j].name, "player");
+					}
 					//fight specific
 					if(enemy != null) {	
 						//no damage and using item
@@ -1967,6 +2014,39 @@ function printPlayerStatus() {
 	$(".playerAgility").text("Agility: " + player.getAgility());	
 }	
 
+//called at map movement to clear enemy detail of square
+function printOthersExamination() {
+	let enemyMapPosition = storyObj[currentMap].enemyCoords;
+	let playerMapPosition = player.getMapPosition();
+	let enemyId;
+	let otherArmour;
+	let otherWeapon;
+		
+	//populates enemy name information using square id enemy[x] and story obj
+	for(var i = 0; i < enemyMapPosition.length; i++) {
+		if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemyMapPosition[i])) {
+			enemyId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/)[0];
+			otherArmour = enemies[enemyId].getArmourName();
+			otherWeapon = enemies[enemyId].getWeaponName();	
+
+			$("#otherName").text("Enemy: " + enemies[enemyId].getName());
+			if(otherArmour != null)
+				$("#otherArmourName").text("Wearing: " + enemies[enemyId].getArmourName());	
+			else
+				$("#otherArmourName").text("Wearing: none");
+			if(otherWeapon != null)
+				$("#otherAttackWeapon").text("Holding: " + enemies[enemyId].getWeaponName());
+			else
+				$("#otherAttackWeapon").text("Holding: none");
+		}
+		else {
+			$("#otherName").text("Enemy: none");
+			$("#otherArmourName").text("Wearing: none");
+			$("#otherAttackWeapon").text("Holding: none");
+		}
+	}
+}
+
 //sets ui to battle or fight state
 function startBattle() {
 	//getting correct enemy if needed
@@ -2062,8 +2142,9 @@ function progressStory() {
 		//if next state is gift, gives an item then moves to next state
 		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "itemGift") {
 			let giftArray = storyObj[currentChapter].nextState[currentState].itemGift;
+			console.log(giftArray);
 			for(var i = 0; i < giftArray.length; i++) {
-				player.addToItemInventory(giftArray[i].name, giftArray[i].quantity);
+				player.addToItemInventory(giftArray[i].name, parseInt(giftArray[i].quantity));
 			}
 			refreshItems();
 			currentState++;
@@ -2301,24 +2382,8 @@ function getExaminationResults() {
 	let otherArmour;
 	let otherWeapon;
 		
-	//populates enemy name information using square id enemy[x] and story obj
-	for(var i = 0; i < enemyMapPosition.length; i++) {
-		if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemyMapPosition[i])) {
-			enemyId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/)[0];
-			otherArmour = enemies[enemyId].getArmourName();
-			otherWeapon = enemies[enemyId].getWeaponName();	
+	printOthersExamination();
 
-			$("#otherName").text("Enemy: " + enemies[enemyId].getName());
-			if(otherArmour != null)
-				$("#otherArmourName").text("Wearing: " + enemies[enemyId].getArmourName());	
-			else
-				$("#otherArmourName").text("Wearing: none");
-			if(otherWeapon != null)
-				$("#otherAttackWeapon").text("Holding: " + enemies[enemyId].getWeaponName());
-			else
-				$("#otherAttackWeapon").text("Holding: none");
-		}
-	}	
 	//examining a corpse loots it
 	if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
 		let otherArmourValue = enemies[enemyId].getArmourValue();
@@ -2579,8 +2644,8 @@ $(document).ready(function(){
 			
 			
 		//process buffs at end of turn
-		player.tickBuffs();
-		enemy.tickBuffs();
+		player.tickBuffs(enemy);
+		enemy.tickBuffs(player);
 			
 			
 		//update game based on changed values
@@ -2814,8 +2879,11 @@ $(document).ready(function(){
 	
 	//map directional control buttons
 	$(".mapDirControl").click(function() {
+		//empty others examination details in modal
+		printOthersExamination();
+
 		//tick buffs on movement
-		player.tickBuffs();
+		player.tickBuffs(player);
 		//allow save on movement
 		$(".saveGame").text("Save").prop('disabled', false);
 		
