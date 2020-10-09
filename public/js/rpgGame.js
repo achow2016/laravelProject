@@ -1419,12 +1419,25 @@ function refreshItems() {
 			for(var j = 0; j < itemObj.length; j++) {	
 				//finds item details in data
 				if(itemObj[j].name == $(this).attr("value")) {
-					//calls helper function in class
-					if(itemObj[j].effect === "Direct Damage") {
+					//display item used
+					$("#playerGameStatus").text(itemObj[j].name);
+					//calls helper function in class, if used on map shows detail
+					let statusString = $("#mapStatus").text();  
+
+					let index = statusString.indexOf('!');
+					if(index > -1) {
+						statusString = statusString.substr(index + 1);
+					}
+
+					if(itemObj[j].effect === "Direct Damage" && enemy != null) {
 						player.useItem(itemObj[j].name, "enemy");
+					}
+					else if(itemObj[j].effect === "Direct Damage" && enemy == null) {
+						$("#mapStatus").text("You cannot use that item here! " + statusString);
 					}
 					else {
 						player.useItem(itemObj[j].name, "player");
+						$("#mapStatus").text("You used a " + itemObj[j].name + "! " + statusString);
 					}
 					//fight specific
 					if(enemy != null) {	
@@ -2289,7 +2302,10 @@ function updateMap(actor, direction) {
 				let tempName = "";
 				for(var i = 0; i < enemyMapPosition.length; i++) {
 					if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemyMapPosition[i])) {
-						tempName = enemies[i].name;
+						if(enemies[i].getWeaponName() == null || enemies[i].getArmourName() == null)
+							tempName = "looted " + enemies[i].name;
+						else
+							tempName = enemies[i].name;
 					}
 				}
 				$("#mapStatus").text("There is a corpse of a " + tempName + " here.");
@@ -2377,23 +2393,33 @@ function getExaminationResults() {
 
 	let enemyMapPosition = storyObj[currentMap].enemyCoords;
 	let playerMapPosition = player.getMapPosition();
-	let enemyId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/)[0];
-	let otherArmour = enemies[enemyId].getArmourName();
-	let otherWeapon = enemies[enemyId].getWeaponName();	
+	let enemyId;
+	let otherArmour;
+	let otherWeapon
+	let squareId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/);
+	//let enemyId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/)[0];
+	if(squareId != null) {
+		enemyId = squareId[0];
+		otherArmour = enemies[enemyId].getArmourName();
+		otherWeapon = enemies[enemyId].getWeaponName();	
+		
+		printOthersExamination();
 
-	printOthersExamination();
-
-	//examining a corpse loots it
-	if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
-		let otherArmourValue = enemies[enemyId].getArmourValue();
-		if(otherArmour != null)
-			if(!player.addEquipment({name: otherArmour, value: otherArmourValue}))
+		//examining a corpse loots it
+		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
+			let otherArmourValue = enemies[enemyId].getArmourValue();
+			if(otherArmour != null && (!player.addEquipment({name: otherArmour, value: otherArmourValue})))
 				enemies[enemyId].unequipArmour();
-		let otherWeapon = enemies[enemyId].getWeaponName();
-		let otherWeaponvalue = enemies[enemyId].getWeaponValue();
-		if(otherWeapon != null)	
-			if(!player.addEquipment({name: otherWeapon, value: otherWeaponvalue}))
+			let otherWeapon = enemies[enemyId].getWeaponName();
+			let otherWeaponvalue = enemies[enemyId].getWeaponValue();
+			if(otherWeapon != null && (!player.addEquipment({name: otherWeapon, value: otherWeaponvalue})))
 				enemies[enemyId].unequipWeapon();
+
+			if(enemies[enemyId].getWeaponName() == null || enemies[enemyId].getArmourName() == null) {
+				let tempName = "looted " + enemies[enemyId].name;
+				$("#mapStatus").text("There is a corpse of a " + tempName + " here.");
+			}	
+		}
 	}
 }	
 
@@ -2605,6 +2631,7 @@ $(document).ready(function(){
 	
 		//show damage
 		//show defense broken damage
+		//show nothing if item used
 		if(playerDefenseBroken) {
 			$("#playerDamagedAmount").text("Break!: " + enemyDamage);
 		}	
@@ -2613,12 +2640,16 @@ $(document).ready(function(){
 				$("#playerDamagedAmount").text("Hit: " + enemyDamage);	
 		}
 		
-		if(enemyDefenseBroken) {
-			$("#enemyDamagedAmount").text("Break!: " + playerDamage);
-		}	
+		if(playerUseItem)
+			$("#enemyDamagedAmount").text("---");
 		else {
-			if(!enemyAttackFailure) 
-				$("#enemyDamagedAmount").text("Hit: " + playerDamage);	
+			if(enemyDefenseBroken) {
+				$("#enemyDamagedAmount").text("Break!: " + playerDamage);
+			}	
+			else {
+				if(!enemyAttackFailure) 
+					$("#enemyDamagedAmount").text("Hit: " + playerDamage);	
+			}
 		}
 		//reset attack modifiers
 		if(playerDefend) {
@@ -2878,8 +2909,6 @@ $(document).ready(function(){
 	
 	//map directional control buttons
 	$(".mapDirControl").click(function() {
-		//empty others examination details in modal
-		printOthersExamination();
 
 		//tick buffs on movement
 		player.tickBuffs(player);
@@ -2894,25 +2923,33 @@ $(document).ready(function(){
 					updateMap("player", this.id);
 					updateMap(null, null);
 				}
+				//empty others examination details in modal
+				printOthersExamination();
 				break;
 			case "mapUp": 
 				if(playerMapPosition[1] < 8) {
 					updateMap("player", this.id);
 					updateMap(null, null);
 				}
-				break;
-			case "mapDown":
+				//empty others examination details in modal
+				printOthersExamination();
+				break;			
+				case "mapDown":
 				if(playerMapPosition[1] > 1) {
 					updateMap("player", this.id);
 					updateMap(null, null);
 				}
+				//empty others examination details in modal
+				printOthersExamination();
 				break;
 			case "mapRight":
 				if(playerMapPosition[0] < 8) {
 					updateMap("player", this.id);
 					updateMap(null, null);
 				}
-				break;	
+				//empty others examination details in modal
+				printOthersExamination();
+				break;			
 			default:
 				break;
 		}
