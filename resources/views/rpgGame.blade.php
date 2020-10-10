@@ -727,8 +727,18 @@
 				-->
 				
 				<div id="scorePanel" class="container tab-pane fade"><br>
-					<h3>Menu 2</h3>
-					<p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam.</p>
+					<p class="playerScore" data-toggle="tooltip" title=""></p>
+					<p class="playerKills" data-toggle="tooltip" title=""></p>
+					<p class="playerDamageDone" data-toggle="tooltip" title=""></p>
+					<p class="playerDamageReceived" data-toggle="tooltip" title=""></p>
+					<p class="playerChaptersCleared" data-toggle="tooltip" title=""></p>
+					<p class="playerName" data-toggle="tooltip" title=""></p>
+					<p class="playerHealth" data-toggle="tooltip" title=""></p>
+					<p class="playerArmourName" data-toggle="tooltip" title=""></p>
+					<p class="playerArmour" data-toggle="tooltip" title=""></p>
+					<p class="playerAttackWeapon" data-toggle="tooltip" title=""></p>
+					<p class="playerAttack" data-toggle="tooltip" title=""></p>	
+					<p class="playerAgility" data-toggle="tooltip" title=""></p>
 				</div>
 				
 			</div>

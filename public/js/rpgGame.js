@@ -30,7 +30,7 @@ var implantObj = [
 
 //skill percent is if attacking
 var personalityObj = [
-	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"25", "staminaCautionThreshold":"3"}, 
+	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"100", "staminaCautionThreshold":"3"}, 
 	/*
 	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"50", "staminaCautionThreshold":"4"}, 
 	{ "type":"defensive" , "attackPercent":"50", "defendPercent":"50", "skillPercent":"0", "staminaCautionThreshold":"3"},
@@ -39,7 +39,7 @@ var personalityObj = [
 ];	
 	
 var enemyObj = [
-	{ "name":"guard", "race":"human", "actorClass":"none", "health":"70", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":"Arm Smash", "avatar":"/img/enemyFace.jpg" },
+	{ "name":"guard", "race":"human", "actorClass":"none", "health":"70", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":["Arm Smash"], "avatar":"/img/enemyFace.jpg" },
 ];
 
 var raceObj = [
@@ -991,11 +991,13 @@ var enemyDefend = false;
 var playerUseItem = false;
 
 //random enemy skill use based on what they have
-function skillEnemyAttack() {
+function skillEnemyAttack(availableSkills) {
 	//gets enemy assigned skill array
 	let skills = enemy.getMeleeSkills();
+
 	//random selection
-	let skillChoice = getRandomInteger(0, (skills.length - 1));
+	//let skillChoice = getRandomInteger(0, (skills.length - 1));
+	let skillChoice = availableSkills[getRandomInteger(0, (availableSkills.length - 1))];
 	
 	for(var j = 0; j < meleeSkillObj.length; j++) {	
 	
@@ -1124,7 +1126,8 @@ function enemyAttack() {
 		if(attackRoll < parseInt(personalityObj[choice].skillPercent)) {
 			skillDecision = true;			
 		}	
-		//regular attack
+
+		//regular attack but if too far away moves forward
 		if(!skillDecision) {
 			//enemy moves forward if not close enough to attack
 			//decreases player distance if enemy forward most and player at max distance
@@ -1171,9 +1174,54 @@ function enemyAttack() {
 					player.removeDefenseBreak();
 			}
 		}
-		//enemy uses skill
+		//enemy uses skill after checking range and selecting one from list, 
+		//moves if no skill matching range
 		else {
-			skillEnemyAttack();
+			let distance;
+			let availableSkills = [];
+			if(playerPosition == 0 && enemyPosition != 0) {
+				distance = enemyPosition; 
+			}	
+			else if(playerPosition > 0 && enemyPosition == 0) {
+				distance = playerPosition; 
+			}
+			else if(playerPosition != 0 && enemyPosition != 0) {
+				distance = playerPosition + enemyPosition; 
+			}
+			else {
+				distance = 0;
+			}
+			//string array of skill names
+			let skills = enemy.getMeleeSkills();
+			console.log(skills);
+			//find and add all usable skills
+			for(var a = 0; a < meleeSkillObj.length; a++) {
+				console.log(meleeSkillObj[a].name);
+				for(let b = 0; b < skills.length; b++) {
+					if(skills[b].name == meleeSkillObj[a].name && meleeSkillObj[a].range >= distance)
+						availableSkills.push(b);
+				}
+			}
+			console.log(availableSkills);
+			//if available skills are none moves forward and fails to attack
+			if(availableSkills.length == 0) {
+				if(playerPosition == 0 && enemyPosition != 0) {
+					enemyPosition--;
+					enemyAttackFailure = true;	
+				}	
+				else if(playerPosition > 0 && enemyPosition == 0) {
+					playerPosition--;
+					enemyAttackFailure = true;	
+				}
+				else if(playerPosition != 0 && enemyPosition != 0) {
+					enemyPosition--;
+					enemyAttackFailure = true;	
+				}	
+			}
+			else {
+				skillEnemyAttack(availableSkills);
+			}
+				
 			//player attack sequence only happens if attack did not fail, resets after
 			if(enemyAttackFailure == false) {
 				//apply stamina use and penalties if any
@@ -1675,14 +1723,16 @@ function enemyInit() {
 		//assign enemy list of skills
 		//first pulls skills from data as array
 		var enemySkillList = enemyObj[selectedEnemy].skills;
-		enemySkillList = enemySkillList.split(",");
+		//enemySkillList = enemySkillList.split(",");
 
-		for(var k = 0; k < meleeSkillObj.length; k++) {
-			if(enemySkillList.includes(meleeSkillObj[k].name)) {
-				enemy.addMeleeSkill(meleeSkillObj[k].name, meleeSkillObj[k].effect,
-					meleeSkillObj[k].percent, meleeSkillObj[k].penalty,
-					meleeSkillObj[k].staminaCost);
-			}	
+		for(var a = 0; a < enemySkillList.length; a++) {
+			for(var b = 0; b < meleeSkillObj.length; b++) {
+				if(enemySkillList[a].includes(meleeSkillObj[b].name)) {
+					enemy.addMeleeSkill(meleeSkillObj[b].name, meleeSkillObj[b].effect,
+						meleeSkillObj[b].percent, meleeSkillObj[b].penalty,
+						meleeSkillObj[b].staminaCost);
+				}	
+			}
 		}
 		
 		//randomize personality
@@ -2530,6 +2580,7 @@ $(document).ready(function(){
 			player.recoverStamina();
 			$("#playerStaminaBar").text(player.getCurrentStamina() + "/" + player.getStamina());
 			$("#playerStaminaBar").css('width', (Math.floor((player.getCurrentStamina() /player.getStamina()) * 100)) + "%");
+			$("#playerGameStatus").text("Defends");
 			player.defend();
 			playerDamage = 0;
 		}	
@@ -2542,6 +2593,7 @@ $(document).ready(function(){
 		enemyDefend = enemy.considerRest();
 	
 		if(enemyDefend) {
+			$("#enemyGameStatus").text("Defends");
 			enemy.recoverStamina();
 			enemy.defend(); 	
 			enemyDamage = 0;
@@ -2553,8 +2605,7 @@ $(document).ready(function(){
 		if(!playerDefend && !playerUseItem) {
 			//if player chose to fight despite low stamina, attack fails
 			if(player.getCurrentStamina() < player.getBaseAttackCost()) {
-				playerAttackFailure = true;	
-				$("#playerDamagedAmount").text("0");
+				playerAttackFailure = true;
 				$("#playerDamagedAmount").text("0");
 				$("#playerGameStatus").text("Fatigued");
 			}	
@@ -2630,19 +2681,25 @@ $(document).ready(function(){
 		}, 500);
 	
 		//show damage
-		//show defense broken damage
-		//show nothing if item used
-		if(playerDefenseBroken) {
-			$("#playerDamagedAmount").text("Break!: " + enemyDamage);
-		}	
-		else {
-			if(!playerAttackFailure) 
+		//show defense broken damage, show nothing if item used
+		//player damaged amount from enemy
+		if(!enemyAttackFailure) {
+			if(playerDefenseBroken) {
+				$("#playerDamagedAmount").text("Break!: " + enemyDamage);
+			}	
+			else {
 				$("#playerDamagedAmount").text("Hit: " + enemyDamage);	
+			}
+		}
+		else {
+			$("#playerDamagedAmount").text("Enemy fails: 0");
 		}
 		
-		if(playerUseItem)
+		//enemy damaged amount from player
+		if(playerUseItem) {
 			$("#enemyDamagedAmount").text("---");
-		else {
+		}
+		else if(!playerAttackFailure) {
 			if(enemyDefenseBroken) {
 				$("#enemyDamagedAmount").text("Break!: " + playerDamage);
 			}	
@@ -2651,6 +2708,10 @@ $(document).ready(function(){
 					$("#enemyDamagedAmount").text("Hit: " + playerDamage);	
 			}
 		}
+		else {
+			$("#enemyDamagedAmount").text("Player fails: 0");
+		}
+
 		//reset attack modifiers
 		if(playerDefend) {
 			player.stopDefend();
