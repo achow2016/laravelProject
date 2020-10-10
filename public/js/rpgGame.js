@@ -14,8 +14,8 @@ var weaponObj = [
 ];
 
 var armourObj = [
-	{ "name":"cloth armour" , "reduction":"0" }, 
-	{ "name":"leather armour" , "reduction":"1" }, 
+	{ "name":"cloth armour" , "reduction":"1" }, 
+	{ "name":"leather armour" , "reduction":"2" }, 
 	{ "name":"brigadine armour" , "reduction":"3" } 
 ];
 	
@@ -353,7 +353,6 @@ class Actor {
 		this.currentStamina = stamina;
 		this.agility = parseInt(agility);
 		this.stance = "111111111";
-		this.limbHealth = "1111";
 		this.staminaRegen = parseInt(staminaRegen);
 		this.baseAttackCost = parseInt(baseAttackCost);
 		this.attackPenalty = 0;
@@ -655,14 +654,6 @@ class Actor {
 	
 	getBaseAttackCost() {
 		return this.baseAttackCost;
-	}	
-	
-	setLimbHealth(limbHealth) {
-		this.limbHealth = limbHealth;
-	}	
-	
-	getLimbHealth() {
-		return this.limbHealth;
 	}	
 	
 	setPersonality(personality) {
@@ -1193,16 +1184,13 @@ function enemyAttack() {
 			}
 			//string array of skill names
 			let skills = enemy.getMeleeSkills();
-			console.log(skills);
 			//find and add all usable skills
 			for(var a = 0; a < meleeSkillObj.length; a++) {
-				console.log(meleeSkillObj[a].name);
 				for(let b = 0; b < skills.length; b++) {
 					if(skills[b].name == meleeSkillObj[a].name && meleeSkillObj[a].range >= distance)
 						availableSkills.push(b);
 				}
 			}
-			console.log(availableSkills);
 			//if available skills are none moves forward and fails to attack
 			if(availableSkills.length == 0) {
 				if(playerPosition == 0 && enemyPosition != 0) {
@@ -2650,7 +2638,8 @@ $(document).ready(function(){
 				}	
 				
 				playerDamage = player.getMeleeAttackDamage(enemy);
-				
+					
+	
 				player.setAttackPenalty(0);
 				
 				if(playerDamage > 0) {
