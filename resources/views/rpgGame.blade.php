@@ -212,6 +212,7 @@
 				<div class="row">
 					<div class="btn-group d-flex w-100" role="group">
 						<button type="button" class="saveGame btn btn-primary active w-100">Save</button>
+						<button type="button" id="mapScore" class="btn btn-primary active w-100">Score</button>
 						<button type="button" class="operationMenu btn btn-primary active w-100" data-toggle="modal" data-target="#mapMenuModal">Menu</button>
 					</div>	
 				</div>
@@ -302,6 +303,38 @@
 					</div>	
 				</div>
 				
+				<!--map score modal-->
+					
+				<!-- Modal -->
+				<div class="modal fade" id="mapScoreModal" role="dialog">
+					<div class="modal-dialog">
+
+				<!-- Modal content-->
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+							</div>
+							<div class="modal-body">
+								<p class="playerScore" data-toggle="tooltip" title=""></p>
+								<p class="playerKills" data-toggle="tooltip" title=""></p>
+								<p class="playerDamageDone" data-toggle="tooltip" title=""></p>
+								<p class="playerDamageReceived" data-toggle="tooltip" title=""></p>
+								<p class="playerChaptersCleared" data-toggle="tooltip" title=""></p>
+								<p class="playerName" data-toggle="tooltip" title=""></p>
+								<p class="playerHealth" data-toggle="tooltip" title=""></p>
+								<p class="playerArmourName" data-toggle="tooltip" title=""></p>
+								<p class="playerArmour" data-toggle="tooltip" title=""></p>
+								<p class="playerAttackWeapon" data-toggle="tooltip" title=""></p>
+								<p class="playerAttack" data-toggle="tooltip" title=""></p>	
+								<p class="playerAgility" data-toggle="tooltip" title=""></p>
+							</div>
+							<div class="modal-footer centered-button">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</div>	
+					</div>	
+				</div>
+
 				<!--examine modal-->
 					
 				<!-- Modal -->
@@ -329,6 +362,7 @@
 								<div id="examineOtherData">
 									<p id="otherName" data-toggle="tooltip" title=""></p>
 									<p id="otherArmourName" data-toggle="tooltip" title=""></p>
+									<p id="otherAttackWeapon" data-toggle="tooltip" title=""></p>
 									<p id="otherAttackWeapon" data-toggle="tooltip" title=""></p>
 								</div>								
 							</div>

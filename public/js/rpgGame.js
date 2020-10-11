@@ -30,21 +30,37 @@ var implantObj = [
 
 //skill percent is if attacking
 var personalityObj = [
-	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"100", "staminaCautionThreshold":"3"}, 
+	{ 
+		"type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"100", 
+		"itemPercent":"0", "staminaCautionThreshold":"3", "healthCautionThreshold":"3" 
+	}, 
 	/*
 	{ "type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"50", "staminaCautionThreshold":"4"}, 
 	{ "type":"defensive" , "attackPercent":"50", "defendPercent":"50", "skillPercent":"0", "staminaCautionThreshold":"3"},
 	{ "type":"tactical" , "attackPercent":"50", "defendPercent":"50", "skillPercent":"50", "staminaCautionThreshold":"3"}
 	*/
 ];	
-	
+
 var enemyObj = [
-	{ "name":"guard", "race":"human", "actorClass":"none", "health":"70", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "skills":["Arm Smash"], "avatar":"/img/enemyFace.jpg" },
+	{ 
+		"name":"guard", "race":"human", "actorClass":"none", "health":"70", "attack":"10", "stamina":"100", 
+		"staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", 
+		"skills":["Arm Smash", "Advancing Swing II"], 
+		"itemLootInventory":[
+			{"name":"First Aid Injector", "quantity":"1"}
+		], 
+		"avatar":"/img/enemyFace.jpg" 
+	},
 ];
 
 var raceObj = [
-	{ "race":"human", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" },
-	{ "race":"android", "health":"150", "attack":"15", "stamina":"150", "staminaRegen":"15", "healthRegen":"1", "baseAttackCost":"7", "agility":"15", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }
+	{ 
+		"race":"human", "health":"100", "attack":"10", "stamina":"100", "staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", 
+		"agility":"10", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" 
+	},
+	{ 
+		"race":"android", "health":"150", "attack":"15", "stamina":"150", "staminaRegen":"15", "healthRegen":"1", "baseAttackCost":"7", 
+		"agility":"15", "avatar":"/img/playerFace.jpg", "melee":"/img/playerFaceMelee.jpg" }
 ];		
 
 var storyObj = [
@@ -100,10 +116,23 @@ var storyObj = [
 //left upper, head, right upper, left mid, torso, right mid, left leg, groin, right leg 
 
 var meleeSkillObj = [
-	{ "name":"Arm Smash", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"Attack Reduction", "debuffPercent":"10", "debuffDuration":"10", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"10", "staminaCost":"5" },
-	{ "name":"Advancing Swing II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Decrease Distance", "range":"2", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"0", "staminaCost":"10" },
-	{ "name":"Retreating Cut II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Increase Distance", "range":"6", "effectQuantity":"2", "percent":"100", "meleePercentagePenalty":"50", "staminaCost":"10" },
-	{ "name":"Heavy Attack", "bodyTarget":"100100000", "stanceResult":"100100110", "debuff":"none", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"-100", "staminaCost":"20" }
+	{ 
+		"name":"Arm Smash", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"Attack Reduction", "debuffPercent":"10",
+		"debuffDuration":"10", "effect":"none", "range":"0", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"10", 
+		"staminaCost":"5" 
+	},
+	{ 
+		"name":"Advancing Swing II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Decrease Distance", 
+		"range":"2", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"0", "staminaCost":"10" 
+	},
+	{ 
+		"name":"Retreating Cut II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Increase Distance", 
+		"range":"6", "effectQuantity":"2", "percent":"100", "meleePercentagePenalty":"50", "staminaCost":"10" 
+	},
+	{ 
+		"name":"Heavy Attack", "bodyTarget":"100100000", "stanceResult":"100100110", "debuff":"none", "effect":"none", "range":"0", 
+		"effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"-100", "staminaCost":"20" 
+	}
 ];
 
 var itemObj = [
@@ -258,78 +287,6 @@ class Item {
 		this.cost = cost;	
 	}
 }	
-	
-//melee skill object
-/*
-class MeleeSkill {
-	constructor(name, effect, percent, penalty, cost, stanceResult, bodyTarget) {
-		this.name = name;
-		this.effect = effect;
-		this.percent = percent;
-		this.powerPenalty = penalty;
-		this.staminaCost = cost;
-		this.stanceResult = stanceResult;
-		this.bodyTarget = bodyTarget;
-	}	
-	
-	getBodyTarget() {
-		return this.bodyTarget;	
-	}	
-	
-	setBodyTarget(target) {
-		this.bodyTarget = target;	
-	}	
-
-	getStanceResult() {
-		return this.stanceResult;	
-	}	
-	
-	setStanceResult(stance) {
-		this.stanceResult = stance;	
-	}		
-	
-	getStaminaCost() {
-		return this.staminaCost;
-	}
-
-	setStaminaCost(cost) {
-		this.staminaCost = cost;
-	}	
-	
-	getPenalty() {
-		return this.powerPenalty;
-	}
-
-	setPenalty(penalty) {
-		this.powerPenalty = penalty;
-	}	
-	
-	
-	getName(){
-		return this.name;	
-	}	
-	
-	setName(same) {
-			this.name = name;
-	}
-
-	getEffect(){
-		return this.effect;	
-	}	
-	
-	setEffect(effect) {
-			this.effect = effect;
-	}	
-
-	getPercent(){
-		return this.percent;	
-	}	
-	
-	setPercent(percent) {
-		this.percent = percent;
-	}
-}
-*/	
 
 class Actor {
 	//randomizers are for enemy actor and adds up to 30% each to attack and health
@@ -365,6 +322,61 @@ class Actor {
 		this.mapPosition = [];
 		this.avatar = avatar;
 		this.equipmentArray = [];
+		this.score = 0;
+		this.kills = 0;
+		this.damageDone = 0;
+		this.damageReceived = 0;
+		this.chaptersCleared = 0;
+	}
+
+	setScore(score) {
+		this.score = score;
+	}
+
+	getScore() {
+		return this.score;
+	}
+
+	setKills(kills) {
+		this.kills = kills;
+	}
+
+	getKills() {
+		return this.kills;
+	}
+
+	addKill() {
+		this.score++;
+		this.kills++;
+	}
+
+	setDamageDone(amount) {
+		this.damageDone = amount;
+	}
+
+	getDamageDone() {
+		return this.damageDone;
+	}
+
+	setDamageReceived(amount) {
+		this.damageReceived = amount;
+	}
+
+	getDamageReceived() {
+		return this.damageReceived;
+	}
+
+	setChaptersCleared(amount) {
+		this.chaptersCleared = amount;
+	}
+
+	getChaptersCleared() {
+		return this.chaptersCleared;
+	}
+
+	addChapterCleared() {
+		this.score++;
+		this.chaptersCleared++;
 	}
 
 	setEquipment(equipment) {
@@ -396,7 +408,25 @@ class Actor {
 
 	getEquipment() {
 		return this.equipmentArray;
-	}	
+	}
+
+	considerRecoveryItem() {
+		let personalityType = this.getPersonality().type;
+		let choice = personalityObj.findIndex(function(personality, i) {
+			return personality.type == personalityType;
+		});
+		if((this.getHealthThreshold() <  parseInt(personalityObj[choice].healthCautionThreshold))) {
+			return false;
+		} 
+		else {
+			for(let i = 0; i < this.itemInventory.length; i++) {
+				if(this.itemInventory[i].getEffect() == "regen") {
+					useItem(this.itemInventory[i].getName(), "self");
+				}
+			}
+			return true;
+		}	
+	}
 
 	considerRest() {
 		let personalityType = this.getPersonality().type;
@@ -504,6 +534,11 @@ class Actor {
 			}
 			else if((this.statusBuffArray)[i].getEffect() == "Direct Damage") {
 				let damage = (this.statusBuffArray)[i].getEffectNumberAmount() - parseInt(this.armourValue);
+				let tempScore = this.getScore() + damage;
+				this.setScore(tempScore);
+				let tempDamageTotal = this.getDamageDone() + damage;
+				this.setDamageDone(tempDamageTotal);
+				
 				let targetHealth = this.currentHealth -= damage;
 				(this.statusBuffArray)[i].tickDuration();
 				if((this.statusBuffArray)[i].getDuration() == 0) {
@@ -568,7 +603,6 @@ class Actor {
 			for(let i = 0; i < this.itemInventory.length; i++) {
 				if((this.itemInventory[i].getName()) === item) {
 					(this.itemInventory[i]).setQuantity(this.itemInventory[i].getQuantity() + qty);
-					itemAdded = true;
 					return;
 				}
 			}
@@ -585,18 +619,24 @@ class Actor {
 		}
 	}	
 
+	//called by player, effects applied on actor in parameter
 	useItem(item, actor) {
 		if(actor === "enemy") {
 			for(var j = 0; j < this.itemInventory.length; j++) {
 				if((this.itemInventory[j].getName()) === item) {
 					//applies item effect
 					var buff;
+					//direct damage items used
 					if(this.itemInventory[j].effect === "Direct Damage") {
 						buff = new BuffStatus(this.itemInventory[j].name, this.itemInventory[j].effect,
 							this.itemInventory[j].stackLimit, this.itemInventory[j].effectPercent,
 							this.itemInventory[j].duration);
 						
 						buff.setEffectNumberAmount(this.getAttackValue());
+						//update score for damage dealt
+						this.score = this.score + this.getAttackValue();
+						this.damageDone = this.damageDone + this.getAttackValue();
+						
 						enemy.addToStatusBuffArray(buff);	
 					}
 					//decrement item quantity, remove from item array if zero	
@@ -616,6 +656,25 @@ class Actor {
 						this.itemInventory[j].duration);
 
 					player.addToStatusBuffArray(buff);	
+					
+					//decrement item quantity, remove from item array if zero	
+					this.itemInventory[j].decrementQuantity();
+					if(this.itemInventory[j].getQuantity() == 0) {
+						this.removeEmptyFromItemInventory(this.itemInventory[j].getName());
+					}	
+				}
+			}
+		}
+	
+		if(actor === "self") {
+			for(var j = 0; j < this.itemInventory.length; j++) {
+				if((this.itemInventory[j].getName()) === item) {
+					//applies item effect
+					var buff = new BuffStatus(this.itemInventory[j].name, this.itemInventory[j].effect,
+						this.itemInventory[j].stackLimit, this.itemInventory[j].effectPercent,
+						this.itemInventory[j].duration);
+
+					this.addToStatusBuffArray(buff);	
 					
 					//decrement item quantity, remove from item array if zero	
 					this.itemInventory[j].decrementQuantity();
@@ -908,6 +967,10 @@ class Actor {
 	}
 	
 	applyDamage(damage) {
+		let tempScore = this.getScore() + damage;
+		this.setScore(tempScore);
+		let tempDamageReceived = this.getDamageReceived() + damage;
+		this.setDamageReceived(tempDamageReceived);
 		this.currentHealth = this.currentHealth - damage;
 	}	
 	
@@ -923,6 +986,10 @@ class Actor {
 		else {
 			damage = Math.ceil(this.getAttackValue() - enemy.getArmourValue());
 		}
+		let tempScore = this.getScore() + damage;
+		this.setScore(tempScore);
+		let tempDamageTotal = this.getDamageDone() + damage;
+		this.setDamageDone(tempDamageTotal);
 		return damage;
 	}	
 }
@@ -1184,6 +1251,7 @@ function enemyAttack() {
 			}
 			//string array of skill names
 			let skills = enemy.getMeleeSkills();
+
 			//find and add all usable skills
 			for(var a = 0; a < meleeSkillObj.length; a++) {
 				for(let b = 0; b < skills.length; b++) {
@@ -1191,6 +1259,7 @@ function enemyAttack() {
 						availableSkills.push(b);
 				}
 			}
+
 			//if available skills are none moves forward and fails to attack
 			if(availableSkills.length == 0) {
 				if(playerPosition == 0 && enemyPosition != 0) {
@@ -1240,8 +1309,18 @@ function enemyAttack() {
 	enemy.setAttackPenalty(0);
 }
 
+//adjust score and stats
+function refreshScore() {
+	$(".playerScore").text("Score: " + player.getScore());
+	$(".playerDamageDone").text("Damage dealt: " + player.getDamageDone());
+	$(".playerDamageReceived").text("Damage Received: " + player.getDamageReceived());
+	$(".playerKills").text("Total kills: " + player.getKills());
+}
+
 //update of ui and clean up after each turn
 function postAttackUpdates() {
+	//adjust score and stats
+	refreshScore();
 
 	//set status conditions player
 	let tempBuffArray = player.getStatusBuffArray();
@@ -1370,9 +1449,22 @@ function postAttackUpdates() {
 		$("#skillMenu").hide();
 		gameEnd = true;
 	}	
-	//player wins
+	//player wins battle
 	//decrement enemy count
 	else if(enemy.getCurrentHealth() <= 0) {
+		//adjust score
+		player.addKill();
+		//win enemy items
+		var enemyItemList = enemy.getItemInventory();
+		let loot = "";
+		for(var z = 0; z < enemyItemList.length; z++) {
+			player.addToItemInventory(enemyItemList[z].name, parseInt(enemyItemList[z].quantity));
+			loot += enemyItemList[z].name + " ";
+		}	
+
+		$("#playerGameStatus").text("You win!");
+		$("#playerStatus").text("Gained: " + loot);
+
 		enemyCount--; 
 		enemies[currentEnemy] = enemy; //assign updated value to enemy array
 		enemy = null; //clears enemy
@@ -1382,9 +1474,7 @@ function postAttackUpdates() {
 		$("#enemyActiveEffects").text("");
 		$("#enemyStaminaCondition").text("");				
 		$("#enemyConditionTriangle").css('border-top', '20px solid blue');	
-		
-		$("#playerGameStatus").text("You win!");
-		
+				
 		//advance story to next chapter if no more enemies
 		if(enemiesLeft == 0) {
 			currentPage = 0;
@@ -1711,16 +1801,9 @@ function enemyInit() {
 		//assign enemy list of skills
 		//first pulls skills from data as array
 		var enemySkillList = enemyObj[selectedEnemy].skills;
-		//enemySkillList = enemySkillList.split(",");
-
+		
 		for(var a = 0; a < enemySkillList.length; a++) {
-			for(var b = 0; b < meleeSkillObj.length; b++) {
-				if(enemySkillList[a].includes(meleeSkillObj[b].name)) {
-					enemy.addMeleeSkill(meleeSkillObj[b].name, meleeSkillObj[b].effect,
-						meleeSkillObj[b].percent, meleeSkillObj[b].penalty,
-						meleeSkillObj[b].staminaCost);
-				}	
-			}
+			enemy.addMeleeSkill(enemySkillList[a]);
 		}
 		
 		//randomize personality
@@ -1739,6 +1822,12 @@ function enemyInit() {
 		//sets enemy personality at beginning
 		let enemyPersonalityChoice = getRandomInteger(0, (personalityObj.length - 1));
 		enemy.setPersonality(personalityObj[enemyPersonalityChoice]);
+
+		//stock enemy lootable inventory
+		var enemyItemList = enemyObj[selectedEnemy].itemLootInventory;
+		for(var z = 0; z < enemyItemList.length; z++) {
+			enemy.addToItemInventory(enemyItemList[z].name, parseInt(enemyItemList[z].quantity));
+		}
 
 		enemies.push(enemy);
 	}
@@ -1788,9 +1877,7 @@ function playerInit() {
 	
 	//assign player list of skills
 	for(var i = 0; i < meleeSkillObj.length; i++) {
-		player.addMeleeSkill(meleeSkillObj[i].name, meleeSkillObj[i].effect,
-			meleeSkillObj[i].percent, meleeSkillObj[i].penalty,
-			meleeSkillObj[i].staminaCost);
+		player.addMeleeSkill(meleeSkillObj[i].name);
 	}
 	
 	//resets stances at beginning and grids
@@ -2214,6 +2301,7 @@ function progressStory() {
 			$("#storyEnd").text("Next chapter!").show();
 			$("#storyEnd").click(function() {
 				currentChapter++;
+				player.addChapterCleared();
 				currentPage = 0;
 				currentState = 0;
 				currentEnemy = 0;
@@ -2452,7 +2540,6 @@ function getExaminationResults() {
 			let otherWeaponvalue = enemies[enemyId].getWeaponValue();
 			if(otherWeapon != null && (!player.addEquipment({name: otherWeapon, value: otherWeaponvalue})))
 				enemies[enemyId].unequipWeapon();
-
 			if(enemies[enemyId].getWeaponName() == null || enemies[enemyId].getArmourName() == null) {
 				let tempName = "looted " + enemies[enemyId].name;
 				$("#mapStatus").text("There is a corpse of a " + tempName + " here.");
@@ -2487,7 +2574,9 @@ $(document).ready(function(){
 	});
 	
 	//saving character configuration and starting story
+	//check if name is duplicate on database
 	$("#completeConfig").click(function() {
+		
 		$("#playerConfigMenu").hide();
 			
 		//call set game values
@@ -2642,6 +2731,7 @@ $(document).ready(function(){
 	
 				player.setAttackPenalty(0);
 				
+				//applies damage and raises score
 				if(playerDamage > 0) {
 					enemy.applyDamage(playerDamage);
 				} 
@@ -2681,7 +2771,7 @@ $(document).ready(function(){
 			}
 		}
 		else {
-			$("#playerDamagedAmount").text("Enemy fails: 0");
+			$("#playerDamagedAmount").text("Enemy deals: 0");
 		}
 		
 		//enemy damaged amount from player
@@ -2698,7 +2788,7 @@ $(document).ready(function(){
 			}
 		}
 		else {
-			$("#enemyDamagedAmount").text("Player fails: 0");
+			$("#enemyDamagedAmount").text("Player deals: 0");
 		}
 
 		//reset attack modifiers
@@ -2721,31 +2811,30 @@ $(document).ready(function(){
 		enemyDefenseBroken = false;
 		playerDefenseBroken = false;
 		playerUseItem = false;	
-			
-			
+				
 		//process buffs at end of turn
 		player.tickBuffs(enemy);
 		enemy.tickBuffs(player);
-			
-			
+
 		//update game based on changed values
 		postAttackUpdates();
 		if(gameEnd) 
 			$("#nextTurnButton").hide();	
 	}	
 
-
+	//player defend button
 	$("#defendButton").click(function() {
 		playerDefend = true;
 		battleTurn();
 	});
-
+	
+	//player attack button
 	$("#attackButton").click(function() {
 		playerDefend = false;
 		battleTurn();
 	});
 	
-	//on clicking next button
+	//next turn button
 	$("#nextTurnButton").click(function() {
 		
 		//reset damage values shown after display
@@ -2779,23 +2868,28 @@ $(document).ready(function(){
 		window.location.href='/work';
 	});
 	
+	//menu button battle view
 	$("#battleGameMenu").click(function() {
 		$('#menuModal').modal('toggle');
 	});	
 	
+	//battle view skills menu
 	$("#skillMenu").click(function() {
 		$('#skillModal').modal('toggle');
 	});	
 	
+	//item button in battle 
 	$("#itemButton").click(function() {
 		refreshItems();
 		$('#itemModal').modal('toggle');
 	});	
 	
+	//enemy inspect modal in battle
 	$("#activeEnemy").click(function() {
 		$('#enemyModal').modal('toggle');
 	});	
 	
+	//player inspect modal in battle
 	$("#activePlayer").click(function() {
 		$('#playerModal').modal('toggle');
 	});	
@@ -2852,10 +2946,14 @@ $(document).ready(function(){
 	$(".toTitleButton").click(function() {
 		$(".toTitleButton").prop('disabled', false);
 		$(".saveGame").text("Save").prop('disabled', false);
+	
 		if($('#battleMenuModal').hasClass('show'))
 			$('#battleMenuModal').modal('toggle');
+		if($('#mapScoreModal').hasClass('show'))
+			$('#mapScoreModal').modal('toggle');
 		if($('#mapMenuModal').hasClass('show'))
 			$('#mapMenuModal').modal('toggle');		
+
 		if(window.localStorage.getItem('player')) {
 			$("#continueButton").prop('disabled', false);	
 		}
@@ -2908,6 +3006,12 @@ $(document).ready(function(){
 		}
 
 		player.setMapPosition(playerData.mapPosition);	
+		
+		player.setScore(playerData.score);	
+		player.setKills(playerData.kills);	
+		player.setDamageDone(playerData.damageDone);	
+		player.setDamageReceived(playerData.damageReceived);	
+		player.setChaptersCleared(playerData.chaptersCleared);
 
 		//enemies
 		enemies.length = 0;
@@ -2934,6 +3038,14 @@ $(document).ready(function(){
 			enemy.setItemInventory(enemyData[i].itemInventory);
 			enemy.setMapPosition(enemyData[i].mapPosition);		
 			enemy.setPersonality(enemyData[i].personality);			
+			
+			for(var u = 0; u < (enemyData[i].itemInventory).length; u++) {
+			let tempItem = new Item((enemyData[i].itemInventory)[u].name, (enemyData[i].itemInventory)[u].effect, 
+				(enemyData[i].itemInventory)[u].stackLimit, (enemyData[i].itemInventory)[u].effectPercent, 
+				(enemyData[i].itemInventory)[u].cost, (enemyData[i].itemInventory)[u].duration,
+				(enemyData[i].itemInventory)[u].quantity);
+				enemy.addToItemInventory(tempItem, 0);
+			}
 
 			enemies.push(enemy);
 		}
@@ -3039,5 +3151,12 @@ $(document).ready(function(){
 	$("#mapItem").click(function() {
 		refreshItems();
 		$('#mapItemModal').modal('toggle');
+	});
+
+	//map score button
+	//map item button
+	$("#mapScore").click(function() {
+		refreshScore();
+		$('#mapScoreModal').modal('toggle');
 	});	
 });
