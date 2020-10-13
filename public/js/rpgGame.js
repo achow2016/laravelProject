@@ -2929,7 +2929,7 @@ $(document).ready(function(){
 		progressStory();
 	});
 	
-	//save data to local storage
+	//save game data to local storage
 	$(".saveGame").click(function() {
 		window.localStorage.setItem('player', JSON.stringify(player));
 		window.localStorage.setItem('enemy', JSON.stringify(enemy));
@@ -2966,6 +2966,7 @@ $(document).ready(function(){
 		$("#mapMain").hide();
 	});
 
+	//continue button
 	//loads player data from local storage, battle progress not saved 
 	$("#continueButton").click(function() {
 		//enable buttons
@@ -3016,6 +3017,7 @@ $(document).ready(function(){
 		//enemies
 		enemies.length = 0;
 		enemyData = JSON.parse(window.localStorage.getItem('enemies'));
+		currentChapter = window.localStorage.getItem('chapter');
 		let enemyCount = parseInt(storyObj[currentChapter].enemyCount);
 		for(var i = 0; i < enemyCount; i++) {
 			enemy = new Actor(enemyData[i].name, enemyData[i].race, enemyData[i].actorClass, enemyData[i].health, 
@@ -3039,14 +3041,16 @@ $(document).ready(function(){
 			enemy.setMapPosition(enemyData[i].mapPosition);		
 			enemy.setPersonality(enemyData[i].personality);			
 			
-			for(var u = 0; u < (enemyData[i].itemInventory).length; u++) {
-			let tempItem = new Item((enemyData[i].itemInventory)[u].name, (enemyData[i].itemInventory)[u].effect, 
-				(enemyData[i].itemInventory)[u].stackLimit, (enemyData[i].itemInventory)[u].effectPercent, 
-				(enemyData[i].itemInventory)[u].cost, (enemyData[i].itemInventory)[u].duration,
-				(enemyData[i].itemInventory)[u].quantity);
-				enemy.addToItemInventory(tempItem, 0);
+/*
+			for(var u = 0; u < enemyData[i].itemInventory.length; u++) {
+				let tempItem = new Item((enemyData[i].itemInventory)[u].name, (enemyData[i].itemInventory)[u].effect, 
+					(enemyData[i].itemInventory)[u].stackLimit, (enemyData[i].itemInventory)[u].effectPercent, 
+					(enemyData[i].itemInventory)[u].cost, (enemyData[i].itemInventory)[u].duration,
+					(enemyData[i].itemInventory)[u].quantity);
+					enemy.addToItemInventory(tempItem, 0);
+				
 			}
-
+*/
 			enemies.push(enemy);
 		}
 		
