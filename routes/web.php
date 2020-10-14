@@ -33,8 +33,8 @@ Route::get('rpgGame', function () {
     return view('rpgGame');
 })->name('rpgGame');
 
-Route::get('rpgGame/scores', 'scoreViewController@scores);
-Route::post('rpgGame/saveScore', 'scoreViewController@add');
+Route::get('rpgGame/scores', 'scoreViewController@scores');
+Route::post('rpgGame/add', 'scoreViewController@add');
 
 
 //corkboard routes

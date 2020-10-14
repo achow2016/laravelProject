@@ -50,7 +50,7 @@
 					<div class="btn-group d-flex w-100 fixed-bottom" role="group">
 						<button id="startButton" type="button" class="introButtons btn btn-primary active w-100">New Game</button>
 						<button id="continueButton" type="button" class="introButtons btn btn-primary active w-100">Continue</button>
-						<button type="button" class="introButtons returnButton btn btn-primary active w-100">home</button>
+						<button id="listScoresButton" type="button" class="introButtons btn btn-primary active w-100">Scores</button>
 					</div>					
 				</div>
 			</div>
@@ -90,8 +90,8 @@
 					<div class="row">
 						<div class="col">
 							<br>
-							<p>
-							Assign 12 points, +5% bonus per point
+							<p id="configMessageArea">
+								Assign 12 points, +5% bonus per point
 							</p>
 						</div>					
 					</div>
@@ -200,8 +200,8 @@
 						<div id="ctrlButtonContainer">
 							<button id="storyProgress" type="button" class="btn btn-primary active">Next</button>
 							<button style="display:none" id="storyEnd" type="button" class="btn btn-primary active"></button>
-							<button type="button" class="saveGame btn btn-primary active">Save</button>
-							<button type="button" class="toTitleButton btn btn-primary active">Title</button>
+							<button type="button" class="saveGame btn btn-primary active">QSave</button>
+							<button type="button" class="saveQuit btn btn-primary active">Save and Quit</button>
 						</div>
 					</div>	
 				</div>						
@@ -211,7 +211,7 @@
 			<div id="mapMain" style="display:none" class="container-fluid">
 				<div class="row">
 					<div class="btn-group d-flex w-100" role="group">
-						<button type="button" class="saveGame btn btn-primary active w-100">Save</button>
+						<button type="button" class="saveGame btn btn-primary active w-100">QSave</button>
 						<button type="button" id="mapScore" class="btn btn-primary active w-100">Score</button>
 						<button type="button" class="operationMenu btn btn-primary active w-100" data-toggle="modal" data-target="#mapMenuModal">Menu</button>
 					</div>	
@@ -271,7 +271,7 @@
 							</div>
 							<div class="modal-body">
 								<div class="" id="gameIntroMenu" role="group">
-									<button type="button" class="toTitleButton btn btn-primary active w-100 mb-1">To Title</button>
+									<button type="button" class="saveQuit btn btn-primary active w-100 mb-1">Save and Quit</button>
 									<button type="button" class="returnButton btn btn-primary active w-100">Return to Website</button>
 								</div>	
 							</div>
@@ -679,9 +679,9 @@
 							</div>
 							<div class="modal-body">
 								<div class="" id="gameIntroMenu" role="group">
-									<button type="button" class="toTitleButton btn btn-primary active w-100 mb-1">To Title</button>
+									<button type="button" class="saveQuit btn btn-primary active w-100 mb-1">Save and Quit</button>
 									<button type="button" class="returnButton btn btn-primary active w-100 mb-1">Return to Website</button>
-									<button type="button" class="saveGame btn btn-primary active w-100">Save</button>
+									<button type="button" class="saveGame btn btn-primary active w-100">QSave</button>
 								</div>	
 							</div>
 							<div class="modal-footer centered-button">
@@ -778,10 +778,15 @@
 			</div>
 		</div>
 		
-		<!--scripts-->
+		<!--scripts
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 
 		integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" 
 		crossorigin="anonymous"></script>
+		-->
+<script
+  src="https://code.jquery.com/jquery-3.5.1.js"
+  integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+  crossorigin="anonymous"></script>
 		
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" 
 		integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" 

@@ -20,5 +20,7 @@ class VerifyCsrfToken extends Middleware
      */
     protected $except = [
         //
+'http://127.0.0.1:8082','http://localhost:8082',
+	'http://127.0.0.1:8082/rpgGame/add'
     ];
 }

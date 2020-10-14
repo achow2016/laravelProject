@@ -1898,7 +1898,7 @@ function gameInit() {
 
 	//story panel reset
 	$('#storyProgress').prop('disabled', false);
-	$('.saveGame').prop('disabled', false).text("Save");
+	$('.saveGame').prop('disabled', false).text("QSave");
 	$('#storyEnd').css('display', 'none').text("");
 	
 	//initialize player actor
@@ -2213,7 +2213,7 @@ function startBattle() {
 function populateMap() {
 	//enable save and title buttons, hide exit button
 	$(".saveGame").prop('disabled', false);
-	$(".toTitleButton").prop('disabled', false);
+	$(".saveQuit").prop('disabled', false);
 
 
 	//generates map tiles, applies background tile image or design
@@ -2267,7 +2267,7 @@ displays next option
 */
 function progressStory() {
 	//enable save
-	$(".saveGame").prop('disabled', false).text("Save");
+	$(".saveGame").prop('disabled', false).text("QSave");
 	
 	//displays next page if available
 	if(currentPage < parseInt(storyObj[currentChapter].pageLength - 1)) {
@@ -2317,7 +2317,7 @@ function progressStory() {
 			//if in battle does not disable
 			if(enemy != null) {
 				$(".saveGame").prop('disabled', false);
-				$(".toTitleButton").prop('disabled', false);
+				$(".saveQuit").prop('disabled', false);
 				startBattle();
 			}
 
@@ -2576,22 +2576,27 @@ $(document).ready(function(){
 	//saving character configuration and starting story
 	//check if name is duplicate on database
 	$("#completeConfig").click(function() {
-		
-		$("#playerConfigMenu").hide();
+		//prevents blank name which causes error at AJAX database write
+		if($("#name").val() == "") {
+			$("#configMessageArea").text("You must enter a name.");
+		} 
+		else {			
+			$("#playerConfigMenu").hide();
+				
+			//call set game values
+			gameInit();
 			
-		//call set game values
-		gameInit();
-		
-		//reset before-game configuration values
-		currentConfigAlloc = 0;
-		strengthAlloc = 0;
-		enduranceAlloc = 0;
-		lifeAlloc = 0;
-		$("#strengthAlloc").text("0");
-		$("#enduranceAlloc").text("0");
-		$("#lifeAlloc").text("0");
-		
-		startStory();	
+			//reset before-game configuration values
+			currentConfigAlloc = 0;
+			strengthAlloc = 0;
+			enduranceAlloc = 0;
+			lifeAlloc = 0;
+			$("#strengthAlloc").text("0");
+			$("#enduranceAlloc").text("0");
+			$("#lifeAlloc").text("0");
+			$("#configMessageArea").text("Assign 12 points, +5% bonus per point");
+			startStory();
+			}	
 	});
 
 	//player actor configuration logic
@@ -2645,7 +2650,7 @@ $(document).ready(function(){
 			
 	//calculates damages, updates fields on attack button
 	function battleTurn() {
-		$(".saveGame").text("Save").prop('disabled', false);
+		$(".saveGame").text("QSave").prop('disabled', false);
 		$("#attackButton").hide();
 		$("#defendButton").hide();
 		$("#itemButton").hide();
@@ -2864,9 +2869,9 @@ $(document).ready(function(){
 	
 	//from menu modal back to main website
 	//<a href="{{ route('home') }}">Home</a>
-	$(".returnButton").click(function() {
-		window.location.href='/work';
-	});
+	//$(".returnButton").click(function() {
+	//	window.location.href='/work';
+	//});
 	
 	//menu button battle view
 	$("#battleGameMenu").click(function() {
@@ -2943,9 +2948,9 @@ $(document).ready(function(){
 	});	
 	
 	//from modal go to title
-	$(".toTitleButton").click(function() {
-		$(".toTitleButton").prop('disabled', false);
-		$(".saveGame").text("Save").prop('disabled', false);
+	$(".saveQuit").click(function() {
+		$(".saveQuit").prop('disabled', false);
+		$(".saveGame").text("QSave").prop('disabled', false);
 	
 		if($('#battleMenuModal').hasClass('show'))
 			$('#battleMenuModal').modal('toggle');
@@ -2964,14 +2969,39 @@ $(document).ready(function(){
 		$("#gameTopTab").hide();
 		$("#storyMain").hide();
 		$("#mapMain").hide();
+
+		if(window.localStorage.getItem('player')) {
+			let tempPlayerData = JSON.parse(window.localStorage.getItem('player'));
+			let name = tempPlayerData.name;
+			let kills = tempPlayerData.kills;
+			let damageDone = tempPlayerData.damageDone;
+			let damageReceived = tempPlayerData.damageReceived;
+			let chaptersCleared = tempPlayerData.chaptersCleared;
+			
+			$.ajaxSetup({
+				headers: {
+					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+				}
+			});
+			$.ajax({
+				type: "POST",
+				url: 'http://localhost:8082/rpgGame/add',
+				data: {name:name,kills:kills,
+					damageDone:damageDone, 
+					damageReceived:damageReceived,
+					chaptersCleared:chaptersCleared}
+				}).done(function( msg ) {
+				//alert( msg );
+			});
+		}
 	});
 
 	//continue button
 	//loads player data from local storage, battle progress not saved 
 	$("#continueButton").click(function() {
 		//enable buttons
-		$(".toTitleButton").prop('disabled', false);
-		$(".saveGame").text("Save").prop('disabled', false);
+		$(".saveQuit").prop('disabled', false);
+		$(".saveGame").text("QSave").prop('disabled', false);
 
 		//player
 		playerData = JSON.parse(window.localStorage.getItem('player'));
@@ -3040,17 +3070,15 @@ $(document).ready(function(){
 			enemy.setItemInventory(enemyData[i].itemInventory);
 			enemy.setMapPosition(enemyData[i].mapPosition);		
 			enemy.setPersonality(enemyData[i].personality);			
-			
-/*
-			for(var u = 0; u < enemyData[i].itemInventory.length; u++) {
-				let tempItem = new Item((enemyData[i].itemInventory)[u].name, (enemyData[i].itemInventory)[u].effect, 
-					(enemyData[i].itemInventory)[u].stackLimit, (enemyData[i].itemInventory)[u].effectPercent, 
-					(enemyData[i].itemInventory)[u].cost, (enemyData[i].itemInventory)[u].duration,
-					(enemyData[i].itemInventory)[u].quantity);
-					enemy.addToItemInventory(tempItem, 0);
-				
+
+			let inventorySize = enemyData[i].itemInventory.length;
+			for(var u = 0; u < inventorySize; u++) {
+				let enemyItem = new Item(enemyData[i].itemInventory[u].name, enemyData[i].itemInventory[u].effect, 
+					enemyData[i].itemInventory[u].stackLimit, enemyData[i].itemInventory[u].effectPercent, 
+					enemyData[i].itemInventory[u].cost, enemyData[i].itemInventory[u].duration,
+					enemyData[i].itemInventory[u].quantity);
+				enemy.addToItemInventory(enemyItem, 0);
 			}
-*/
 			enemies.push(enemy);
 		}
 		
@@ -3079,7 +3107,7 @@ $(document).ready(function(){
 		//tick buffs on movement
 		player.tickBuffs(player);
 		//allow save on movement
-		$(".saveGame").text("Save").prop('disabled', false);
+		$(".saveGame").text("QSave").prop('disabled', false);
 		
 		//populates player new position	
 		let playerMapPosition = player.getMapPosition();
@@ -3162,5 +3190,15 @@ $(document).ready(function(){
 	$("#mapScore").click(function() {
 		refreshScore();
 		$('#mapScoreModal').modal('toggle');
-	});	
+	});
+
+	//main screen score button
+	$("#listScoresButton").click(function() {
+		window.location.href='/rpgGame/scores';
+	});
+
+	//score screen home button to return to game
+	$("#returnFromScoresButton").click(function() {
+		window.location.href='/rpgGame';
+	});
 });

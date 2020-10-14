@@ -30,7 +30,7 @@ class scoreViewController extends Controller {
 		$rpgGameScore->setAttribute('chaptersCleared', $chaptersCleared);
 		
 		$rpgGameScore->save();	
-		return view('rpgGame/readScores');
+		return view('rpgGame');
 	}
 }
 ?>

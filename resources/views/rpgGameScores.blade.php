@@ -40,7 +40,7 @@
 				@endisset
 				<div class="row">
 					<div class="btn-group d-flex w-100 fixed-bottom" role="group">
-						<button id="homeButton" type="button" class="introButtons btn btn-primary active w-100">Home</button>
+						<button id="returnFromScoresButton" type="button" class="introButtons btn btn-primary active w-100">Home</button>
 						<button type="button" class="introButtons scoreButton btn btn-primary active w-100">Scores</button>
 					</div>					
 				</div>
