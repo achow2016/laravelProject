@@ -353,6 +353,7 @@
 									<div class="row text-center" id="playerMapConditions">
 									</div>
 									<p class="playerHealth" data-toggle="tooltip" title=""></p>
+									<p class="playerMoney" data-toggle="tooltip" title=""></p>
 									<p class="playerArmourName" data-toggle="tooltip" title=""></p>
 									<p class="playerArmour" data-toggle="tooltip" title=""></p>
 									<p class="playerAttackWeapon" data-toggle="tooltip" title=""></p>
