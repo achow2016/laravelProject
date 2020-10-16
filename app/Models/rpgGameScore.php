@@ -14,7 +14,7 @@ class rpgGameScore extends Model
      * @var array
      */
     protected $fillable = [
-		'name', 'kills', 'damageDone', 'damageReceived', 'chaptersCleared',
+		'name', 'kills', 'damageDone', 'damageReceived', 'chaptersCleared', 'totalEarnings', 'scoreTotal'
     ];
 }
 ?>

@@ -34,6 +34,8 @@ Route::get('rpgGame', function () {
 })->name('rpgGame');
 
 Route::get('rpgGame/scores', 'scoreViewController@scores');
+Route::get('rpgGame/scores/detail', 'scoreViewController@detail')->name('detail');
+
 Route::post('rpgGame/add', 'scoreViewController@add');
 
 

@@ -14,6 +14,12 @@ class scoreViewController extends Controller {
 		return view('rpgGameScores', ['scores' => $scores]);
 	}
 
+	public function detail(Request $request) 
+	{
+		$profile = rpgGameScore::where('name', $request->input('name'))->first();
+		return view('rpgGameScores', ['profile' => $profile]);
+	}
+
 	public function add(Request $request)
 	{	
 		$name = $request->input('name');
@@ -21,6 +27,8 @@ class scoreViewController extends Controller {
 		$damageDone = $request->input('damageDone');
 		$damageReceived = $request->input('damageReceived');
 		$chaptersCleared = $request->input('chaptersCleared');
+		$earningsTotal = $request->input('earningsTotal');
+		$scoreTotal = $request->input('scoreTotal');
 		
 		$rpgGameScore = new rpgGameScore();
 		$rpgGameScore->setAttribute('name', $name);
@@ -28,6 +36,8 @@ class scoreViewController extends Controller {
 		$rpgGameScore->setAttribute('damageDone', $damageDone);
 		$rpgGameScore->setAttribute('damageReceived', $damageReceived);
 		$rpgGameScore->setAttribute('chaptersCleared', $chaptersCleared);
+		$rpgGameScore->setAttribute('earningsTotal', $earningsTotal);
+		$rpgGameScore->setAttribute('scoreTotal', $scoreTotal);
 		
 		$rpgGameScore->save();	
 		return view('rpgGame');

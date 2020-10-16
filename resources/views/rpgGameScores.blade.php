@@ -15,37 +15,41 @@
 		<!--javascript at bottom-->
     </head>
     <body>
-		<div class="content .container" id="outer">
-			<!--game intro screen-->
-			<div class="col" id="gameIntroMenu">	
-						<table>
-							<tr>
-								<th>Name</th>
-								<th>Kills</th>
-								<th>Dmg Done</th>
-								<th>Dmg rcvd</th>
-								<th>cleared</th>	
-							</tr>
-							@isset($scores)
-								@foreach($scores as $score)
-									<tr>
-										<td>{{$score->name}}</td>
-										<td>{{$score->kills}}</td>
-										<td>{{$score->damageDone}}</td>
-										<td>{{$score->damageReceived}}</td>
-										<td>{{$score->chaptersCleared}}</td>	
-									</tr>
-								@endforeach
-							@endisset
-						</table>
-					</div>	
+		<div>
+			@isset($scores)
+			<table class="table">
+				<tr>
+					<th width="33%">Name</th>
+					<th width="33%">Score</th>	
+					<th width="33%">Detail</th>	
+				</tr>			
+				@foreach($scores as $score)
+				<tr>
+					<td>{{$score->name}}</td>
+					<td>{{$score->scoreTotal}}</td>	
+					<td><a href="{{ URL::to('rpgGame/scores/detail/?name=' . $score->name) }}">View</a></td>
+				</tr>
+				@endforeach
+			</table>
+			@endisset
 
-				<div class="row">
-					<div class="btn-group d-flex w-100 fixed-bottom" role="group">
-						<button id="returnFromScoresButton" type="button" class="introButtons btn btn-primary active w-100">Home</button>
-						<button type="button" class="introButtons scoreButton btn btn-primary active w-100">Scores</button>
-					</div>					
-				</div>
+			@isset($profile)
+			<div class="text-center">
+				<p>Name: {{$profile->name}}</p>
+				<p>Kills: {{$profile->kills}}</p>
+				<p>Dmg Done: {{$profile->damageDone}}</p>
+				<p>Dmg Recvd: {{$profile->damageReceived}}</p>
+				<p>Chapters: {{$profile->chaptersCleared}}</p>
+				<p>Earnings: {{$profile->earningsTotal}}</p>
+				<p>Total: {{$profile->scoreTotal}}</p>
+			</div>
+			@endisset
+
+			<div class="row">
+				<div class="btn-group d-flex w-100 fixed-bottom" role="group">
+					<button id="returnFromScoresButton" type="button" class="introButtons btn btn-primary active w-100">Home</button>
+					<button type="button" class="listScoresButton introButtons scoreButton btn btn-primary active w-100">Scores</button>
+				</div>					
 			</div>
 		</div>
 		<!--scripts-->

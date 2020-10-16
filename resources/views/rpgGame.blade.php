@@ -50,7 +50,7 @@
 					<div class="btn-group d-flex w-100 fixed-bottom" role="group">
 						<button id="startButton" type="button" class="introButtons btn btn-primary active w-100">New Game</button>
 						<button id="continueButton" type="button" class="introButtons btn btn-primary active w-100">Continue</button>
-						<button id="listScoresButton" type="button" class="introButtons btn btn-primary active w-100">Scores</button>
+						<button type="button" class="listScoresButton introButtons btn btn-primary active w-100">Scores</button>
 					</div>					
 				</div>
 			</div>
@@ -272,7 +272,7 @@
 							<div class="modal-body">
 								<div class="" id="gameIntroMenu" role="group">
 									<button type="button" class="saveQuit btn btn-primary active w-100 mb-1">Save and Quit</button>
-									<button type="button" class="returnButton btn btn-primary active w-100">Return to Website</button>
+									<button type="button" class="returnButton btn btn-primary active w-100">Quit</button>
 								</div>	
 							</div>
 							<div class="modal-footer centered-button">
@@ -681,7 +681,7 @@
 							<div class="modal-body">
 								<div class="" id="gameIntroMenu" role="group">
 									<button type="button" class="saveQuit btn btn-primary active w-100 mb-1">Save and Quit</button>
-									<button type="button" class="returnButton btn btn-primary active w-100 mb-1">Return to Website</button>
+									<button type="button" class="returnButton btn btn-primary active w-100 mb-1">Quit</button>
 									<button type="button" class="saveGame btn btn-primary active w-100">QSave</button>
 								</div>	
 							</div>

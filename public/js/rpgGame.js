@@ -327,6 +327,17 @@ class Actor {
 		this.damageReceived = 0;
 		this.chaptersCleared = 0;
 		this.money = 0;
+		this.earningsTotal = 0;
+	}
+
+	setEarningsTotal(earningsTotal) {
+		this.score -= this.earningsTotal;
+		this.earningsTotal = earningsTotal;
+		this.score += this.earningsTotal;
+	}
+
+	getEarningsTotal() {
+		return this.earningsTotal;
 	}
 
 	setMoney(money) {
@@ -1468,9 +1479,10 @@ function postAttackUpdates() {
 			player.addToItemInventory(enemyItemList[z].name, parseInt(enemyItemList[z].quantity));
 			loot += enemyItemList[z].name + " ";
 		}	
-		//win enemy money
+		//win enemy money, add to total earned
 		let goldLoot = parseInt(enemy.getMoney());
 		player.setMoney(player.getMoney() + goldLoot);
+		player.setEarningsTotal(player.getEarningsTotal() + goldLoot);
 
 		$("#playerGameStatus").text("You win!");
 		$("#playerStatus").text("Gained: " + loot + ", $" + goldLoot);
@@ -1513,7 +1525,8 @@ function postAttackUpdates() {
 		$("#playerHealthBar").css('width', Math.floor(player.getCurrentHealth() / player.getHealth() * 100) + "%");
 	}
 }
-
+//compares agility
+//if enemy has greater agility, will go first and apply attack on player
 function agilityCheck() {
 	
 	//speed check, enemy performs attack first if slower
@@ -1548,35 +1561,17 @@ function refreshItems() {
 	for(var i = 0; i < playerItemArray.length; i++) {
 		let itemName = playerItemArray[i].getName();
 		let itemQty = playerItemArray[i].getQuantity(); 
+		let itemEffect = playerItemArray[i].getEffect(); 
+
 		$('.itemButtonArray').append('<div class="row"><input value=' + '"' + itemName + '"' +
-			' type="button" class="itemButton' + i + ' btn btn-primary active mb-1"></button><p class="ml-1">' +
-			itemQty + '</p></div>');
+			' type="button" class="itemButton' + i + ' btn btn-primary active mb-1"></button><p class="ml-1">x ' +
+			itemQty + ' ' + itemEffect + '</p></div>');
 		//item logic
 		$('.itemButton' + i).click(function() {
 			for(var j = 0; j < itemObj.length; j++) {	
 				//finds item details in data
-				if(itemObj[j].name == $(this).attr("value")) {
-					//display item used
-					$("#playerGameStatus").text(itemObj[j].name);
-					//calls helper function in class, if used on map shows detail
-					let statusString = $("#mapStatus").text();  
-
-					let index = statusString.indexOf('!');
-					if(index > -1) {
-						statusString = statusString.substr(index + 1);
-					}
-
-					if(itemObj[j].effect === "Direct Damage" && enemy != null) {
-						player.useItem(itemObj[j].name, "enemy");
-					}
-					else if(itemObj[j].effect === "Direct Damage" && enemy == null) {
-						$("#mapStatus").text("You cannot use that item here! " + statusString);
-					}
-					else {
-						player.useItem(itemObj[j].name, "player");
-						$("#mapStatus").text("You used a " + itemObj[j].name + "! " + statusString);
-					}
-					//fight specific
+				if(itemObj[j].name == $(this).attr("value")) {					
+					//fight specific agility check, allows enemy attack first if slower
 					if(enemy != null) {	
 						//no damage and using item
 						player.setAttackPenalty(100);
@@ -1585,19 +1580,46 @@ function refreshItems() {
 						//agility check
 						agilityCheck();
 						
+						//uses the item in fight, on self or enemy if direct damage
+						if(itemObj[j].effect === "Direct Damage" && enemy != null) {
+							player.useItem(itemObj[j].name, "enemy");
+						}
+						else {
+							player.useItem(itemObj[j].name, "player");
+						}
+
 						$('#itemModal').modal('toggle');
 						refreshItems();
-						playerBasicAttack = false;//is using item
-						$("#attackButton").click();//goes to battle turn processing
+						playerBasicAttack = false;
+
+						//display item used
+						$("#playerGameStatus").text(itemObj[j].name);
+						//goes to rest of battle turn processing
+						$("#attackButton").click();
 					}
 					//map specific
-					if(enemy == null) {	
-						refreshItems();
-						//$('#mapItemModal').modal('toggle');
-						if($('#mapItemModal').hasClass('show'))
-							$('#mapItemModal').modal('toggle');
-						if($('#itemModal').hasClass('show'))
-							$('#itemModal').modal('toggle');
+					if(enemy == null) {
+					//item used on map shows detail
+					let statusString = $("#mapStatus").text();  
+
+					let index = statusString.indexOf('!');
+					if(index > -1) {
+						statusString = statusString.substr(index + 1);
+					}
+					//uses the item on map, no direct damage items usable
+					if(itemObj[j].effect === "Direct Damage" && enemy == null) {
+						$("#mapStatus").text("You cannot use that item here! " + statusString);
+					}
+					else {
+						player.useItem(itemObj[j].name, "player");
+						$("#mapStatus").text("You used a " + itemObj[j].name + "! " + statusString);
+					}
+					//clean up
+					refreshItems();
+					if($('#mapItemModal').hasClass('show'))
+						$('#mapItemModal').modal('toggle');
+					if($('#itemModal').hasClass('show'))
+						$('#itemModal').modal('toggle');
 					}
 				}
 			}
@@ -1613,7 +1635,7 @@ function refreshEquipment() {
 		let itemName = playerEquipmentArray[i].name;
 		let value = playerEquipmentArray[i].value;
 		$('#equipButtonArray').append('<div class="row"><input value=' + '"' + itemName + '"' +
-			' type="button" id="equipButton' + i + '" class="btn btn-primary active mb-1"></button><p class="ml-1 mt-1">' +
+			' type="button" id="equipButton' + i + '" class="btn btn-primary active mb-1"></button><p class="ml-1 mt-1">EV: +' +
 			value + '</p></div>');
 		//equip logic
 		$('#equipButton' + i).click(function() {
@@ -2147,6 +2169,21 @@ function startStory() {
 
 //called at map and in battle to populate player status fields
 function printPlayerStatus() {
+	//set status conditions player
+	let tempBuffArray = player.getStatusBuffArray();
+	let buffStr;
+	$("#playerActiveEffects").empty();
+
+	for(let i = 0; i < tempBuffArray.length; i++) {
+		buffStr = tempBuffArray[i].getName() + " " + tempBuffArray[i].getEffect() + " " +
+			tempBuffArray[i].getEffectPercent() + "% x" + tempBuffArray[i].getStackCount() + " " +
+			tempBuffArray[i].getDuration() + " left";
+		$("#playerActiveEffects").append("<p>" + buffStr + "</p>");
+	};
+	if(tempBuffArray.length != 0)
+		$("#playerConditionTriangle").css('border-top', '20px solid orange');
+
+
 	$(".playerImage").attr("src", raceObj[0].avatar);
 	$(".playerName").text("Name: " + player.getName());
 	$(".playerMoney").text("Money: " + player.getMoney());
@@ -2161,35 +2198,17 @@ function printPlayerStatus() {
 }	
 
 //called at map movement to clear enemy detail of square
-function printOthersExamination() {
-	let enemyMapPosition = storyObj[currentMap].enemyCoords;
-	let playerMapPosition = player.getMapPosition();
-	let enemyId;
-	let otherArmour;
-	let otherWeapon;
-		
-	//populates enemy name information using square id enemy[x] and story obj
-	for(var i = 0; i < enemyMapPosition.length; i++) {
-		if(JSON.stringify(player.getMapPosition()) === JSON.stringify(enemyMapPosition[i])) {
-			enemyId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/)[0];
-			otherArmour = enemies[enemyId].getArmourName();
-			otherWeapon = enemies[enemyId].getWeaponName();	
-
-			$("#otherName").text("Enemy: " + enemies[enemyId].getName());
-			if(otherArmour != null)
-				$("#otherArmourName").text("Wearing: " + enemies[enemyId].getArmourName());	
-			else
-				$("#otherArmourName").text("Wearing: none");
-			if(otherWeapon != null)
-				$("#otherAttackWeapon").text("Holding: " + enemies[enemyId].getWeaponName());
-			else
-				$("#otherAttackWeapon").text("Holding: none");
-		}
-		else {
-			$("#otherName").text("Enemy: none");
-			$("#otherArmourName").text("Wearing: none");
-			$("#otherAttackWeapon").text("Holding: none");
-		}
+function printOthersExamination(id) {
+	let enemyId = id;
+	if(enemyId != null) {
+		$("#otherName").text("Enemy: " + enemies[enemyId].getName());
+		$("#otherArmourName").text("Wearing: " + enemies[enemyId].getArmourName());	
+		$("#otherAttackWeapon").text("Holding: " + enemies[enemyId].getWeaponName());
+	}
+	else {
+		$("#otherName").text("Enemy: none");
+		$("#otherArmourName").text("Wearing: none");
+		$("#otherAttackWeapon").text("Holding: none");
 	}
 }
 
@@ -2428,7 +2447,7 @@ function updateMap(actor, direction) {
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "exit") {
 			$("#mapStatus").text("You are walking on a grassy field. There is a path leading out of this area.");
 			$("#mapFight").hide();	
-			if(enemyCount <= 0)	
+			if(enemyCount > 0)	
 				$("#mapExit").show().prop('disabled', false);
 			else 
 				$("#mapExit").show().prop('disabled', true);
@@ -2535,26 +2554,26 @@ function getExaminationResults() {
 	let playerMapPosition = player.getMapPosition();
 	let enemyId;
 	let otherArmour;
-	let otherWeapon
+	let otherWeapon;
+	let otherWeaponvalue;
+	let tempName;
 	let squareId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/);
+
 	if(squareId != null) {
 		enemyId = squareId[0];
-		otherArmour = enemies[enemyId].getArmourName();
-		otherWeapon = enemies[enemyId].getWeaponName();	
-		
-		printOthersExamination();
+		printOthersExamination(enemyId);
 
 		//examining a corpse loots it
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
-			let otherArmourValue = enemies[enemyId].getArmourValue();
+			otherArmourValue = enemies[enemyId].getArmourValue();
 			if(otherArmour != null && (!player.addEquipment({name: otherArmour, value: otherArmourValue})))
 				enemies[enemyId].unequipArmour();
-			let otherWeapon = enemies[enemyId].getWeaponName();
-			let otherWeaponvalue = enemies[enemyId].getWeaponValue();
+			otherWeapon = enemies[enemyId].getWeaponName();
+			otherWeaponvalue = enemies[enemyId].getWeaponValue();
 			if(otherWeapon != null && (!player.addEquipment({name: otherWeapon, value: otherWeaponvalue})))
 				enemies[enemyId].unequipWeapon();
 			if(enemies[enemyId].getWeaponName() == null || enemies[enemyId].getArmourName() == null) {
-				let tempName = "looted " + enemies[enemyId].name;
+				tempName = "looted " + enemies[enemyId].name;
 				$("#mapStatus").text("There is a corpse of a " + tempName + " here.");
 			}	
 		}
@@ -2880,12 +2899,6 @@ $(document).ready(function(){
 		}
 	});	
 	
-	//from menu modal back to main website
-	//<a href="{{ route('home') }}">Home</a>
-	//$(".returnButton").click(function() {
-	//	window.location.href='/work';
-	//});
-	
 	//menu button battle view
 	$("#battleGameMenu").click(function() {
 		$('#menuModal').modal('toggle');
@@ -2960,7 +2973,8 @@ $(document).ready(function(){
 		$(".saveGame").text("Saved").prop('disabled', true);
 	});	
 	
-	//from modal go to title
+	//save and quit
+	//from modal go to title after saving scores to database
 	$(".saveQuit").click(function() {
 		$(".saveQuit").prop('disabled', false);
 		$(".saveGame").text("QSave").prop('disabled', false);
@@ -2990,6 +3004,9 @@ $(document).ready(function(){
 			let damageDone = tempPlayerData.damageDone;
 			let damageReceived = tempPlayerData.damageReceived;
 			let chaptersCleared = tempPlayerData.chaptersCleared;
+			let earningsTotal = tempPlayerData.earningsTotal;
+			let scoreTotal = kills + damageDone + damageReceived + chaptersCleared + earningsTotal;
+
 			
 			$.ajaxSetup({
 				headers: {
@@ -3002,7 +3019,9 @@ $(document).ready(function(){
 				data: {name:name,kills:kills,
 					damageDone:damageDone, 
 					damageReceived:damageReceived,
-					chaptersCleared:chaptersCleared}
+					chaptersCleared:chaptersCleared,
+					earningsTotal:earningsTotal,
+					scoreTotal:scoreTotal}
 				}).done(function( msg ) {
 				//alert( msg );
 			});
@@ -3056,6 +3075,7 @@ $(document).ready(function(){
 		player.setDamageDone(playerData.damageDone);	
 		player.setDamageReceived(playerData.damageReceived);	
 		player.setChaptersCleared(playerData.chaptersCleared);
+		player.setEarningsTotal(playerData.earningsTotal);
 
 		//enemies init, if any
 		enemies.length = 0;
@@ -3206,12 +3226,17 @@ $(document).ready(function(){
 	});
 
 	//main screen score button
-	$("#listScoresButton").click(function() {
+	$(".listScoresButton").click(function() {
 		window.location.href='/rpgGame/scores';
 	});
 
 	//score screen home button to return to game
 	$("#returnFromScoresButton").click(function() {
+		window.location.href='/rpgGame';
+	});
+
+	//returns to title from map or battle without save
+	$(".returnButton").click(function() {
 		window.location.href='/rpgGame';
 	});
 });

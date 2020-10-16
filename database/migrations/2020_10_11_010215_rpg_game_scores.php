@@ -20,6 +20,8 @@ class RpgGameScores extends Migration
 			$table->integer('damageDone');
 			$table->integer('damageReceived');
 			$table->integer('chaptersCleared');
+			$table->integer('earningsTotal');
+			$table->integer('scoreTotal');
 			
             $table->timestamps();
         });
