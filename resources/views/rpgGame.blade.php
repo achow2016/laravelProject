@@ -43,6 +43,11 @@
 						<div id="gameTitle">
 							<img class="mx-auto d-block" src="/img/gameTitleTempImage.jpg" width="150px" height="150px" alt="Game Title Art"/>
 							<h1>My Game</h1>
+								 @if( auth()->check() )
+								<li class="nav-item">
+								<a class="nav-link" href="/rpgGame/logout">{{ auth()->user()->name }} logout</a>
+								</li>
+								@endif
 						</div>
 					</div>
 				</div>

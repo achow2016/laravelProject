@@ -31,12 +31,26 @@ Route::get('work', function () {
 
 Route::get('rpgGame', function () {
     return view('rpgGame');
-})->name('rpgGame');
+})->name('rpgGame')->middleware('auth:rpgUser');
 
-Route::get('rpgGame/scores', 'scoreViewController@scores');
-Route::get('rpgGame/scores/detail', 'scoreViewController@detail')->name('detail');
+Route::get('rpgGame/scores', 'scoreViewController@scores')->middleware('auth:rpgUser');;
+Route::get('rpgGame/scores/detail', 'scoreViewController@detail')->name('detail')->middleware('auth:rpgUser');;
+Route::post('rpgGame/add', 'scoreViewController@add')->middleware('auth:rpgUser');;
 
-Route::post('rpgGame/add', 'scoreViewController@add');
+Route::get('register', function () {
+    return view('rpgGameRegistration');
+})->name('register');
+
+Route::get('rpgGame/register', 'rpggameRegistrationController@create');
+Route::post('rpgGame/register', 'rpggameRegistrationController@store');
+ 
+Route::get('rpgGame/login', 'rpggameSessionController@create');
+Route::post('rpgGame/login', 'rpggameSessionController@store');
+Route::get('rpgGame/logout', 'rpggameSessionController@destroy')->middleware('auth:rpgUser');
+
+Route::get('login', function () {
+    return view('rpgGameLogin');
+})->name('login');
 
 
 //corkboard routes
@@ -68,9 +82,9 @@ Route::get('microblogLogin', function () {
 })->name('microblogLogin');
 
 //login screen alt
-Route::get('login', function () {
-    return view('microblogLogin');
-})->name('login');
+//Route::get('login', function () {
+//    return view('microblogLogin');
+//})->name('login');
 
 //process login
 

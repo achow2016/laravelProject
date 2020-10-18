@@ -51,6 +51,12 @@ return [
             'driver' => 'session',
             'provider' => 'admin',
         ],
+		
+		//rpgGame
+		'rpgUser' => [
+            'driver' => 'session',
+            'provider' => 'rpgUsers',
+        ],
 
         'api' => [
             'driver' => 'token',
@@ -88,6 +94,12 @@ return [
 		'admin' => [
             'driver' => 'eloquent',
             'model' => App\Models\microblogUser::class,
+        ],
+
+		//rpgGame
+		'rpgUsers' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\rpgGameUser::class,
         ],
 
         // 'users' => [
