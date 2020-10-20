@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 
 //models
 use App\Models\rpgGameScore;
+use Illuminate\Support\Facades\Auth;
 
 class scoreViewController extends Controller {
+
 	public function scores() 
 	{
 		$scores = rpgGameScore::all();
@@ -38,7 +40,7 @@ class scoreViewController extends Controller {
 		$rpgGameScore->setAttribute('chaptersCleared', $chaptersCleared);
 		$rpgGameScore->setAttribute('earningsTotal', $earningsTotal);
 		$rpgGameScore->setAttribute('scoreTotal', $scoreTotal);
-		
+
 		$rpgGameScore->save();	
 		return view('rpgGame');
 	}

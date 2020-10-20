@@ -18,31 +18,29 @@
 		<div>
 			<div class="row">
 				<div class="col">
-					<h2 class="text-center">Register</h2>
-					<form method="POST" action="/rpgGame/register">
-					{{ csrf_field() }}
-						<div class="form-group">
-							<label for="name">Name:</label>
-							<input type="text" class="form-control" id="name" name="name">
-						</div>
-
+					<h2>Reset Login</h2>
+					<form method="POST" action="{{ url('/resetPassword') }}">
+						{{ csrf_field() }}
 						<div class="form-group">
 							<label for="email">Email:</label>
 							<input type="email" class="form-control" id="email" name="email">
 						</div>
-
 						<div class="form-group">
-							<label for="password">Password:</label>
-							<input type="password" class="form-control" id="password" name="password" autocomplete="on">
-						</div>
-
-						<div class="form-group">
-							<button type="submit" class="btn btn-primary">Submit</button>
-							<a href="/login">Login</a>
+							<button type="submit" class="btn btn-primary">Reset</button>
+							<a href="/register">Register</a>
 						</div>
 					</form>
 				</div>
 			</div>
+
+			<div class="row">
+				<div class="col">
+					@if (Session::has('message'))
+						{{ Session::get('message') }}
+					@endif
+				</div>
+			</div>
+
 		</div>
 		<!--scripts-->
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 

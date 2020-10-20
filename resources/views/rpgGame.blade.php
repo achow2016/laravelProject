@@ -45,7 +45,8 @@
 							<h1>My Game</h1>
 								 @if( auth()->check() )
 								<li class="nav-item">
-								<a class="nav-link" href="/rpgGame/logout">{{ auth()->user()->name }} logout</a>
+								<p>Welcome, {{ auth()->user()->name }}</p>
+								<a class="nav-link" href="/rpgGame/logout">logout</a>
 								</li>
 								@endif
 						</div>

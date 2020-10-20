@@ -3006,7 +3006,6 @@ $(document).ready(function(){
 			let chaptersCleared = tempPlayerData.chaptersCleared;
 			let earningsTotal = tempPlayerData.earningsTotal;
 			let scoreTotal = kills + damageDone + damageReceived + chaptersCleared + earningsTotal;
-
 			
 			$.ajaxSetup({
 				headers: {
@@ -3021,7 +3020,7 @@ $(document).ready(function(){
 					damageReceived:damageReceived,
 					chaptersCleared:chaptersCleared,
 					earningsTotal:earningsTotal,
-					scoreTotal:scoreTotal}
+					scoreTotal:scoreTotal},
 				}).done(function( msg ) {
 				//alert( msg );
 			});

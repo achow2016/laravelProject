@@ -28,12 +28,15 @@
 
 						<div class="form-group">
 							<label for="password">Password:</label>
-							<input type="password" class="form-control" id="password" name="password">
+							<input type="password" class="form-control" id="password" name="password" autocomplete="on">
 						</div>
 
 						<div class="form-group">
 							<button type="submit" class="btn btn-primary">Login</button>
+							<br><br>
 							<a href="/register">Register</a>
+							<br><br>
+							<a href="/rpgGame/loginReset">Reset Pass</a>
 						</div>
 					</form>
 				</div>
