@@ -19,12 +19,27 @@
 			<div class="row">
 				<div class="col">
 					<h2>Reset Login</h2>
-					<form method="POST" action="{{ url('/resetPassword') }}">
+					<form method="POST" action="/rpgGame/newPassword">
 						{{ csrf_field() }}
 						<div class="form-group">
-							<label for="email">Email:</label>
-							<input type="email" class="form-control" id="email" name="email">
+							<label for="password">New password:</label>
+							<input type="password" class="form-control" id="password" name="password" autocomplete="on">
 						</div>
+						<div class="form-group">
+							<label for="password">New Password Again:</label>
+							<input type="password" class="form-control" id="password_confirmation" name="password_confirmation" autocomplete="on">
+						</div>
+
+						<div class="form-group">
+							<label for="token">Token</label>
+							<input type="text" class="form-control" id="token" name="token" value={{ app('request')->input('token') }}>
+						</div>
+
+						<div class="form-group">
+							<label for="token">Email</label>
+							<input type="text" class="form-control" id="email" name="email" value={{ app('request')->input('email') }}>
+						</div>
+
 						<div class="form-group">
 							<button type="submit" class="btn btn-primary">Reset</button>
 							<br><br>

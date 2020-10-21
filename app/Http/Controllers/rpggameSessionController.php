@@ -28,7 +28,7 @@ class rpgGameSessionController extends Controller
 			return redirect('/login')->with('message', 'User does not exist!'); 
 
 		//debug helper
-		echo("<script>console.log('PHP: " . $user . "');</script>");
+		//echo("<script>console.log('PHP: " . $user . "');</script>");
 		
 		//check password, returns error if incorrect
 		if($check) {

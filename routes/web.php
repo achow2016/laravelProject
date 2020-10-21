@@ -39,13 +39,28 @@ use Illuminate\Support\Facades\Route;
 	Route::get('rpgGame/logout', 'rpggameSessionController@destroy')->middleware('auth:rpgUser');
 
 	Route::get('rpgGame/loginReset', 'rpggameRegistrationController@loginReset')->name('loginReset');
+	Route::post('rpgGame/newPassword', 'rpggameRegistrationController@newPass')->name('newPassword');
 
 	Route::get('login', function () {
 		return view('rpgGameLogin');
 	})->name('login');
 
+	Route::get('rpgGameResetMail', function () {
+		return view('rpgGameResetMail');
+	})->name('rpgGameResetMail');
+
+	Route::get('rpgGameResetMailConf', function () {
+		return view('rpgGameResetMailConf');
+	})->name('rpgGameResetMailConf');
+
+	Route::get('/rpgGame/passwordReset', function () {
+		return view('rpgGamePasswordReset');
+	})->name('rpgGamePasswordReset');
+
 	Route::post('resetPassword', 'rpggameRegistrationController@validatePassReset');
 	Route::post('resetPasswordToken', 'rpggameRegistrationController@resetPass');
+	Route::post('newPass', 'rpggameRegistrationController@newPass');
+	
 	
 
 
