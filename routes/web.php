@@ -64,6 +64,8 @@ use Illuminate\Support\Facades\Route;
 	
 
 
+
+/*
 //main site routes
 
 	Route::get('/', function () {
@@ -119,3 +121,4 @@ use Illuminate\Support\Facades\Route;
 	//logout
 
 	Route::get('microblogLogout', 'microblogController@logout')->name('microblogLogout');
+*/

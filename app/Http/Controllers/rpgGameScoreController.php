@@ -23,7 +23,11 @@ class scoreViewController extends Controller {
 	}
 
 	public function add(Request $request)
-	{	
+	{
+		$profile = rpgGameScore::where('name', $request->input('name'))->first();
+		if($profile != null)
+			rpgGameScore::where('name', $request->input('name'))->delete();
+
 		$name = $request->input('name');
 		$kills = $request->input('kills');
 		$damageDone = $request->input('damageDone');

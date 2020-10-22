@@ -8,15 +8,15 @@ var mapObj = [
 ];
 
 var weaponObj = [
-	{ "name":"wood sword" , "damage":"1" },
-	{ "name":"bronze sword" , "damage":"2" },
-	{ "name":"iron sword" , "damage":"7" }
+	{ "name":"wood sword" , "damage":"1", "cost":"100" },
+	{ "name":"bronze sword" , "damage":"2", "cost":"200" },
+	{ "name":"iron sword" , "damage":"7", "cost":"700" }
 ];
 
 var armourObj = [
-	{ "name":"cloth armour" , "reduction":"1" }, 
-	{ "name":"leather armour" , "reduction":"2" }, 
-	{ "name":"brigadine armour" , "reduction":"3" } 
+	{ "name":"cloth armour" , "reduction":"1", "cost":"100" }, 
+	{ "name":"leather armour" , "reduction":"2", "cost":"200" }, 
+	{ "name":"brigadine armour" , "reduction":"3", "cost":"300" },
 ];
 	
 //ST, EN, LI is strength(atk), endurance(sp), life(hp)	
@@ -73,8 +73,14 @@ var storyObj = [
 		"enemyCoords":[[4,8],[4,4]],
 		"chestCoords":[[2,3]],
 		"chestloot":[{"name":"Small Treatment Kit", "quantity":"1"}],
-		"shopCoords":[[2,3]],
-		"shopInventory":[{"name":"Small Treatment Kit", "quantity":"1"}],
+		"shopCoords":[2,3],
+		"shopMoney":"1000",
+		"shopInventory":[
+			{"name":"Small Treatment Kit", "type":"item"},
+			{"name":"brigadine armour", "type":"equipment"},
+			{"name":"iron sword", "type":"equipment"}
+
+		],
 		"pages" : [
 			"Welcome to rpgGame!",
 			"You are a slave working at an arena where people pay to watch slaves fight each other and wild animals for entertainment.",
@@ -145,6 +151,103 @@ function getRandomInteger(min, max) {
 	return Math.floor(Math.random() * (max - min + 1) ) + min;
 }
 
+//inventory key value: name, type, qty, cost 
+class Shopkeeper {
+	constructor(inventory, money) {
+		this.inventory = [];
+		this.money = money;
+	}
+
+	getMoney() {
+		return this.money;
+	}
+
+	setMoney(money) {
+		this.money = money;
+	}
+
+	getInventory() {
+		return this.inventory;
+	}
+
+	setInventory(inventory) {
+		this.inventory = inventory;
+	}
+
+	removeItem(item) {
+		for(let i = 0; i < (this.inventory).length; i++) {
+			if((this.inventory[i].name) === item.name) {
+				var processedItemList = (this.equipmentArray).filter(function(value,index,arr) { return value.name == item.name});
+				this.setInventory(processedItemList);
+			}	
+		}
+	}
+
+	addItem(item) {
+		for(let i = 0; i < (this.inventory).length; i++) {
+			if(item.name === (this.inventory[i].name)) {
+				this.inventory[i].qty++
+				return;
+			}		
+		}
+		
+		var newItem = {
+			name: item.name,
+			type: item.type,
+			cost: item.cost
+		}
+		(this.inventory).push(newItem);	
+	}
+
+	sellItem(item, actor) {
+		for(let i = 0; i < (this.inventory).length; i++) {
+			if(item.name === (this.inventory[i].name)) {
+				//found, process sale
+				actor.setMoney(actor.getMoney() - this.inventory[i].cost);
+				this.setMoney(this.getMoney() + this.inventory[i].cost);
+
+				if(this.inventory[i].type === "item")
+					actor.addToItemInventory(this.inventory[i].name, 1);
+				if(this.inventory[i].type === "equipment")
+					actor.addEquipment(this.inventory[i].name);
+				
+				this.inventory[i].qty--;
+				if(this.inventory[i].qty == 0)
+					removeItem(this.inventory[i].name);
+				break;
+			}		
+		}
+	}
+
+	buyItem(item, actor) {
+		//first checks if enough money, if not return false
+		if(this.getMoney() >= item.cost) {
+
+			//exchanges money
+			this.setMoney(this.getMoney() - item.cost);
+			actor.setMoney(actor.getMoney() + item.cost);
+			
+			//adds item to inventory
+			for(let i = 0; i < (this.inventory).length; i++) {
+				if(item.name === (this.inventory[i].name)) {
+					this.inventory[i].qty++
+					return;
+				}		
+			}
+			
+			var newItem = {
+				name: item.name,
+				type: item.type,
+				cost: item.cost
+			}
+			(this.inventory).push(newItem);	
+			return true;
+		}
+		else {
+			return false;
+		}
+	}
+}
 //for storing a buff status, placed in player buff array
 class BuffStatus {
 	constructor(name, effect, stackLimit, effectPercent, duration) {
@@ -2264,7 +2367,9 @@ function populateMap() {
 	let enemyCount = parseInt(storyObj[currentChapter].enemyCount);
 	let enemyMapPosition = storyObj[currentMap].enemyCoords;
 	let exitMapPosition = mapObj[currentMap].endPoint;
+	let shopMapPosition = storyObj[currentMap].shopCoords;
 	
+
 	//enemy positions added to enemy objs from story obj listing
 	for(var k = 0; k < enemyCount; k++) {
 		enemies[k].setMapPosition(enemyMapPosition[k]);
@@ -2285,6 +2390,11 @@ function populateMap() {
 	$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).empty()
 		.append("<p id='exit' class='row pl-2'>exit</p>").css("background-color", "blue").css("color", "white");
 	
+	//mark shop point
+	$("#" + shopMapPosition[0] + "-" + shopMapPosition[1]).empty()
+		.append("<p id='shop' class='row pl-2'>shop</p>").css("background-color", "green").css("color", "white");
+	
+
 	$("#mapMain").show();
 }
 	
@@ -2388,7 +2498,9 @@ function updateMap(actor, direction) {
 	let exitMapPosition = mapObj[currentMap].endPoint;
 	//let enemyMapPosition = enemy.getMapPosition();
 	let enemyMapPosition = storyObj[currentMap].enemyCoords;
+	let shopMapPosition = storyObj[currentMap].shopCoords;
 	let playerMapPosition = player.getMapPosition();
+	
 	
 	//for previous spot after movement
 	if(actor === "player") {
@@ -2414,7 +2526,14 @@ function updateMap(actor, direction) {
 					.append("<p id='exit' class='row pl-2'>exit</p>").css("background-color", "blue").css("color", "white");
 				$("#mapFight").show();
 				$("#mapExit").hide();
-			}	
+			}
+			//restores shop
+			else if (JSON.stringify(player.getMapPosition()) === JSON.stringify(shopMapPosition)) {
+				$("#" + shopMapPosition[0] + "-" + shopMapPosition[1]).empty()
+					.append("<p id='exit' class='row pl-2'>shop</p>").css("background-color", "green").css("color", "white");
+				$("#mapFight").show();
+				$("#mapShop").hide();
+			}
 			//restores base
 			else {
 			$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).empty().append("<p>g</p>")
@@ -2441,22 +2560,31 @@ function updateMap(actor, direction) {
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "g") {
 			$("#mapStatus").text("You are walking on a grassy field.");
 			$("#mapExit").hide().prop('disabled', true);	
+			$("#mapShop").hide().prop('disabled', true);	
 		}
 
 		//exit point, update text and shows exit button
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "exit") {
 			$("#mapStatus").text("You are walking on a grassy field. There is a path leading out of this area.");
 			$("#mapFight").hide();	
+			$("#mapShop").hide().prop('disabled', true);
 			if(enemyCount > 0)	
 				$("#mapExit").show().prop('disabled', false);
 			else 
 				$("#mapExit").show().prop('disabled', true);
 		}
-			
+
+		//shop point, update text and shows shop button
+		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "shop") {
+			$("#mapStatus").text("You are walking on a grassy field. There is a shop in this area.");
+			$("#mapFight").hide();	
+			$("#mapShop").show().prop('disabled', false);
+		}
+
 
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "e") {
 			$("#mapExit").hide().prop('disabled', true);	
-			
+			$("#mapShop").hide().prop('disabled', true);
 			if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
 				let tempName = "";
 				for(var i = 0; i < enemyMapPosition.length; i++) {
@@ -2480,7 +2608,6 @@ function updateMap(actor, direction) {
 				$("#mapStatus").text("There is someone here...");	
 				$("#mapFight").prop("disabled", false);
 			}
-			//logic for if corpse but exit point
 		}	
 
 		//updates new spot moved onto to player marker and preserves enemy id		
@@ -3006,7 +3133,7 @@ $(document).ready(function(){
 			let chaptersCleared = tempPlayerData.chaptersCleared;
 			let earningsTotal = tempPlayerData.earningsTotal;
 			let scoreTotal = kills + damageDone + damageReceived + chaptersCleared + earningsTotal;
-			
+
 			$.ajaxSetup({
 				headers: {
 					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')

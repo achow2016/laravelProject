@@ -246,6 +246,7 @@
 					<div class="col">
 						<div class="btn-group d-flex w-100 mt-1" role="group">
 							<button disabled id="mapExit" type="button" class="mapControl btn btn-primary active w-100 mr-1">Exit</button>
+							<button disabled id="mapShop" type="button" class="mapControl btn btn-primary active w-100 mr-1">Shop</button>
 							<button disabled id="mapFight" type="button" class="mapControl btn btn-primary active w-100 mr-1">Fight</button>
 							<button id="mapExamine" type="button" class="mapControl btn btn-primary active w-100 ml-1 mr-1">Examine</button>
 							<button id="mapItem" type="button" class="mapControl btn btn-primary active w-100 ml-1 mr-1">Item</button>
@@ -308,6 +309,28 @@
 						</div>	
 					</div>	
 				</div>
+
+				<!--shop items modal-->
+					
+				<!-- Modal -->
+				<div class="modal fade" id="mapShopModal" role="dialog">
+					<div class="modal-dialog">
+
+				<!-- Modal content-->
+						<div class="modal-content">
+							<div class="modal-header">
+								<button type="button" class="close" data-dismiss="modal">&times;</button>
+							</div>
+							<div class="modal-body">
+								<div class="shopItemButtonArray btn-group-vertical centered-button"></div>
+							</div>
+							<div class="modal-footer centered-button">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+							</div>
+						</div>	
+					</div>	
+				</div>
+
 				
 				<!--map score modal-->
 					
