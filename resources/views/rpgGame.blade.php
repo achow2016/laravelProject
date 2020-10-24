@@ -310,7 +310,7 @@
 					</div>	
 				</div>
 
-				<!--shop items modal-->
+				<!--shop map items modal-->
 					
 				<!-- Modal -->
 				<div class="modal fade" id="mapShopModal" role="dialog">
@@ -322,7 +322,26 @@
 								<button type="button" class="close" data-dismiss="modal">&times;</button>
 							</div>
 							<div class="modal-body">
-								<div class="shopItemButtonArray btn-group-vertical centered-button"></div>
+								<div id="shopMainMenu">
+									<p class="mapShopMoney"></p>
+									<p class="mapPlayerMoney"></p>
+									<button id="shopBuy" class="btn btn-primary active w-100 mb-1">Buy</button>
+									<button id="shopSell" class="btn btn-primary active w-100">Sell</button>
+								</div>
+								<div id="shopBuyMenu" style="display:none">
+									<p>Buy</p>
+									<p class="mapShopMoney"></p>
+									<p class="mapPlayerMoney"></p>
+									<div id="shopSellInventory" class="btn-group-vertical centered-button"></div>
+									<button class="shopMain btn btn-primary active w-100 mb-1">Back</button>
+								</div>
+								<div id="shopSellMenu" style="display:none">
+									<p>Sell</p>
+									<p class="mapShopMoney"></p>
+									<p class="mapPlayerMoney"></p>
+									<div id="playerSellInventory" class="btn-group-vertical centered-button"></div>
+									<button class="shopMain btn btn-primary active w-100 mb-1">Back</button>
+								</div>
 							</div>
 							<div class="modal-footer centered-button">
 								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

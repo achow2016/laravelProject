@@ -73,7 +73,7 @@ var storyObj = [
 		"enemyCoords":[[4,8],[4,4]],
 		"chestCoords":[[2,3]],
 		"chestloot":[{"name":"Small Treatment Kit", "quantity":"1"}],
-		"shopCoords":[2,3],
+		"shopCoords":[4,4],
 		"shopMoney":"1000",
 		"shopInventory":[
 			{"name":"Small Treatment Kit", "type":"item"},
@@ -153,9 +153,9 @@ function getRandomInteger(min, max) {
 
 //inventory key value: name, type, qty, cost 
 class Shopkeeper {
-	constructor(inventory, money) {
-		this.inventory = [];
+	constructor(money, inventory) {
 		this.money = money;
+		this.inventory = inventory;
 	}
 
 	getMoney() {
@@ -513,19 +513,17 @@ class Actor {
 			}	
 		}
 	}
-
+	//returns true if duplicate and doesn't push
 	addEquipment(item) {
-		var duplicate = false;
+		var state = false;
 		for(let i = 0; i < (this.equipmentArray).length; i++) {
 			if(item.name === (this.equipmentArray[i].name)) {
-				duplicate = true; 
-				return duplicate;
+				return state;
 			}	 		
 		}
-		if(!duplicate) {
-			(this.equipmentArray).push(item);
-			return duplicate;
-		}			
+		state = true;
+		(this.equipmentArray).push(item);
+		return state;				
 	}	
 
 	getEquipment() {
@@ -1144,6 +1142,8 @@ var player;
 var enemiesLeft; 
 var enemies = []; //all enemies in chapter
 var enemy; //stores current enemy being fought
+var shopkeeper;
+
 
 var playerPosition = 0;
 var enemyPosition = 0;
@@ -1430,6 +1430,17 @@ function enemyAttack() {
 	enemy.setAttackPenalty(0);
 }
 
+//get shop current money
+function refreshShopMoney() {
+	$(".mapShopMoney").text("Shop Money: " + shopkeeper.getMoney());
+	$(".mapPlayerMoney").text("Player Money: " + player.getMoney());
+}	
+
+//initialize shopkeeper, populate shop
+function shopInit(money, inventory) {
+	shopkeeper = new Shopkeeper(money, inventory);
+	refreshShopMoney();
+}
 //adjust score and stats
 function refreshScore() {
 	$(".playerScore").text("Score: " + player.getScore());
@@ -2059,7 +2070,7 @@ function gameInit() {
 	refreshItems();
 	refreshSkills();
 	refreshEquipment();
-
+	
 	//game UI reset
 	
 	//reset race select
@@ -2305,8 +2316,16 @@ function printOthersExamination(id) {
 	let enemyId = id;
 	if(enemyId != null) {
 		$("#otherName").text("Enemy: " + enemies[enemyId].getName());
-		$("#otherArmourName").text("Wearing: " + enemies[enemyId].getArmourName());	
-		$("#otherAttackWeapon").text("Holding: " + enemies[enemyId].getWeaponName());
+		let tempArmourName = enemies[enemyId].getArmourName();
+		if(tempArmourName == null)
+			$("#otherArmourName").text("Wearing: nothing");
+		else
+			$("#otherArmourName").text("Wearing: " + tempArmourName);	
+		let tempWeaponName = enemies[enemyId].getWeaponName();
+		if(tempWeaponName == null)
+			$("#otherAttackWeapon").text("Wearing: nothing");
+		else
+			$("#otherAttackWeapon").text("Holding: " + tempWeaponName);
 	}
 	else {
 		$("#otherName").text("Enemy: none");
@@ -2450,6 +2469,9 @@ function progressStory() {
 		
 		//if map state, allows go to map or loads map from save
 		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "map") {
+			//if map has a shop
+			shopInit(storyObj[currentChapter].shopMoney, storyObj[currentChapter].shopInventory);
+			
 			uiReset();
 			//if in battle does not disable
 			if(enemy != null) {
@@ -2597,11 +2619,17 @@ function updateMap(actor, direction) {
 				}
 				$("#mapStatus").text("There is a corpse of a " + tempName + " here.");
 				
-				//add logic if dquare is also an exit square
+				//add logic if square is also an exit square
 				if(JSON.stringify(player.getMapPosition()) === JSON.stringify(exitMapPosition)) {
 					$("#mapStatus").text("There is a corpse of a " + tempName + " here. There is a way out of the area here.");
 					$("#mapFight").hide();
 					$("#mapExit").show().prop('disabled', false);
+				}
+				//add logic if square is also a shop square
+				if(JSON.stringify(player.getMapPosition()) === JSON.stringify(shopMapPosition)) {
+					$("#mapStatus").text("There is a corpse of a " + tempName + " here. There is a shop in this area.");
+					$("#mapFight").hide();
+					$("#mapShop").show().prop('disabled', false);
 				}
 			}	
 			else {
@@ -2640,7 +2668,6 @@ function updateMap(actor, direction) {
 				if(temp.every((val, index) => val === playerMapPosition[index]) && temp.every((val, index) => val === exitMapPosition[index])) {
 					$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">ce</p>")
 					.css("background-color", "green").css("color", "black");
-					
 				}
 				else if(temp.every((val, index) => val === playerMapPosition[index]) && enemies[i].getCurrentHealth() > 0) {
 					$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=enemy" + i + ">ce</p>")
@@ -2692,16 +2719,25 @@ function getExaminationResults() {
 
 		//examining a corpse loots it
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
+			otherArmour = enemies[enemyId].getArmourName();
 			otherArmourValue = enemies[enemyId].getArmourValue();
-			if(otherArmour != null && (!player.addEquipment({name: otherArmour, value: otherArmourValue})))
+			if(otherArmour != null && (player.addEquipment({name: otherArmour, value: otherArmourValue})))
 				enemies[enemyId].unequipArmour();
 			otherWeapon = enemies[enemyId].getWeaponName();
 			otherWeaponvalue = enemies[enemyId].getWeaponValue();
-			if(otherWeapon != null && (!player.addEquipment({name: otherWeapon, value: otherWeaponvalue})))
+			if(otherWeapon != null && (player.addEquipment({name: otherWeapon, value: otherWeaponvalue})))
 				enemies[enemyId].unequipWeapon();
 			if(enemies[enemyId].getWeaponName() == null || enemies[enemyId].getArmourName() == null) {
 				tempName = "looted " + enemies[enemyId].name;
 				$("#mapStatus").text("There is a corpse of a " + tempName + " here.");
+				//keeps shop text
+				//adds logic if square is also a shop square
+				let shopMapPosition = storyObj[currentMap].shopCoords;
+				if(JSON.stringify(player.getMapPosition()) === JSON.stringify(shopMapPosition)) {
+					$("#mapStatus").text("There is a corpse of a " + tempName + " here. There is a shop in this area.");
+					$("#mapFight").hide();
+					$("#mapShop").show().prop('disabled', false);
+				}
 			}	
 		}
 	}
@@ -3091,6 +3127,7 @@ $(document).ready(function(){
 	$(".saveGame").click(function() {
 		window.localStorage.setItem('player', JSON.stringify(player));
 		window.localStorage.setItem('enemy', JSON.stringify(enemy));
+		window.localStorage.setItem('shopkeeper', JSON.stringify(shopkeeper));
 		window.localStorage.setItem('enemies', JSON.stringify(enemies));
 		window.localStorage.setItem('state', currentState);
 		window.localStorage.setItem('chapter', currentChapter);
@@ -3240,7 +3277,12 @@ $(document).ready(function(){
 			currentEnemy = window.localStorage.getItem('currentEnemy');
 			enemy = enemies[currentEnemy];
 		}
+		
+		//shop
+		shopData = JSON.parse(window.localStorage.getItem('shopkeeper'));
+		shopkeeper = new Shopkeeper(shopData.money, shopData.inventory);
 
+		//story state
 		currentState = window.localStorage.getItem('state');
 		currentChapter = window.localStorage.getItem('chapter');
 		currentPage = window.localStorage.getItem('page');
@@ -3251,6 +3293,7 @@ $(document).ready(function(){
 		refreshItems();
 		refreshSkills();
 		refreshEquipment();
+		refreshShopMoney();
 
 		startStory();	
 	});
@@ -3344,6 +3387,34 @@ $(document).ready(function(){
 		$('#mapItemModal').modal('toggle');
 	});
 
+	//map shop main menu button
+	$("#mapShop").click(function() {
+		$("#shopBuyMenu").hide();
+		$("#shopSellMenu").hide();
+		$("#shopMainMenu").show();
+		$('#mapShopModal').modal('toggle');
+		refreshShopMoney();
+	});
+	
+	//map shop modal return to main
+	$(".shopMain").click(function() {
+		$("#shopBuyMenu").hide();
+		$("#shopSellMenu").hide();
+		$("#shopMainMenu").show();
+	});
+
+	//map shop modal buy menu
+	$("#shopBuy").click(function() {
+		$("#shopMainMenu").hide();
+		$("#shopBuyMenu").show();
+	});
+	
+	//map shop modal sell menu
+	$("#shopSell").click(function() {
+		$("#shopMainMenu").hide();
+		$("#shopSellMenu").show();
+	});	
+	
 	//map score button
 	//map item button
 	$("#mapScore").click(function() {

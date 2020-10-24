@@ -15,6 +15,11 @@ use Illuminate\Support\Facades\Route;
 
 //rpg game / project routes
 
+	Route::get('/', function () {
+		return view('rpgGame');
+	})->name('home');
+
+	
 	//all but login and register requires logged in user
 	//add to score db uses ajax incompat with middleware as-is
 	Route::get('rpgGame', function () {
