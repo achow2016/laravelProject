@@ -339,7 +339,7 @@
 									<p>Sell</p>
 									<p class="mapShopMoney"></p>
 									<p class="mapPlayerMoney"></p>
-									<div id="playerSellInventory" class="btn-group-vertical centered-button"></div>
+									<div id="playerShopSellList" class="btn-group-vertical centered-button"></div>
 									<button class="shopMain btn btn-primary active w-100 mb-1">Back</button>
 								</div>
 							</div>

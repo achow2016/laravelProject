@@ -184,19 +184,27 @@ class Shopkeeper {
 	}
 
 	addItem(item) {
-		for(let i = 0; i < (this.inventory).length; i++) {
-			if(item.name === (this.inventory[i].name)) {
-				this.inventory[i].qty++
-				return;
-			}		
+		//for class Item objects
+		if(item instanceof Item) {
+			for(let i = 0; i < (this.inventory).length; i++) {
+				if((this.inventory[i].name) instanceof Item) {
+					if(item.getName() === (this.inventory[i].getName())) {
+						this.inventory[i].setQuantity(this.inventory[i].getQuantity() + 1);
+						return;
+					}		
+				}
+			}
+			(this.inventory).push(item);
 		}
-		
-		var newItem = {
-			name: item.name,
-			type: item.type,
-			cost: item.cost
+		//for equipment
+		else {
+			var newItem = ({
+				name: item.name,
+				type: item.type,
+				cost: item.cost
+			});
+			(this.inventory).push(newItem);	
 		}
-		(this.inventory).push(newItem);	
 	}
 
 	sellItem(item, actor) {
@@ -218,34 +226,17 @@ class Shopkeeper {
 			}		
 		}
 	}
-
-	buyItem(item, actor) {
+	//called after actor giveItem(), gives actor money after receiving item from them
+	//false if no money to buy
+	buyItem(itemCost, actor) {
 		//first checks if enough money, if not return false
-		if(this.getMoney() >= item.cost) {
-
+		if(this.getMoney() >= itemCost) {
 			//exchanges money
-			this.setMoney(this.getMoney() - item.cost);
-			actor.setMoney(actor.getMoney() + item.cost);
-			
-			//adds item to inventory
-			for(let i = 0; i < (this.inventory).length; i++) {
-				if(item.name === (this.inventory[i].name)) {
-					this.inventory[i].qty++
-					return;
-				}		
-			}
-			
-			var newItem = {
-				name: item.name,
-				type: item.type,
-				cost: item.cost
-			}
-			(this.inventory).push(newItem);	
-			return true;
+			this.setMoney(this.getMoney() - itemCost);
+			actor.setMoney(actor.getMoney() + itemCost);
+			return true;0
 		}
-		else {
-			return false;
-		}
+		return false;
 	}
 }
 //for storing a buff status, placed in player buff array
@@ -431,7 +422,25 @@ class Actor {
 		this.chaptersCleared = 0;
 		this.money = 0;
 		this.earningsTotal = 0;
+		this.armourCost = 0;
+		this.weaponCost = 0;
 	}
+	
+	getWeaponCost() {
+		return this.weaponCost;
+	}
+
+	setWeaponCost(cost) {
+		this.weaponCost = cost;
+	}
+
+	getArmourCost() {
+		return this.armourCost;
+	}
+
+	setArmourCost(cost) {
+		this.armourCost = cost;
+	}	
 
 	setEarningsTotal(earningsTotal) {
 		this.score -= this.earningsTotal;
@@ -507,8 +516,8 @@ class Actor {
 
 	removeEquipment(item) {
 		for(let i = 0; i < (this.equipmentArray).length; i++) {
-			if((this.equipmentArray[i].name) === item.name) {
-				var processedEquipList = (this.equipmentArray).filter(function(value,index,arr) { return value.name == item.name});
+			if((this.equipmentArray[i].name) === item) {
+				var processedEquipList = (this.equipmentArray).filter(equipment => equipment.name != item);
 				this.setEquipment(processedEquipList);
 			}	
 		}
@@ -739,6 +748,41 @@ class Actor {
 		}
 	}	
 
+	//gives item to shopkeep, they will give money to actor
+	giveItem(item, shopkeeper) {
+		for(var j = 0; j < this.itemInventory.length; j++) {
+			if((this.itemInventory[j].getName()) === item) {
+				shopkeeper.addItem(this.itemInventory[j]);
+				this.itemInventory[j].decrementQuantity();
+				if(this.itemInventory[j].getQuantity() == 0) {
+					this.removeEmptyFromItemInventory();
+				}
+				return;
+			}
+		}
+		
+		for(var j = 0; j < this.equipmentArray.length; j++) {
+			if(this.equipmentArray[j].name === item) {
+				var newItem;
+				/*
+				if(this.equipmentArray[j].hasOwnProperty("damage")
+					item = ({
+						name: this.equipmentArray[j].name, 
+						type: "equipment", 
+						cost: this.equipmentArray[j].cost
+					});
+				*/	
+				newItem = ({
+					name: this.equipmentArray[j].name, 
+					type: "equipment",
+					cost: this.equipmentArray[j].cost
+				});	
+				shopkeeper.addItem(newItem);
+				this.removeEquipment(this.equipmentArray[j].name);
+			}
+		}
+	}	
+
 	//called by player, effects applied on actor in parameter
 	useItem(item, actor) {
 		if(actor === "enemy") {
@@ -920,10 +964,7 @@ class Actor {
 		return this.stamina;
 	}				
 	
-	//addMeleeSkill(name,effect,percent) {
 	addMeleeSkill(name) {
-		//var skill = new MeleeSkill(name,effect,percent);
-		//this.meleeSkillArray.push(skill);
 		this.meleeSkillArray.push({'name':name});
 	}
 
@@ -988,14 +1029,16 @@ class Actor {
 		return parseInt(this.weaponDamage);
 	}
 	
-	equipWeapon(weaponName, weaponDamage) {
+	equipWeapon(weaponName, weaponDamage, weaponCost) {
 		this.weaponName = weaponName;
 		this.weaponDamage = weaponDamage;
+		this.weaponCost = weaponCost;
 	}
 	
 	unequipWeapon() {
 		this.weaponName = null;
 		this.weaponDamage = null;
+		this.weaponCost = null;
 	}
 	
 	getWeaponName() {
@@ -1022,9 +1065,10 @@ class Actor {
 		this.armourValue = value;
 	}	
 
-	equipArmour(armourName, armourValue) {
+	equipArmour(armourName, armourValue, armourCost) {
 		this.armourName = armourName;
 		this.armourValue = armourValue;
+		this.armourCost = armourCost;
 	}	
 	
 	getArmourName() {
@@ -1034,6 +1078,7 @@ class Actor {
 	unequipArmour() {
 		this.armourName = null;
 		this.armourValue = null;
+		this.armourCost = null;
 	}
 	
 	getName(name) {
@@ -1430,6 +1475,80 @@ function enemyAttack() {
 	enemy.setAttackPenalty(0);
 }
 
+//refreshes what the shop is selling on map
+function refreshShopSellList() {
+	
+}
+
+
+//refreshes what the player can sell on map shop
+function refreshPlayerSellList() {
+	$('#playerShopSellList').empty();
+	var playerItemArray = [];
+	var playerItems = player.getItemInventory();
+	var playerEquipment = player.getEquipment();
+	playerItemArray.push(...playerItems);
+	playerItemArray.push(...playerEquipment);
+	//all items added to array
+	
+	var itemName = null;
+	var itemQty = null;
+	for(var i = 0; i < playerItemArray.length; i++) {
+		let itemName;
+		let itemQty; 
+		let itemCost;
+		
+		if(playerItemArray[i] instanceof Item) {
+			itemName = playerItemArray[i].getName();
+			itemQty = playerItemArray[i].getQuantity(); 
+			itemCost = playerItemArray[i].getCost();
+		}
+		else {
+			itemName = playerItemArray[i].name;
+			itemQty = 1;
+			itemCost = playerItemArray[i].cost;
+		}	
+		
+		$('#playerShopSellList').append('<div class="row"><input value=' + '"' + itemName + '"' +
+			' type="button" id="' + itemQty + '-' + itemCost + '" class="playerSellList' + i + ' btn btn-primary active mb-1"></button><p class="ml-1">x ' +
+			itemQty + ' ' + itemCost + '</p></div>');
+		//shop player inventory selling logic
+		$('.playerSellList' + i).click(function() {
+			var playerInventory = player.getItemInventory();
+			var playerEquipment = player.getEquipment();
+			for(var j = 0; j < playerInventory.length; j++) {	
+				//sells item from player inventory to shopkeeper
+				if(playerInventory[j].getName() == $(this).attr("value")) {
+					player.giveItem($(this).attr("value"), shopkeeper);
+					var quantityCost = $(this).attr("id");
+					var tempInfoArray = quantityCost.split("-");
+					var quantity = parseInt(tempInfoArray[0]);
+					var cost = parseInt(tempInfoArray[1]);
+					shopkeeper.buyItem(cost, player);
+					refreshShopMoney();
+					refreshPlayerSellList()
+					return;
+				}
+			}
+			for(var j = 0; j < playerEquipment.length; j++) {	
+				//sells equipment from player inventory to shopkeeper
+				if(playerEquipment[j].name == $(this).attr("value")) {					
+					player.giveItem($(this).attr("value"), shopkeeper);
+					var quantityCost = $(this).attr("id");
+					var tempInfoArray = quantityCost.split("-");
+					var quantity = parseInt(tempInfoArray[0]);
+					var cost = parseInt(tempInfoArray[1]);
+					shopkeeper.buyItem(cost, player);
+					refreshShopMoney();
+					refreshPlayerSellList()
+					return;
+				}
+			}
+		});			
+	}
+}
+	
+
 //get shop current money
 function refreshShopMoney() {
 	$(".mapShopMoney").text("Shop Money: " + shopkeeper.getMoney());
@@ -1758,7 +1877,7 @@ function refreshEquipment() {
 				//finds item details in data
 				if(weaponObj[j].name === $(this).attr("value")) {
 					//calls helper function in class
-					player.equipWeapon(weaponObj[j].name, weaponObj[j].damage);
+					player.equipWeapon(weaponObj[j].name, weaponObj[j].damage, weaponObj[j].cost);
 					//map specific
 					if($('#equipModal').hasClass('show'))
 						$('#equipModal').modal('toggle');
@@ -1769,7 +1888,7 @@ function refreshEquipment() {
 				//finds item details in data
 				if(armourObj[j].name === $(this).attr("value")) {
 					//calls helper function in class
-					player.equipArmour(armourObj[j].name, armourObj[j].reduction);
+					player.equipArmour(armourObj[j].name, armourObj[j].reduction, armourObj[j].cost);
 					//map specific
 					if($('#equipModal').hasClass('show'))
 						$('#equipModal').modal('toggle');
@@ -1937,12 +2056,14 @@ function enemyInit() {
 		
 		enemy.equipWeapon(
 			weaponObj[enemyTier].name, 
-			weaponObj[enemyTier].damage
+			weaponObj[enemyTier].damage,
+			weaponObj[enemyTier].cost
 		);
 
 		enemy.equipArmour(
 			armourObj[enemyTier].name, 
-			armourObj[enemyTier].reduction
+			armourObj[enemyTier].reduction,
+			armourObj[enemyTier].cost
 		);
 
 		//assign enemy list of skills
@@ -2006,18 +2127,20 @@ function playerInit() {
 		}	
 	}	
 	
-	player.addEquipment({name: weaponObj[0].name, value: weaponObj[0].damage});
+	player.addEquipment({name: weaponObj[0].name, value: weaponObj[0].damage, cost: weaponObj[0].cost});
 
 	player.equipWeapon(
 		weaponObj[0].name, 
-		weaponObj[0].damage
+		weaponObj[0].damage,
+		weaponObj[0].cost
 	);
 
-	player.addEquipment({name: armourObj[0].name, value: armourObj[0].reduction});
+	player.addEquipment({name: armourObj[0].name, value: armourObj[0].reduction, cost: armourObj[0].cost});
 
 	player.equipArmour(
 		armourObj[0].name, 
-		armourObj[0].reduction
+		armourObj[0].reduction,
+		armourObj[0].cost
 	);
 	player.setCurrentHealth(Math.ceil(player.getHealth() * (1 + (0.05 * lifeAlloc))));
 	player.setHealth(Math.ceil(player.getHealth() * (1 + (0.05 * lifeAlloc))));
@@ -2045,6 +2168,9 @@ function gameInit() {
 	currentPage = 0;
 	currentChapter = 0;
 	currentState = 0;	
+
+	//shop reset
+	shopInit(storyObj[currentChapter].shopMoney, storyObj[currentChapter].shopInventory);
 
 	//story panel reset
 	$('#storyProgress').prop('disabled', false);
@@ -2323,7 +2449,7 @@ function printOthersExamination(id) {
 			$("#otherArmourName").text("Wearing: " + tempArmourName);	
 		let tempWeaponName = enemies[enemyId].getWeaponName();
 		if(tempWeaponName == null)
-			$("#otherAttackWeapon").text("Wearing: nothing");
+			$("#otherAttackWeapon").text("Holding: nothing");
 		else
 			$("#otherAttackWeapon").text("Holding: " + tempWeaponName);
 	}
@@ -2468,10 +2594,7 @@ function progressStory() {
 		}
 		
 		//if map state, allows go to map or loads map from save
-		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "map") {
-			//if map has a shop
-			shopInit(storyObj[currentChapter].shopMoney, storyObj[currentChapter].shopInventory);
-			
+		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "map") {			
 			uiReset();
 			//if in battle does not disable
 			if(enemy != null) {
@@ -2721,11 +2844,13 @@ function getExaminationResults() {
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
 			otherArmour = enemies[enemyId].getArmourName();
 			otherArmourValue = enemies[enemyId].getArmourValue();
-			if(otherArmour != null && (player.addEquipment({name: otherArmour, value: otherArmourValue})))
+			otherArmourCost = enemies[enemyId].getArmourCost();
+			if(otherArmour != null && (player.addEquipment({name: otherArmour, value: otherArmourValue, cost: otherArmourCost})))
 				enemies[enemyId].unequipArmour();
 			otherWeapon = enemies[enemyId].getWeaponName();
 			otherWeaponvalue = enemies[enemyId].getWeaponValue();
-			if(otherWeapon != null && (player.addEquipment({name: otherWeapon, value: otherWeaponvalue})))
+			otherWeaponCost = enemies[enemyId].getWeaponCost();
+			if(otherWeapon != null && (player.addEquipment({name: otherWeapon, value: otherWeaponvalue, cost: otherWeaponCost})))
 				enemies[enemyId].unequipWeapon();
 			if(enemies[enemyId].getWeaponName() == null || enemies[enemyId].getArmourName() == null) {
 				tempName = "looted " + enemies[enemyId].name;
@@ -3206,12 +3331,14 @@ $(document).ready(function(){
 		
 		player.equipWeapon(
 			playerData.weaponName, 
-			playerData.weaponDamage
+			playerData.weaponDamage,
+			playerData.weaponCost
 		);
 
 		player.equipArmour(
 			playerData.armourName, 
-			playerData.armourValue
+			playerData.armourValue,
+			playerData.armourCost
 		);	
 
 		player.setCurrentHealth(playerData.currentHealth);
@@ -3228,7 +3355,9 @@ $(document).ready(function(){
 
 		for(var i = 0; i < (playerData.equipmentArray).length; i++) {
 			player.addEquipment({name: (playerData.equipmentArray)[i].name, 
-				value: (playerData.equipmentArray)[i].value});
+				value: (playerData.equipmentArray)[i].value,
+				cost: (playerData.equipmentArray)[i].cost	
+			});
 		}
 
 		player.setMapPosition(playerData.mapPosition);	
@@ -3239,6 +3368,7 @@ $(document).ready(function(){
 		player.setDamageReceived(playerData.damageReceived);	
 		player.setChaptersCleared(playerData.chaptersCleared);
 		player.setEarningsTotal(playerData.earningsTotal);
+		player.setMoney(playerData.money);
 
 		//enemies init, if any
 		enemies.length = 0;
@@ -3255,12 +3385,14 @@ $(document).ready(function(){
 				
 				enemy.equipWeapon(
 					enemyData[i].weaponName, 
-					enemyData[i].weaponDamage
+					enemyData[i].weaponDamage,
+					enemyData[i].weaponCost
 				);
 
 				enemy.equipArmour(
 					enemyData[i].armourName, 
-					enemyData[i].armourValue
+					enemyData[i].armourValue,
+					enemyData[i].armourCost
 				);
 
 				enemy.setCurrentHealth(enemyData[i].currentHealth);
@@ -3281,7 +3413,7 @@ $(document).ready(function(){
 		//shop
 		shopData = JSON.parse(window.localStorage.getItem('shopkeeper'));
 		shopkeeper = new Shopkeeper(shopData.money, shopData.inventory);
-
+		
 		//story state
 		currentState = window.localStorage.getItem('state');
 		currentChapter = window.localStorage.getItem('chapter');
@@ -3389,11 +3521,11 @@ $(document).ready(function(){
 
 	//map shop main menu button
 	$("#mapShop").click(function() {
+		refreshShopMoney();
 		$("#shopBuyMenu").hide();
 		$("#shopSellMenu").hide();
 		$("#shopMainMenu").show();
 		$('#mapShopModal').modal('toggle');
-		refreshShopMoney();
 	});
 	
 	//map shop modal return to main
@@ -3407,12 +3539,14 @@ $(document).ready(function(){
 	$("#shopBuy").click(function() {
 		$("#shopMainMenu").hide();
 		$("#shopBuyMenu").show();
+		refreshShopSellList();
 	});
 	
 	//map shop modal sell menu
 	$("#shopSell").click(function() {
 		$("#shopMainMenu").hide();
 		$("#shopSellMenu").show();
+		refreshPlayerSellList();
 	});	
 	
 	//map score button
