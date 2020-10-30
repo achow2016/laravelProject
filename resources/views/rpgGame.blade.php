@@ -344,6 +344,8 @@
 								</div>
 							</div>
 							<div class="modal-footer centered-button">
+								<p id="buyMessage"></p>
+								<p id="sellMessage"></p>
 								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 							</div>
 						</div>	

@@ -71,15 +71,19 @@ var storyObj = [
 		],
 		"enemyEquipmentTier" :"1",
 		"enemyCoords":[[4,8],[4,4]],
-		"chestCoords":[[2,3]],
-		"chestloot":[{"name":"Small Treatment Kit", "quantity":"1"}],
+		"chestCoords":[[2,3], [3,3]],
+		"chestLoot":[
+			[{"name":"Small Treatment Kit"}],
+			[{"name":"Small Treatment Kit"}]
+		],
 		"shopCoords":[4,4],
 		"shopMoney":"1000",
 		"shopInventory":[
-			{"name":"Small Treatment Kit", "type":"item", "cost":"100"},
-			{"name":"brigadine armour", "type":"equipment", "cost":"200"},
-			{"name":"iron sword", "type":"equipment", "cost":"300"}
-
+			{ "name":"cloth armour" , "reduction":"1", "cost":"100" }, 
+			{ "name":"leather armour" , "reduction":"2", "cost":"200" }, 
+			{ "name":"brigadine armour" , "reduction":"3", "cost":"300" },
+			{ "name":"First Aid Injector" , "effect":"Regen", "effectStackLimit":"1", "effectPercent":"5", "cost":"10", "duration":"10"},
+	
 		],
 		"pages" : [
 			"Welcome to rpgGame!",
@@ -173,15 +177,16 @@ class Shopkeeper {
 	setInventory(inventory) {
 		this.inventory = inventory;
 	}
-
+	
 	removeItem(item) {
 		for(let i = 0; i < (this.inventory).length; i++) {
-			if((this.inventory[i].name) === item.name) {
-				var processedItemList = (this.equipmentArray).filter(function(value,index,arr) { return value.name == item.name});
+			if((this.inventory[i].name) === item) {
+				var processedItemList = (this.inventory).filter(inventory => inventory.name != item);
 				this.setInventory(processedItemList);
 			}	
 		}
 	}
+	
 
 	addItem(item) {
 		//for class Item objects
@@ -209,21 +214,34 @@ class Shopkeeper {
 
 	sellItem(item, actor) {
 		for(let i = 0; i < (this.inventory).length; i++) {
-			if(item.name === (this.inventory[i].name)) {
+			if(item === (this.inventory[i].name)) {
 				//found, process sale
-				actor.setMoney(actor.getMoney() - this.inventory[i].cost);
-				this.setMoney(this.getMoney() + this.inventory[i].cost);
+				if(actor.getMoney() < this.inventory[i].cost) {
+					return "nsf";
+				}
+				else if(actor.getEquipment().find(el => el.name === item) != null)
+					return "duplicate";
+				else {
+					actor.setMoney(actor.getMoney() - parseInt(this.inventory[i].cost));
+					this.setMoney(this.getMoney() + parseInt(this.inventory[i].cost));
 
-				if(this.inventory[i].type === "item")
-					actor.addToItemInventory(this.inventory[i].name, 1);
-				if(this.inventory[i].type === "equipment")
-					actor.addEquipment(this.inventory[i].name);
-				
-				this.inventory[i].qty--;
-				if(this.inventory[i].qty == 0)
-					removeItem(this.inventory[i].name);
-				break;
-			}		
+					if(this.inventory[i] instanceof Item || this.inventory[i].hasOwnProperty("effect"))
+						actor.addToItemInventory(this.inventory[i].name, 1);
+					else {
+						var item;
+						if(this.inventory[i].hasOwnProperty("reduction")) {
+							item = ({name: this.inventory[i].name, value: this.inventory[i].reduction, cost: this.inventory[i].cost});
+							actor.addEquipment(item);
+						}
+						else {
+							item = ({name: this.inventory[i].name, value: this.inventory[i].damage, cost: this.inventory[i].cost});
+							actor.addEquipment(item);
+						}
+					}
+					this.removeItem(this.inventory[i].name);
+					return true;
+				}
+			}
 		}
 	}
 	//called after actor giveItem(), gives actor money after receiving item from them
@@ -234,7 +252,7 @@ class Shopkeeper {
 			//exchanges money
 			this.setMoney(this.getMoney() - itemCost);
 			actor.setMoney(actor.getMoney() + itemCost);
-			return true;0
+			return true;
 		}
 		return false;
 	}
@@ -522,6 +540,7 @@ class Actor {
 			}	
 		}
 	}
+	
 	//returns true if duplicate and doesn't push
 	addEquipment(item) {
 		var state = false;
@@ -730,8 +749,8 @@ class Actor {
         else {
 			//check if item exists and add to it if found
 			for(let i = 0; i < this.itemInventory.length; i++) {
-				if((this.itemInventory[i].getName()) === item) {
-					(this.itemInventory[i]).setQuantity(this.itemInventory[i].getQuantity() + qty);
+				if(this.itemInventory[i].getName() === item) {
+					this.itemInventory[i].setQuantity(this.itemInventory[i].getQuantity() + 1);
 					return;
 				}
 			}
@@ -1483,9 +1502,68 @@ function enemyAttack() {
 	enemy.setAttackPenalty(0);
 }
 
+//refresh shop messages
+function refreshShopMessages() {
+	$('#buyMessage').text("");
+	$('#sellMessage').text("");
+}
+
 //refreshes what the shop is selling on map
 function refreshShopSellList() {
+	$('#shopSellInventory').empty();
+	var shopInventory = shopkeeper.getInventory();
 	
+	for(var i = 0; i < shopInventory.length; i++) {
+		let itemName;
+		//let itemQty; 
+		let itemEffect; 
+		let itemCost;
+		
+		if(shopInventory[i] instanceof Item) {
+			itemName = shopInventory[i].getName();
+			//itemQty = 1;
+			itemEffect = shopInventory[i].getEffect();			
+			itemCost = shopInventory[i].getCost();
+		}
+		else {
+			itemName = shopInventory[i].name;
+			//itemQty = 1;
+			if(shopInventory[i].hasOwnProperty("reduction"))
+				itemEffect = "Dmg -" + shopInventory[i].reduction;
+			if(shopInventory[i].hasOwnProperty("damage"))
+				itemEffect = "Dmg +" + shopInventory[i].damage;
+			if(shopInventory[i].hasOwnProperty("effect"))
+				itemEffect = shopInventory[i].effect;
+			itemCost = shopInventory[i].cost;
+		}
+		
+		$('#shopSellInventory').append('<div class="row"><input value=' + '"' + itemName + '"' +
+			' type="button" id="' + 1 + '-' + itemCost + '" class="shopSellList' + i + ' btn btn-primary active mb-1"></button><p class="ml-1">' +
+			//itemQty + ' ' + itemCost + '</p></div>');
+			itemEffect + ' ' + itemCost + '</p></div>');
+		//shop player inventory selling logic
+		$('.shopSellList' + i).click(function() {
+			//allow save after action
+			$('.saveGame').prop('disabled', false).text("QSave");
+			var shopInventory = shopkeeper.getInventory();
+			for(var j = 0; j < shopInventory.length; j++) {
+				//sells item from player inventory to shopkeeper
+				if(shopInventory[j].name === $(this).attr("value")) {
+					var result = shopkeeper.sellItem($(this).attr("value"), player);
+					if(result == true)
+						$('#buyMessage').text("Bought item for " + shopInventory[j].cost + "!");
+					else if(result == "nsf")
+						$('#buyMessage').text("Not enough money!");
+					else
+						$('#buyMessage').text("Duplicate equipment!");	
+					refreshShopMoney();
+					refreshShopSellList();
+					refreshPlayerSellList();
+					return;
+				}
+			}
+		});
+	}	
 }
 
 
@@ -1529,12 +1607,17 @@ function refreshPlayerSellList() {
 			for(var j = 0; j < playerInventory.length; j++) {	
 				//sells item from player inventory to shopkeeper
 				if(playerInventory[j].getName() == $(this).attr("value")) {
-					player.giveItem($(this).attr("value"), shopkeeper);
 					var quantityCost = $(this).attr("id");
 					var tempInfoArray = quantityCost.split("-");
 					var quantity = parseInt(tempInfoArray[0]);
 					var cost = parseInt(tempInfoArray[1]);
-					shopkeeper.buyItem(cost, player);
+					if(shopkeeper.buyItem(cost, player)) {
+						player.giveItem($(this).attr("value"), shopkeeper);
+						$('#sellMessage').text("Sold item for " + cost + "!");
+					} 
+					else {
+						$('#sellMessage').text("Shop cannot afford the item!");
+					}	
 					refreshShopMoney();
 					refreshPlayerSellList()
 					return;
@@ -1568,9 +1651,10 @@ function refreshShopMoney() {
 
 //initialize shopkeeper, populate shop
 function shopInit(money, inventory) {
-	shopkeeper = new Shopkeeper(money, inventory);
+	shopkeeper = new Shopkeeper(parseInt(money), inventory);
 	refreshShopMoney();
 }
+
 //adjust score and stats
 function refreshScore() {
 	$(".playerScore").text("Score: " + player.getScore());
@@ -2527,6 +2611,7 @@ function populateMap() {
 	let enemyMapPosition = storyObj[currentMap].enemyCoords;
 	let exitMapPosition = mapObj[currentMap].endPoint;
 	let shopMapPosition = storyObj[currentMap].shopCoords;
+	let chestMapPosition = storyObj[currentMap].chestCoords;
 	
 
 	//enemy positions added to enemy objs from story obj listing
@@ -2553,6 +2638,13 @@ function populateMap() {
 	$("#" + shopMapPosition[0] + "-" + shopMapPosition[1]).empty()
 		.append("<p id='shop' class='row pl-2'>shop</p>").css("background-color", "green").css("color", "white");
 	
+
+	//marks chest points
+	for(var i = 0; i < chestMapPosition.length; i++) {
+		let temp = chestMapPosition[i];
+		$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=chest" + i + ">?</p>")
+			.css("background-color", "pink").css("color", "black");
+	}
 
 	$("#mapMain").show();
 }
@@ -2658,6 +2750,7 @@ function updateMap(actor, direction) {
 	//let enemyMapPosition = enemy.getMapPosition();
 	let enemyMapPosition = storyObj[currentMap].enemyCoords;
 	let shopMapPosition = storyObj[currentMap].shopCoords;
+	let chestMapPosition = storyObj[currentMap].chestCoords;
 	let playerMapPosition = player.getMapPosition();
 	
 	
@@ -2680,16 +2773,18 @@ function updateMap(actor, direction) {
 			
 			} 
 			//restores exit
-			else if (JSON.stringify(player.getMapPosition()) === JSON.stringify(exitMapPosition)) {
+			else if(JSON.stringify(player.getMapPosition()) === JSON.stringify(exitMapPosition)) {
 				$("#" + exitMapPosition[0] + "-" + exitMapPosition[1]).empty()
-					.append("<p id='exit' class='row pl-2'>exit</p>").css("background-color", "blue").css("color", "white");
+				//	.append("<p id='exit' class='row pl-2'>exit</p>").css("background-color", "blue").css("color", "white");
+					.append("<p id='exit' class='row'>exit</p>").css("background-color", "blue").css("color", "white");
 				$("#mapFight").show();
 				$("#mapExit").hide();
 			}
 			//restores shop
-			else if (JSON.stringify(player.getMapPosition()) === JSON.stringify(shopMapPosition)) {
+			else if(JSON.stringify(player.getMapPosition()) === JSON.stringify(shopMapPosition)) {
 				$("#" + shopMapPosition[0] + "-" + shopMapPosition[1]).empty()
-					.append("<p id='exit' class='row pl-2'>shop</p>").css("background-color", "green").css("color", "white");
+				//	.append("<p id='shop' class='row pl-2'>shop</p>").css("background-color", "green").css("color", "white");
+					.append("<p id='shop' class='row'>shop</p>").css("background-color", "green").css("color", "white");
 				$("#mapFight").show();
 				$("#mapShop").hide();
 			}
@@ -2699,6 +2794,17 @@ function updateMap(actor, direction) {
 				.css("border", "1px solid black").css("background-color", "white").css("color", "green");	
 			}					
 		}	
+		
+		//restores chests
+		for(var d = 0; d < chestMapPosition.length; d++) {
+			if(JSON.stringify(player.getMapPosition()) === JSON.stringify(chestMapPosition[d])) {
+				var temp = chestMapPosition[d];
+				$("#" + temp[0] + "-" + temp[1]).empty()
+					.append("<p id='chest" + d + "'>?</p>").css("background-color", "pink").css("color", "black");
+				//$("#mapFight").show();
+				//$("#mapShop").hide();
+			}
+		}
 		
 		//set player new position
 		if(direction === "mapLeft")
@@ -2740,6 +2846,10 @@ function updateMap(actor, direction) {
 			$("#mapShop").show().prop('disabled', false);
 		}
 
+		//chest point, update text examine loots item
+		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "?") {
+			$("#mapStatus").text("You are walking on a grassy field. There is a chest here.");
+		}
 
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "e") {
 			$("#mapExit").hide().prop('disabled', true);	
@@ -2767,6 +2877,13 @@ function updateMap(actor, direction) {
 					$("#mapStatus").text("There is a corpse of a " + tempName + " here. There is a shop in this area.");
 					$("#mapFight").hide();
 					$("#mapShop").show().prop('disabled', false);
+				}
+				//add logic if square is also a chest square
+				for(var u = 0; u < chestMapPosition.length; u++) {
+					if(JSON.stringify(player.getMapPosition()) === JSON.stringify(chestMapPosition[u])) {
+						$("#mapStatus").text("There is a corpse of a " + tempName + " here. There is also a chest here.");
+						$("#mapFight").hide();
+					}
 				}
 			}	
 			else {
@@ -3539,6 +3656,7 @@ $(document).ready(function(){
 
 	//map shop main menu button
 	$("#mapShop").click(function() {
+		refreshShopMessages();
 		refreshShopMoney();
 		refreshPlayerSellList();
 		$("#shopBuyMenu").hide();
@@ -3549,6 +3667,7 @@ $(document).ready(function(){
 	
 	//map shop modal return to main
 	$(".shopMain").click(function() {
+		refreshShopMessages()
 		$("#shopBuyMenu").hide();
 		$("#shopSellMenu").hide();
 		$("#shopMainMenu").show();

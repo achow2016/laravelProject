@@ -48,7 +48,7 @@
 			<div class="row">
 				<div class="btn-group d-flex w-100 fixed-bottom" role="group">
 					<button id="returnFromScoresButton" type="button" class="introButtons btn btn-primary active w-100">Home</button>
-					<button type="button" class="listScoresButton introButtons scoreButton btn btn-primary active w-100">Scores</button>
+					<button type="button" class="listScoresButton introButtons scoreButton btn btn-primary active w-100">Refresh</button>
 				</div>					
 			</div>
 		</div>
