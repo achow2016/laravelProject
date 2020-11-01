@@ -4,29 +4,32 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+
 //models
+use App\Models\rpgGameUser;
 use App\Models\rpgGameScore;
+use App\Models\rpgGameFriend;
 use Illuminate\Support\Facades\Auth;
 
-class scoreViewController extends Controller {
+class ScoreViewController extends Controller {
 
 	public function scores() 
 	{
-		$scores = rpgGameScore::all();
+		$scores = RpgGameScore::all();
 		return view('rpgGameScores', ['scores' => $scores]);
 	}
 
 	public function detail(Request $request) 
 	{
-		$profile = rpgGameScore::where('name', $request->input('name'))->first();
+		$profile = RpgGameScore::where('name', $request->input('name'))->first();
 		return view('rpgGameScores', ['profile' => $profile]);
 	}
 
 	public function add(Request $request)
 	{
-		$profile = rpgGameScore::where('name', $request->input('name'))->first();
+		$profile = RpgGameScore::where('name', $request->input('name'))->first();
 		if($profile != null)
-			rpgGameScore::where('name', $request->input('name'))->delete();
+			RpgGameScore::where('name', $request->input('name'))->delete();
 
 		$name = $request->input('name');
 		$kills = $request->input('kills');
@@ -36,7 +39,7 @@ class scoreViewController extends Controller {
 		$earningsTotal = $request->input('earningsTotal');
 		$scoreTotal = $request->input('scoreTotal');
 		
-		$rpgGameScore = new rpgGameScore();
+		$rpgGameScore = new RpgGameScore();
 		$rpgGameScore->setAttribute('name', $name);
 		$rpgGameScore->setAttribute('kills', $kills);
 		$rpgGameScore->setAttribute('damageDone', $damageDone);
@@ -47,6 +50,42 @@ class scoreViewController extends Controller {
 
 		$rpgGameScore->save();	
 		return view('rpgGame');
+	}
+	
+	public function addFriend(Request $request) 
+	{
+		$user = RpgGameUser::where('name', $request->input('name'))->first();
+		$profile = RpgGameScore::where('name', $request->input('name'))->first();
+		
+		//$friend = new RpgGameFriend;
+		$friend = new RpgGameFriend();
+		$friend->setAttribute('name', $user->name);
+		$friend->setAttribute('score', $profile->scoreTotal);
+		$friend->save();	
+		//$friend->name = $user->name;
+		//$friend->score = $user->scoreTotal;
+		$user = $user->friends()->saveMany([$friend]);
+	}	
+	
+	//associtiation friend to another
+	//$comment = Comment::find(1); $post = Post::find(2); $comment->post()->associate($post)->save();
+	
+	public function friends() 
+	{
+		$username = auth()->user()->name;
+		$user = RpgGameUser::where('name', 'a')->first();
+		/*
+		$user = RpgGameUser::where('name', $username)->first();
+		$friends = $user->friends;
+		dd($friends);
+		$friend = RpgGameFriend::find(1); 
+		$user = $friend->user;
+		dd($user);
+		*/
+		
+		//$friends = RpgGameFriend::where('rpg_game_user_id', 1)->first();
+		$friends = RpgGameFriend::where('name', 'a')->first();
+		return view('rpgGameScores', ['friends' => $friends]);	
 	}
 }
 ?>

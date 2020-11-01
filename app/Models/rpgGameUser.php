@@ -6,7 +6,7 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-class rpgGameUser extends Authenticatable
+class RpgGameUser extends Authenticatable
 {
     use Notifiable;
 
@@ -46,4 +46,9 @@ class rpgGameUser extends Authenticatable
     {
         $this->attributes['password'] = bcrypt($password);
     }
+	
+	public function friends()
+	{
+		return $this->hasMany('App\Models\rpgGameFriend');
+	}
 }

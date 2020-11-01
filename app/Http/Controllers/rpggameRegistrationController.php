@@ -32,7 +32,7 @@ class rpggameRegistrationController extends Controller
 			'password' => 'required'
 		]);
 		
-		$user = rpgGameUser::create(request(['name', 'email', 'password']));
+		$user = RpgGameUser::create(request(['name', 'email', 'password']));
 		
 		Auth::guard('rpgUser')->login($user, true);
 		
@@ -41,7 +41,7 @@ class rpggameRegistrationController extends Controller
 
 	private function sendResetEmail($email, $token)
 	{	
-		$user = rpgGameUser::where('email', $email)->first();
+		$user = RpgGameUser::where('email', $email)->first();
 		//Generates the password reset link and token
 		try {
 			$text = "127.0.0.1:8082/rpgGame/passwordReset?token=" . $token . "&email=" . urlencode($user->email);
@@ -69,14 +69,13 @@ class rpggameRegistrationController extends Controller
 		}
 	
 	}
-	
 
 	public function validatePassReset(Request $request) {
 		$this->validate(request(), [
 			'email' => 'required|email'
 		]);
 		$email = $request->input('email');
-		$user = rpgGameUser::where('email', $email)->first();
+		$user = RpgGameUser::where('email', $email)->first();
 		if(!$user)
 			return redirect('/login')->with('message', 'User does not exist!'); 
 		
@@ -116,14 +115,14 @@ class rpggameRegistrationController extends Controller
 		if (!$tokenData)
 			return redirect('/login')->with('message', 'Your reset token is invalid!'); 
 
-		$user = rpgGameUser::where('email', $tokenData->email)->first();
+		$user = RpgGameUser::where('email', $tokenData->email)->first();
 		// Redirect the user back if the email is invalid
 		if (!$user) 
 			return redirect()->back()->withErrors(['email' => 'Email not found']);
 		
 		//update the new password, hashed by model function already
 		$userData = $request->password;
-		$query = rpgGameUser::where('email', $request->email)->first();
+		$query = RpgGameUser::where('email', $request->email)->first();
 		$query->password = $userData;
 		$query->save();
 

@@ -28,10 +28,31 @@
 					<td>{{$score->name}}</td>
 					<td>{{$score->scoreTotal}}</td>	
 					<td><a href="{{ URL::to('rpgGame/scores/detail/?name=' . $score->name) }}">View</a></td>
+					<!--watch or friend this person-->
+					<td><a href="{{ URL::to('rpgGame/scores/addFriend/?name=' . $score->name) }}">+&#128065</a></td>
 				</tr>
 				@endforeach
 			</table>
 			@endisset
+
+
+			@isset($friends)
+			<table class="table">
+				<tr>
+					<th width="33%">Name</th>
+					<th width="33%">Score</th>	
+					<th width="33%">Detail</th>	
+				</tr>			
+				@foreach($friends as $friend)
+				<tr>
+					<td>{{$friend->name}}</td>
+					<td>{{$friend->score}}</td>	
+					<td><a href="{{ URL::to('rpgGame/scores/detail/?name=' . $friend->name) }}">View</a></td>
+				</tr>
+				@endforeach
+			</table>
+			@endisset
+
 
 			@isset($profile)
 			<div class="text-center">
@@ -49,6 +70,7 @@
 				<div class="btn-group d-flex w-100 fixed-bottom" role="group">
 					<button id="returnFromScoresButton" type="button" class="introButtons btn btn-primary active w-100">Home</button>
 					<button type="button" class="listScoresButton introButtons scoreButton btn btn-primary active w-100">Refresh</button>
+					<button type="button" class="listFriendsButton introButtons scoreButton btn btn-primary active w-100">Friends</button>
 				</div>					
 			</div>
 		</div>

@@ -19,7 +19,7 @@ class rpgGameSessionController extends Controller
 		//$user = rpgGameUser::find();
 		$email = $request->input('email');
 		$password = $request->input('password');
-		$user = rpgGameUser::where('email', $email)->first();
+		$user = RpgGameUser::where('email', $email)->first();
 
 		//if user not found, will setup return to login
 		if($user)

@@ -132,7 +132,7 @@ var meleeSkillObj = [
 	},
 	{ 
 		"name":"Advancing Swing II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Decrease Distance", 
-		"range":"2", "effectQuantity":"1", "percent":"100", "meleePercentagePenalty":"0", "staminaCost":"10" 
+		"range":"2", "effectQuantity":"2", "percent":"100", "meleePercentagePenalty":"0", "staminaCost":"10" 
 	},
 	{ 
 		"name":"Retreating Cut II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Increase Distance", 
@@ -3697,6 +3697,11 @@ $(document).ready(function(){
 	//main screen score button
 	$(".listScoresButton").click(function() {
 		window.location.href='/rpgGame/scores';
+	});
+
+	//main screen score friends button
+	$(".listFriendsButton").click(function() {
+		window.location.href='/rpgGame/friends';
 	});
 
 	//score screen home button to return to game
