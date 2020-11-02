@@ -54,37 +54,38 @@ class ScoreViewController extends Controller {
 	
 	public function addFriend(Request $request) 
 	{
-		$user = RpgGameUser::where('name', $request->input('name'))->first();
-		$profile = RpgGameScore::where('name', $request->input('name'))->first();
 		
-		//$friend = new RpgGameFriend;
-		$friend = new RpgGameFriend();
-		$friend->setAttribute('name', $user->name);
-		$friend->setAttribute('score', $profile->scoreTotal);
-		$friend->save();	
-		//$friend->name = $user->name;
-		//$friend->score = $user->scoreTotal;
-		$user = $user->friends()->saveMany([$friend]);
+		//first check if duplicates
+		$username = auth()->user()->name;
+		$user = RpgGameUser::where('name', $username)->first();
+		$friends = $user->friends->where('name', $request->input('name'))->first();
+		
+		//if not duplicate
+		if(!$friends) {		
+			$user = RpgGameUser::where('name', $request->input('name'))->first();
+			$profile = RpgGameScore::where('name', $request->input('name'))->first();
+			
+			$friend = new RpgGameFriend();
+			$friend->setAttribute('rpg_game_user_id', $profile->id);
+			$friend->setAttribute('name', $user->name);
+			$friend->setAttribute('score', $profile->scoreTotal);			
+			$user = $user->friends()->save($friend);
+
+			$scores = RpgGameScore::all();
+			return view('rpgGameScores', ['scores' => $scores]);
+		}
+		else {
+			$errorMessage = "Duplicate friend, not added!";
+			$scores = RpgGameScore::all();
+			return view('rpgGameScores', ['scores' => $scores, 'errorMessage' => $errorMessage]);
+		}	
 	}	
-	
-	//associtiation friend to another
-	//$comment = Comment::find(1); $post = Post::find(2); $comment->post()->associate($post)->save();
 	
 	public function friends() 
 	{
 		$username = auth()->user()->name;
-		$user = RpgGameUser::where('name', 'a')->first();
-		/*
 		$user = RpgGameUser::where('name', $username)->first();
 		$friends = $user->friends;
-		dd($friends);
-		$friend = RpgGameFriend::find(1); 
-		$user = $friend->user;
-		dd($user);
-		*/
-		
-		//$friends = RpgGameFriend::where('rpg_game_user_id', 1)->first();
-		$friends = RpgGameFriend::where('name', 'a')->first();
 		return view('rpgGameScores', ['friends' => $friends]);	
 	}
 }

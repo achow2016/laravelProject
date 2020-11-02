@@ -49,6 +49,6 @@ class RpgGameUser extends Authenticatable
 	
 	public function friends()
 	{
-		return $this->hasMany('App\Models\rpgGameFriend');
+		return $this->hasMany('App\Models\rpgGameFriend', 'rpg_game_user_id', 'id');
 	}
 }

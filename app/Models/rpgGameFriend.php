@@ -18,6 +18,6 @@ class RpgGameFriend extends Model{
     ];
 	
     public function user() {
-		return $this->belongsTo(RpgGameUser::class);	
+		return $this->belongsTo('App\Models\rpgGameUser', 'rpg_game_user_id');	
 	}	
 }
