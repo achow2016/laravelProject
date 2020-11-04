@@ -73,8 +73,9 @@ var storyObj = [
 		"enemyCoords":[[4,8],[4,4]],
 		"chestCoords":[[2,3], [3,3]],
 		"chestLoot":[
-			[{"name":"Small Treatment Kit"}],
-			[{"name":"Small Treatment Kit"}]
+			{"name":"Small Treatment Kit"},
+			{"name":"First Aid Injector"},
+			{"name":"100 Gold"}
 		],
 		"shopCoords":[4,4],
 		"shopMoney":"1000",
@@ -153,6 +154,30 @@ var itemObj = [
 //random helper function
 function getRandomInteger(min, max) {
 	return Math.floor(Math.random() * (max - min + 1) ) + min;
+}
+
+//chest, opened and emptied from map
+class Chest {
+	constructor(money, inventory) {
+		this.money = money;
+		this.inventory = inventory;
+	}
+
+	getMoney() {
+		return this.money;
+	}
+
+	setMoney(money) {
+		this.money = money;
+	}
+	
+	getInventory() {
+		return this.inventory;
+	}
+
+	setInventory(inventory) {
+		this.inventory = inventory;
+	}
 }
 
 //inventory key value: name, type, qty, cost 
@@ -443,6 +468,21 @@ class Actor {
 		this.armourCost = 0;
 		this.weaponCost = 0;
 	}
+	
+	lootChest(targetChest) {
+		let chestItem = targetChest.getInventory();
+		let chestMoney = targetChest.getMoney();
+		
+		if(chestMoney != null) {
+			player.setMoney(player.getMoney() + parseInt(chestMoney));	
+			targetChest.setMoney(null);
+		}	
+		
+		if(chestItem != null) {
+			player.addToItemInventory(chestItem.name, 1);
+			targetChest.setInventory(null);
+		}
+	}	
 	
 	getWeaponCost() {
 		return this.weaponCost;
@@ -1215,6 +1255,7 @@ var enemiesLeft;
 var enemies = []; //all enemies in chapter
 var enemy; //stores current enemy being fought
 var shopkeeper;
+var chests = [];
 
 
 var playerPosition = 0;
@@ -1653,6 +1694,26 @@ function refreshShopMoney() {
 function shopInit(money, inventory) {
 	shopkeeper = new Shopkeeper(parseInt(money), inventory);
 	refreshShopMoney();
+}
+
+//initialize chests
+function chestInit(inventory) {
+	var chestLootList = storyObj[currentChapter].chestLoot;
+	var chestQuantity = (storyObj[currentChapter].chestCoords).length;
+	var chest;
+	for(let i = 0; i < chestQuantity; i++) {
+		var choice = getRandomInteger(0, chestLootList.length);
+		if(choice > 0)
+			choice--;
+		if((chestLootList[choice].name).includes("Gold")) {
+			let goldData = (chestLootList[choice].name).replace("Gold", "").trim();
+			chest = new Chest(goldData, null);
+		}
+		else {
+			chest = new Chest(null, chestLootList[choice]);
+		}
+		chests.push(chest);
+	}
 }
 
 //adjust score and stats
@@ -2267,6 +2328,9 @@ function gameInit() {
 	//shop reset
 	shopInit(storyObj[currentChapter].shopMoney, storyObj[currentChapter].shopInventory);
 
+	//chest reset	
+	chestInit(storyObj[currentChapter].chestLoot);
+
 	//story panel reset
 	$('#storyProgress').prop('disabled', false);
 	$('.saveGame').prop('disabled', false).text("QSave");
@@ -2341,7 +2405,8 @@ function gameInit() {
 
 //reset ui elements
 //to be called from continue button
-function uiReset() {
+function uiReset() {	
+	
 	//reset body grids		
 	for(let i = 0; i < 10; i++) {
 		$(".p" + i).css({"border": "1px solid black"});
@@ -2524,11 +2589,10 @@ function printPlayerStatus() {
 	$(".playerMoney").text("Money: " + player.getMoney());
 	
 	$(".playerArmour").text("Reduction: " + player.getArmourValue());
-	$(".playerArmourName").text("Armour: " + player.getArmourName());
-	$(".playerAttackWeapon").text("Weapon: " + player.getWeaponName());
+	$(".playerArmourName").text("Wearing: " + player.getArmourName());
+	$(".playerAttackWeapon").text("Holding: " + player.getWeaponName());
 	$(".playerAttack").text("Damage: " + player.getAttack() + " + " + player.getWeaponDamage());
 	
-	$(".playerAttackWeapon").text("Weapon: " + player.getWeaponName());
 	$("#playerHealthBar").text(player.getCurrentHealth() + "/" + player.getHealth())
 	$("#playerStaminaBar").text(player.getCurrentStamina() + "/" + player.getStamina())
 	$(".playerHealth").text("Health: " + player.getCurrentHealth() + " / " + player.getHealth());
@@ -2641,9 +2705,11 @@ function populateMap() {
 
 	//marks chest points
 	for(var i = 0; i < chestMapPosition.length; i++) {
-		let temp = chestMapPosition[i];
-		$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=chest" + i + ">?</p>")
-			.css("background-color", "pink").css("color", "black");
+		if(chests[i].getMoney() != null || chests[i].getInventory() != null) {
+			let temp = chestMapPosition[i];
+			$("#" + temp[0] + "-" + temp[1]).empty().append("<p id=chest" + i + ">?</p>")
+				.css("background-color", "pink").css("color", "black");
+		}
 	}
 
 	$("#mapMain").show();
@@ -2753,6 +2819,9 @@ function updateMap(actor, direction) {
 	let chestMapPosition = storyObj[currentMap].chestCoords;
 	let playerMapPosition = player.getMapPosition();
 	
+	//hide map buttons
+	$("#mapExit").hide().prop('disabled', true);	
+	$("#mapShop").hide().prop('disabled', true);
 	
 	//for previous spot after movement
 	if(actor === "player") {
@@ -2797,12 +2866,12 @@ function updateMap(actor, direction) {
 		
 		//restores chests
 		for(var d = 0; d < chestMapPosition.length; d++) {
-			if(JSON.stringify(player.getMapPosition()) === JSON.stringify(chestMapPosition[d])) {
-				var temp = chestMapPosition[d];
-				$("#" + temp[0] + "-" + temp[1]).empty()
-					.append("<p id='chest" + d + "'>?</p>").css("background-color", "pink").css("color", "black");
-				//$("#mapFight").show();
-				//$("#mapShop").hide();
+			if(chests[d].getMoney() != null || chests[d].getInventory() != null) {
+				if(JSON.stringify(player.getMapPosition()) === JSON.stringify(chestMapPosition[d])) {
+					var temp = chestMapPosition[d];
+					$("#" + temp[0] + "-" + temp[1]).empty()
+						.append("<p id='chest" + d + "'>?</p>").css("background-color", "pink").css("color", "black");
+				}
 			}
 		}
 		
@@ -2819,18 +2888,22 @@ function updateMap(actor, direction) {
 		//get new location of player and update detail text
 		playerMapPosition = player.getMapPosition();
 		$("#mapFight").prop("disabled", true);
+		$("#spaceTerrain").text("Terrain: flat earth");
 
 		//update map status tag based on what the player is going to be walking on
 		//base terrain
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "g") {
-			$("#mapStatus").text("You are walking on a grassy field.");
+			var terrainData = "grassy field";
+			//updates map message and examine modal text
+			$("#mapStatus").text("You are walking on a "+ terrainData + ".");
+			$("#spaceTerrain").text("Terrain: " + terrainData);
 			$("#mapExit").hide().prop('disabled', true);	
 			$("#mapShop").hide().prop('disabled', true);	
 		}
 
 		//exit point, update text and shows exit button
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "exit") {
-			$("#mapStatus").text("You are walking on a grassy field. There is a path leading out of this area.");
+			$("#mapStatus").text("There is a path leading out of this area.");
 			$("#mapFight").hide();	
 			$("#mapShop").hide().prop('disabled', true);
 			if(enemyCount > 0)	
@@ -2841,14 +2914,14 @@ function updateMap(actor, direction) {
 
 		//shop point, update text and shows shop button
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "shop") {
-			$("#mapStatus").text("You are walking on a grassy field. There is a shop in this area.");
+			$("#mapStatus").text("There is a shop in this area.");
 			$("#mapFight").hide();	
 			$("#mapShop").show().prop('disabled', false);
 		}
 
 		//chest point, update text examine loots item
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "?") {
-			$("#mapStatus").text("You are walking on a grassy field. There is a chest here.");
+			$("#mapStatus").text("There is a chest here.");
 		}
 
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).text() === "e") {
@@ -2946,7 +3019,8 @@ function getExaminationResults() {
 	let tempBuffArray = player.getStatusBuffArray();
 	let buffStr;
 	$("#playerMapConditions").empty();
-
+	$('#spaceChest').text("");
+	
 	for(let i = 0; i < tempBuffArray.length; i++) {
 		buffStr = tempBuffArray[i].getName() + " " + tempBuffArray[i].getEffect() + " " +
 			tempBuffArray[i].getEffectPercent() + "% x" + tempBuffArray[i].getStackCount() + " " +
@@ -2974,18 +3048,19 @@ function getExaminationResults() {
 		//examining a corpse loots it
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
 			otherArmour = enemies[enemyId].getArmourName();
-			otherArmourValue = enemies[enemyId].getArmourValue();
+			otherArmourValue = enemies[enemyId].getArmourValue().toString();
+			console.log(otherArmourValue);
 			otherArmourCost = enemies[enemyId].getArmourCost();
 			if(otherArmour != null && otherArmour != "Nothing") {
+				player.addEquipment({name: otherArmour, value: otherArmourValue, cost: otherArmourCost});
 				enemies[enemyId].unequipArmour();
-				player.addEquipment({name: otherArmour, Value: otherArmourValue, cost: otherArmourCost});
 			}
 			otherWeapon = enemies[enemyId].getWeaponName();
 			otherWeaponvalue = enemies[enemyId].getWeaponValue();
-			otherWeaponCost = enemies[enemyId].getWeaponCost();
+			otherWeaponCost = enemies[enemyId].getWeaponCost().toString();
 			if(otherWeapon != null && otherWeapon != "Nothing") {
-				enemies[enemyId].unequipWeapon();
 				player.addEquipment({name: otherWeapon, value: otherWeaponvalue, cost: otherWeaponCost});
+				enemies[enemyId].unequipWeapon();
 			}
 			if(enemies[enemyId].getWeaponName() == null || enemies[enemyId].getArmourName() == null) {
 				tempName = "looted " + enemies[enemyId].name;
@@ -2999,6 +3074,23 @@ function getExaminationResults() {
 					$("#mapShop").show().prop('disabled', false);
 				}
 			}	
+		}
+		
+		//examining a chest loots it
+		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^chest/)) {
+			let targetChest = chests[squareId];
+			let money = targetChest.getMoney();
+			let item = targetChest.getInventory();
+			if(targetChest.getMoney() != null) {
+				$('#spaceChest').text("Looted: $" + money);
+				$('#mapStatus').text("Looted: " + money);	
+			}
+			var itemString = "";
+			if(targetChest.getInventory() != null) {
+				$('#spaceChest').text("Looted: " + item.name);
+				$('#mapStatus').text("Looted: " + item.name);
+			}	
+			player.lootChest(targetChest);
 		}
 	}
 }	
@@ -3389,6 +3481,7 @@ $(document).ready(function(){
 		window.localStorage.setItem('enemy', JSON.stringify(enemy));
 		window.localStorage.setItem('shopkeeper', JSON.stringify(shopkeeper));
 		window.localStorage.setItem('enemies', JSON.stringify(enemies));
+		window.localStorage.setItem('chests', JSON.stringify(chests));
 		window.localStorage.setItem('state', currentState);
 		window.localStorage.setItem('chapter', currentChapter);
 		window.localStorage.setItem('page', currentPage);
@@ -3504,6 +3597,18 @@ $(document).ready(function(){
 		player.setChaptersCleared(playerData.chaptersCleared);
 		player.setEarningsTotal(playerData.earningsTotal);
 		player.setMoney(playerData.money);
+
+		//chests init, if any
+		chests.length = 0;
+		var chestData = JSON.parse(window.localStorage.getItem('chests'));
+		if((chestData.length) > 0) {
+			currentChapter = window.localStorage.getItem('chapter');
+			let chestCount = (storyObj[currentChapter].chestCoords).length;
+			for(var i = 0; i < chestCount; i++) {
+				chest = new Chest(chestData[i].money, chestData[i].inventory);
+				chests.push(chest);
+			}
+		}	
 
 		//enemies init, if any
 		enemies.length = 0;
@@ -3637,6 +3742,11 @@ $(document).ready(function(){
 	
 	//map examine button
 	$("#mapExamine").click(function() {
+		$("#examineSelfData").hide();
+		$("#examineOtherData").hide();
+		$("#examineSpaceData").hide();
+		$("#examMain").hide();
+		$("#examineControl").show();
 		printPlayerStatus();
 		getExaminationResults();
 		$('#mapExamineModal').modal('toggle');
@@ -3713,4 +3823,34 @@ $(document).ready(function(){
 	$(".returnButton").click(function() {
 		window.location.href='/rpgGame';
 	});
+	
+	//exam self
+	$("#examSelf").click(function() {
+		$("#examineSelfData").show();
+		$("#examMain").show();
+		$("#examineControl").hide();
+	});	
+
+	//exam other
+	$("#examOther").click(function() {
+		$("#examineOtherData").show();
+		$("#examMain").show();
+		$("#examineControl").hide();
+	});	
+	
+	//exam main
+	$("#examMain").click(function() {
+		$("#examineSelfData").hide();
+		$("#examineOtherData").hide();
+		$("#examineSpaceData").hide();
+		$("#examMain").hide();
+		$("#examineControl").show();
+	});
+	
+	//examine tile space
+	$("#examSpace").click(function() {
+		$("#examineSpaceData").show();
+		$("#examMain").show();
+		$("#examineControl").hide();
+	});	
 });

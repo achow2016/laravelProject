@@ -397,7 +397,12 @@
 								<button type="button" class="close" data-dismiss="modal">&times;</button>
 							</div>
 							<div class="modal-body">
-								<div id="examineSelfData">
+								<div id="examineControl">
+									<button id="examSelf" class="btn btn-primary active w-100 mb-1">Self</button>
+									<button id="examOther" class="btn btn-primary active w-100 mb-1">Other</button>
+									<button id="examSpace" class="btn btn-primary active w-100 mb-1">Space</button>
+								</div>
+								<div style="display:none" id="examineSelfData">
 									<p class="playerName" data-toggle="tooltip" title=""></p>
 									<p data-toggle="tooltip" title="">Status:</p>
 									<div class="row text-center" id="playerMapConditions">
@@ -410,14 +415,19 @@
 									<p class="playerAttack" data-toggle="tooltip" title=""></p>	
 									<p class="playerAgility" data-toggle="tooltip" title=""></p>	
 								</div>
-								<div id="examineOtherData">
+								<div style="display:none" id="examineOtherData">
 									<p id="otherName" data-toggle="tooltip" title=""></p>
 									<p id="otherArmourName" data-toggle="tooltip" title=""></p>
 									<p id="otherAttackWeapon" data-toggle="tooltip" title=""></p>
 									<p id="otherAttackWeapon" data-toggle="tooltip" title=""></p>
-								</div>								
+								</div>		
+								<div style="display:none" id="examineSpaceData">
+									<p id="spaceTerrain" data-toggle="tooltip" title=""></p>
+									<p id="spaceChest" data-toggle="tooltip" title=""></p>
+								</div>									
 							</div>
 							<div class="modal-footer centered-button">
+								<button style="display:none" id="examMain" class="btn btn-primary active w-100 mb-1">Back</button>
 								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 							</div>
 						</div>	
