@@ -365,18 +365,23 @@
 								<button type="button" class="close" data-dismiss="modal">&times;</button>
 							</div>
 							<div class="modal-body">
+								<p class="playerName" data-toggle="tooltip" title=""></p>
 								<p class="playerScore" data-toggle="tooltip" title=""></p>
 								<p class="playerKills" data-toggle="tooltip" title=""></p>
 								<p class="playerDamageDone" data-toggle="tooltip" title=""></p>
 								<p class="playerDamageReceived" data-toggle="tooltip" title=""></p>
 								<p class="playerChaptersCleared" data-toggle="tooltip" title=""></p>
-								<p class="playerName" data-toggle="tooltip" title=""></p>
-								<p class="playerHealth" data-toggle="tooltip" title=""></p>
+								<p class="playerEarnings" data-toggle="tooltip" title=""></p>
+								<br>
+								<p class="playerOldTotal" data-toggle="tooltip" title=""></p>
+								
+								
+								<!--p class="playerHealth" data-toggle="tooltip" title=""></p>
 								<p class="playerArmourName" data-toggle="tooltip" title=""></p>
 								<p class="playerArmour" data-toggle="tooltip" title=""></p>
 								<p class="playerAttackWeapon" data-toggle="tooltip" title=""></p>
 								<p class="playerAttack" data-toggle="tooltip" title=""></p>	
-								<p class="playerAgility" data-toggle="tooltip" title=""></p>
+								<p class="playerAgility" data-toggle="tooltip" title=""></p-->
 							</div>
 							<div class="modal-footer centered-button">
 								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -423,7 +428,6 @@
 								</div>		
 								<div style="display:none" id="examineSpaceData">
 									<p id="spaceTerrain" data-toggle="tooltip" title=""></p>
-									<p id="spaceChest" data-toggle="tooltip" title=""></p>
 								</div>									
 							</div>
 							<div class="modal-footer centered-button">
@@ -796,14 +800,8 @@
 					</div>	
 				</div>
 				
-				<!--
-					status tab
-					
-					equipment
-					stats
-				-->
 				
-				<div id="playerPanel" class="container tab-pane fade">
+				<!--div id="playerPanel" class="container tab-pane fade">
 					<img src="data:," alt="Player Image" class="playerImage" height="80px" width="80px">
 					<p class="playerName" data-toggle="tooltip" title=""></p>
 					<p class="playerHealth" data-toggle="tooltip" title=""></p>
@@ -814,26 +812,13 @@
 					<p class="playerAgility" data-toggle="tooltip" title=""></p>
 				</div>
 				
-				<!--
-					score tab
-					
-					statistics
-					score
-				-->
-				
 				<div id="scorePanel" class="container tab-pane fade"><br>
 					<p class="playerScore" data-toggle="tooltip" title=""></p>
 					<p class="playerKills" data-toggle="tooltip" title=""></p>
 					<p class="playerDamageDone" data-toggle="tooltip" title=""></p>
 					<p class="playerDamageReceived" data-toggle="tooltip" title=""></p>
 					<p class="playerChaptersCleared" data-toggle="tooltip" title=""></p>
-					<p class="playerName" data-toggle="tooltip" title=""></p>
-					<p class="playerHealth" data-toggle="tooltip" title=""></p>
-					<p class="playerArmourName" data-toggle="tooltip" title=""></p>
-					<p class="playerArmour" data-toggle="tooltip" title=""></p>
-					<p class="playerAttackWeapon" data-toggle="tooltip" title=""></p>
-					<p class="playerAttack" data-toggle="tooltip" title=""></p>	
-					<p class="playerAgility" data-toggle="tooltip" title=""></p>
+					<p class="mapPlayerMoney" data-toggle="tooltip" title=""></p>
 				</div>
 				
 			</div>

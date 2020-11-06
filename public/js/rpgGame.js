@@ -1722,6 +1722,25 @@ function refreshScore() {
 	$(".playerDamageDone").text("Damage dealt: " + player.getDamageDone());
 	$(".playerDamageReceived").text("Damage Received: " + player.getDamageReceived());
 	$(".playerKills").text("Total kills: " + player.getKills());
+	$(".playerChaptersCleared").text("Chapters Cleared: " + player.getChaptersCleared());
+	$(".playerEarnings").text("Total Earnings: " + player.getEarningsTotal());
+	
+	$.ajaxSetup({
+		headers: {
+			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+		}
+	});
+	$.ajax({
+		type: "GET",
+		url: 'http://localhost:8082/rpgGame/getMyScore',
+		success: function (data) {
+			console.log(data);
+			$(".playerOldTotal").text("Last Total: " + data);
+		},
+		error: function() { 
+			console.log("error!");
+		}
+	});		
 }
 
 //update of ui and clean up after each turn
@@ -2937,6 +2956,7 @@ function updateMap(actor, direction) {
 							tempName = enemies[i].name;
 					}
 				}
+				
 				$("#mapStatus").text("There is a corpse of a " + tempName + " here.");
 				
 				//add logic if square is also an exit square
@@ -3015,11 +3035,13 @@ function updateMap(actor, direction) {
 //populates examine modal depending on where player is standing
 function getExaminationResults() {
 
+	//call $('#mapExamineModal').modal('toggle');
+	
+
 	//populate player conditions
 	let tempBuffArray = player.getStatusBuffArray();
 	let buffStr;
 	$("#playerMapConditions").empty();
-	$('#spaceChest').text("");
 	
 	for(let i = 0; i < tempBuffArray.length; i++) {
 		buffStr = tempBuffArray[i].getName() + " " + tempBuffArray[i].getEffect() + " " +
@@ -3040,6 +3062,7 @@ function getExaminationResults() {
 	let otherWeaponvalue;
 	let tempName;
 	let squareId = $("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/\d+/);
+	let lootComplete = false;
 
 	if(squareId != null) {
 		enemyId = squareId[0];
@@ -3047,13 +3070,23 @@ function getExaminationResults() {
 
 		//examining a corpse loots it
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^corpse/)) {
+			
+			//keeps shop text
+			//adds logic if square is also a shop square
+			let shopMapPosition = storyObj[currentMap].shopCoords;
+			if(JSON.stringify(player.getMapPosition()) === JSON.stringify(shopMapPosition)) {
+				tempName = enemies[enemyId].name;
+				$("#mapFight").hide();
+				$("#mapShop").show().prop('disabled', false);
+			}
+			
 			otherArmour = enemies[enemyId].getArmourName();
 			otherArmourValue = enemies[enemyId].getArmourValue().toString();
-			console.log(otherArmourValue);
 			otherArmourCost = enemies[enemyId].getArmourCost();
 			if(otherArmour != null && otherArmour != "Nothing") {
 				player.addEquipment({name: otherArmour, value: otherArmourValue, cost: otherArmourCost});
 				enemies[enemyId].unequipArmour();
+				lootComplete = true;
 			}
 			otherWeapon = enemies[enemyId].getWeaponName();
 			otherWeaponvalue = enemies[enemyId].getWeaponValue();
@@ -3061,38 +3094,61 @@ function getExaminationResults() {
 			if(otherWeapon != null && otherWeapon != "Nothing") {
 				player.addEquipment({name: otherWeapon, value: otherWeaponvalue, cost: otherWeaponCost});
 				enemies[enemyId].unequipWeapon();
+				lootComplete = true;
 			}
-			if(enemies[enemyId].getWeaponName() == null || enemies[enemyId].getArmourName() == null) {
-				tempName = "looted " + enemies[enemyId].name;
-				$("#mapStatus").text("There is a corpse of a " + tempName + " here.");
-				//keeps shop text
-				//adds logic if square is also a shop square
-				let shopMapPosition = storyObj[currentMap].shopCoords;
-				if(JSON.stringify(player.getMapPosition()) === JSON.stringify(shopMapPosition)) {
-					$("#mapStatus").text("There is a corpse of a " + tempName + " here. There is a shop in this area.");
-					$("#mapFight").hide();
-					$("#mapShop").show().prop('disabled', false);
+			
+			//exit on loot
+			if(lootComplete) {
+				if(otherWeapon != "Nothing" && otherArmour != "Nothing") {
+					tempName = "looted " + enemies[enemyId].name;
+					$("#mapStatus").text("There is a corpse of a " + tempName + " here. Found a " + otherWeapon +
+						" and a " + otherArmour);
+					return;
+				}	
+				if(otherWeapon != "Nothing" || otherArmour != "Nothing") {
+					if(otherWeapon != "Nothing") {
+						tempName = "looted " + enemies[enemyId].name;
+						$("#mapStatus").text("There is a corpse of a " + tempName + " here. Found a " + otherWeapon);
+						return;
+					}
+					else {
+						tempName = "looted " + enemies[enemyId].name;
+						$("#mapStatus").text("There is a corpse of a " + tempName + " here. Found a " +  otherArmour);
+						return;
+					}	
 				}
-			}	
+			}
+			
+			//keeps shop text
+			//adds logic if square is also a shop square
+			//let shopMapPosition = storyObj[currentMap].shopCoords;
+			if(JSON.stringify(player.getMapPosition()) === JSON.stringify(shopMapPosition)) {
+				tempName = enemies[enemyId].name;
+				$("#mapStatus").text("There is a corpse of a " + tempName + " here. There is a shop in this area.");
+				$("#mapFight").hide();
+				$("#mapShop").show().prop('disabled', false);
+			}
 		}
 		
-		//examining a chest loots it
+		//examining a chest loots it, prints message to map, returns
 		if($("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id').match(/^chest/)) {
 			let targetChest = chests[squareId];
 			let money = targetChest.getMoney();
 			let item = targetChest.getInventory();
 			if(targetChest.getMoney() != null) {
-				$('#spaceChest').text("Looted: $" + money);
 				$('#mapStatus').text("Looted: " + money);	
 			}
 			var itemString = "";
 			if(targetChest.getInventory() != null) {
-				$('#spaceChest').text("Looted: " + item.name);
 				$('#mapStatus').text("Looted: " + item.name);
 			}	
 			player.lootChest(targetChest);
+			$("#" + playerMapPosition[0] + "-" + playerMapPosition[1]).children().attr('id', 'player');
+			return;
 		}
 	}
+	
+	$('#mapExamineModal').modal('toggle');
 }	
 
 //game starting scripts
@@ -3737,6 +3793,14 @@ $(document).ready(function(){
 		updateMap(null, null);	
 		$("#battleMain").hide();
 		$("#gameTopTab").hide();
+		
+		//if enemy was blocking shop, opens shop option
+		let playerMapPosition = player.getMapPosition();
+		let shopMapPosition = storyObj[currentMap].shopCoords;
+		if(JSON.stringify(player.getMapPosition()) === JSON.stringify(shopMapPosition)) {
+			$("#mapFight").hide();
+			$("#mapShop").show().prop('disabled', false);
+		}		
 		$("#mapMain").show();	
 	});
 	
@@ -3749,7 +3813,7 @@ $(document).ready(function(){
 		$("#examineControl").show();
 		printPlayerStatus();
 		getExaminationResults();
-		$('#mapExamineModal').modal('toggle');
+		//$('#mapExamineModal').modal('toggle');
 	});
 	
 	//map item button

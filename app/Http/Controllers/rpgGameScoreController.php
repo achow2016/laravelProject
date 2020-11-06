@@ -88,5 +88,12 @@ class ScoreViewController extends Controller {
 		$friends = $user->friends;
 		return view('rpgGameScores', ['friends' => $friends]);	
 	}
+	
+	public function getMyScore() 
+	{
+		$username = auth()->user()->name;
+		$user = RpgGameUser::where('name', $username)->first();
+		return $user->scoreTotal;
+	}
 }
 ?>
