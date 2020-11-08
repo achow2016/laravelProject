@@ -1724,24 +1724,7 @@ function refreshScore() {
 	$(".playerKills").text("Total kills: " + player.getKills());
 	$(".playerChaptersCleared").text("Chapters Cleared: " + player.getChaptersCleared());
 	$(".playerEarnings").text("Total Earnings: " + player.getEarningsTotal());
-	
-	$.ajaxSetup({
-		headers: {
-			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-		}
-	});
-	$.ajax({
-		type: "GET",
-		url: 'http://localhost:8082/rpgGame/getMyScore',
-		success: function (data) {
-			console.log(data);
-			$(".playerOldTotal").text("Last Total: " + data);
-		},
-		error: function() { 
-			console.log("error!");
-		}
-	});		
-}
+}	
 
 //update of ui and clean up after each turn
 function postAttackUpdates() {

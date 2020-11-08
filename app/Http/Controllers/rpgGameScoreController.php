@@ -16,7 +16,14 @@ class ScoreViewController extends Controller {
 	public function scores() 
 	{
 		$scores = RpgGameScore::all();
-		return view('rpgGameScores', ['scores' => $scores]);
+		$username = auth()->user()->name;
+		$myScore = RpgGameScore::where('name', $username)->first()->value('scoreTotal');
+		if($myScore->first())
+			return view('rpgGameScores', ['scores' => $scores, 'myScore' => $myScore]);
+		else {
+			$myScore = 0;
+			return view('rpgGameScores', ['scores' => $scores]);
+		}
 	}
 
 	public function detail(Request $request) 
@@ -87,13 +94,6 @@ class ScoreViewController extends Controller {
 		$user = RpgGameUser::where('name', $username)->first();
 		$friends = $user->friends;
 		return view('rpgGameScores', ['friends' => $friends]);	
-	}
-	
-	public function getMyScore() 
-	{
-		$username = auth()->user()->name;
-		$user = RpgGameUser::where('name', $username)->first();
-		return $user->scoreTotal;
 	}
 }
 ?>

@@ -372,8 +372,6 @@
 								<p class="playerDamageReceived" data-toggle="tooltip" title=""></p>
 								<p class="playerChaptersCleared" data-toggle="tooltip" title=""></p>
 								<p class="playerEarnings" data-toggle="tooltip" title=""></p>
-								<br>
-								<p class="playerOldTotal" data-toggle="tooltip" title=""></p>
 								
 								
 								<!--p class="playerHealth" data-toggle="tooltip" title=""></p>

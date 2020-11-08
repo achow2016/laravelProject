@@ -32,7 +32,6 @@ use Illuminate\Support\Facades\Route;
 	Route::get('rpgGame/scores/detail', 'ScoreViewController@detail')->name('detail')->middleware('auth:rpgUser');
 	Route::get('rpgGame/scores/addFriend', 'ScoreViewController@addFriend')->name('friend')->middleware('auth:rpgUser');
 	Route::post('rpgGame/add', 'ScoreViewController@add');//)->middleware('auth:rpgUser');
-	Route::get('rpgGame/getMyScore', 'ScoreViewController@getMyScore')->middleware('auth:rpgUser');
 	
 	//user account auth
 	Route::get('register', function () {
