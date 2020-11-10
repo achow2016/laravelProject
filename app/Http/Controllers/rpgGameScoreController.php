@@ -18,7 +18,7 @@ class ScoreViewController extends Controller {
 		$scores = RpgGameScore::all();
 		$username = auth()->user()->name;
 		$myScore = RpgGameScore::where('name', $username)->first()->value('scoreTotal');
-		if($myScore->first())
+		if($myScore != 0)
 			return view('rpgGameScores', ['scores' => $scores, 'myScore' => $myScore]);
 		else {
 			$myScore = 0;

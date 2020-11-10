@@ -44,10 +44,13 @@
 							<img class="mx-auto d-block" src="/img/gameTitleTempImage.jpg" width="150px" height="150px" alt="Game Title Art"/>
 							<h1>My Game</h1>
 								 @if( auth()->check() )
-								<li class="nav-item">
 								<p>Welcome, {{ auth()->user()->name }}</p>
 								<a class="nav-link" href="/rpgGame/logout">logout</a>
-								</li>
+								<form id="avatarForm" method="post" enctype="multipart/form-data">
+									Avatar
+									<input type="file" name="avatar" id="avatar">
+									<input type="submit" value="Upload Image" name="submit">
+								</form>
 								@endif
 						</div>
 					</div>
@@ -817,7 +820,7 @@
 					<p class="playerDamageReceived" data-toggle="tooltip" title=""></p>
 					<p class="playerChaptersCleared" data-toggle="tooltip" title=""></p>
 					<p class="mapPlayerMoney" data-toggle="tooltip" title=""></p>
-				</div>
+				</div-->
 				
 			</div>
 		</div>

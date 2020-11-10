@@ -147,5 +147,23 @@ class rpggameRegistrationController extends Controller
 		catch (Exception $e) {
 			echo("<script>console.log('" . $e . "');</script>");
 		}
+	}
+
+	public function addAvatar(Request $request) 
+	{
+		//gets user, to update record with an avatar image
+		$username = auth()->user()->name;
+		$myUser = RpgGameUser::where('name', $username)->first();
+		//if has image, processes and stores
+		if($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            //getting timestamp
+            $timestamp = str_replace([' ', ':'], '-', Carbon::now()->toDateTimeString());
+            $name = $timestamp. '-' .$file->getClientOriginalName();
+            $file->move(public_path().'/img/rpgGame/', $name);
+            $myUser->avatar = url('/img/rpgGame/' . $name);
+			$myUser->save();	
+        }
+		return view('rpgGame');
 	}	
 }

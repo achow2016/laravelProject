@@ -3899,5 +3899,23 @@ $(document).ready(function(){
 		$("#examineSpaceData").show();
 		$("#examMain").show();
 		$("#examineControl").hide();
-	});	
+	});
+
+	//ajax avatar submit
+	$("#avatarForm").on('submit', (function(event) {
+		event.preventDefault();
+		var avatar = $('#avatarForm').val();
+		$.ajaxSetup({
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			}
+		});
+		$.ajax({
+			type: "POST",
+			url: 'http://localhost:8082/rpgGame/addAvatar',
+			data: {avatar:avatar}}).done(function( msg ) {
+				alert( msg );
+			});
+			
+	}));
 });
