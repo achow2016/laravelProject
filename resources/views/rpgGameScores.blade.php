@@ -60,6 +60,7 @@
 
 			@isset($profile)
 			<div class="text-center">
+				<img class="col" src="{{ session()->get( 'otherAvatar' ) }}" alt="avatar" >
 				<p>Name: {{$profile->name}}</p>
 				<p>Kills: {{$profile->kills}}</p>
 				<p>Dmg Done: {{$profile->damageDone}}</p>

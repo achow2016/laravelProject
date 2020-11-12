@@ -78,7 +78,7 @@ var storyObj = [
 			{"name":"100 Gold"}
 		],
 		"shopCoords":[4,4],
-		"shopMoney":"1000",
+		"shopMoney":"100",
 		"shopInventory":[
 			{ "name":"cloth armour" , "reduction":"1", "cost":"100" }, 
 			{ "name":"leather armour" , "reduction":"2", "cost":"200" }, 
@@ -811,6 +811,8 @@ class Actor {
 	giveItem(item, shopkeeper) {
 		for(var j = 0; j < this.itemInventory.length; j++) {
 			if((this.itemInventory[j].getName()) === item) {
+				//if(shopkeeper.getMoney() < this.itemInventory[j].cost)
+				//	return;
 				shopkeeper.addItem(this.itemInventory[j]);
 				this.itemInventory[j].decrementQuantity();
 				if(this.itemInventory[j].getQuantity() == 0) {
@@ -822,6 +824,8 @@ class Actor {
 		
 		for(var j = 0; j < this.equipmentArray.length; j++) {
 			if(this.equipmentArray[j].name === item) {
+				//if(shopkeeper.getMoney() < this.equipmentArray[j].cost)
+				//	return;
 				var newItem;
 				newItem = ({
 					name: this.equipmentArray[j].name, 
@@ -1666,13 +1670,20 @@ function refreshPlayerSellList() {
 			}
 			for(var j = 0; j < playerEquipment.length; j++) {	
 				//sells equipment from player inventory to shopkeeper
-				if(playerEquipment[j].name == $(this).attr("value")) {		
-					player.giveItem($(this).attr("value"), shopkeeper);
+				if(playerEquipment[j].name == $(this).attr("value")) {	
+					var cost = playerEquipment[j].cost;
+					if(shopkeeper.buyItem(cost, player)) {
+						player.giveItem($(this).attr("value"), shopkeeper);
+						$('#sellMessage').text("Sold item for " + cost + "!");
+					}
+					else {
+						$('#sellMessage').text("Shop cannot afford the item!");
+					}	
 					var quantityCost = $(this).attr("id");
 					var tempInfoArray = quantityCost.split("-");
 					var quantity = parseInt(tempInfoArray[0]);
 					var cost = parseInt(tempInfoArray[1]);
-					shopkeeper.buyItem(cost, player);
+					//shopkeeper.buyItem(cost, player);
 					refreshShopMoney();
 					refreshPlayerSellList()
 					return;
@@ -2823,7 +2834,7 @@ function updateMap(actor, direction) {
 	
 	//hide map buttons
 	$("#mapExit").hide().prop('disabled', true);	
-	$("#mapShop").hide().prop('disabled', true);
+	//$("#mapShop").hide().prop('disabled', true);
 	
 	//for previous spot after movement
 	if(actor === "player") {
@@ -3900,22 +3911,4 @@ $(document).ready(function(){
 		$("#examMain").show();
 		$("#examineControl").hide();
 	});
-
-	//ajax avatar submit
-	$("#avatarForm").on('submit', (function(event) {
-		event.preventDefault();
-		var avatar = $('#avatarForm').val();
-		$.ajaxSetup({
-			headers: {
-				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-			}
-		});
-		$.ajax({
-			type: "POST",
-			url: 'http://localhost:8082/rpgGame/addAvatar',
-			data: {avatar:avatar}}).done(function( msg ) {
-				alert( msg );
-			});
-			
-	}));
 });

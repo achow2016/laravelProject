@@ -46,11 +46,13 @@
 								 @if( auth()->check() )
 								<p>Welcome, {{ auth()->user()->name }}</p>
 								<a class="nav-link" href="/rpgGame/logout">logout</a>
-								<form id="avatarForm" method="post" enctype="multipart/form-data">
+								<form method="post" action="{{ action('rpggameRegistrationController@addAvatar') }}" enctype="multipart/form-data">
 									Avatar
 									<input type="file" name="avatar" id="avatar">
 									<input type="submit" value="Upload Image" name="submit">
 								</form>
+								<br>
+								<img class="col" src="{{ session()->get( 'avatar' ) }}" alt="avatar" >
 								@endif
 						</div>
 					</div>

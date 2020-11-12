@@ -16,18 +16,26 @@ class ScoreViewController extends Controller {
 	public function scores() 
 	{
 		$scores = RpgGameScore::all();
-		$username = auth()->user()->name;
-		$myScore = RpgGameScore::where('name', $username)->first()->value('scoreTotal');
+		//$username = auth()->user()->name;
+		$username = auth::guard('rpgUser')->user()->name;
+		$myScore = RpgGameScore::where('name', $username)->first();
+		if($myScore != null)
+			$myScore = RpgGameScore::where('name', $username)->first()->value('scoreTotal');
 		if($myScore != 0)
 			return view('rpgGameScores', ['scores' => $scores, 'myScore' => $myScore]);
 		else {
 			$myScore = 0;
-			return view('rpgGameScores', ['scores' => $scores]);
+			return view('rpgGameScores', ['scores' => $scores, 'myScore' => $myScore]);
 		}
 	}
 
 	public function detail(Request $request) 
 	{
+		
+		$username = $request->input('name');
+		$user = RpgGameUser::where('name', $username)->first();
+		$request->session()->put('otherAvatar', $user->avatar);
+		
 		$profile = RpgGameScore::where('name', $request->input('name'))->first();
 		return view('rpgGameScores', ['profile' => $profile]);
 	}
@@ -63,7 +71,8 @@ class ScoreViewController extends Controller {
 	{
 		
 		//first check if duplicates
-		$username = auth()->user()->name;
+		//$username = auth()->user()->name;
+		$username = auth::guard('rpgUser')->user()->name;
 		$user = RpgGameUser::where('name', $username)->first();
 		$friends = $user->friends->where('name', $request->input('name'))->first();
 		
@@ -90,7 +99,8 @@ class ScoreViewController extends Controller {
 	
 	public function friends() 
 	{
-		$username = auth()->user()->name;
+		//$username = auth()->user()->name;
+		$username = auth::guard('rpgUser')->user()->name;
 		$user = RpgGameUser::where('name', $username)->first();
 		$friends = $user->friends;
 		return view('rpgGameScores', ['friends' => $friends]);	

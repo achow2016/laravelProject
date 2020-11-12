@@ -22,9 +22,11 @@ use Illuminate\Support\Facades\Route;
 	
 	//all but login and register requires logged in user
 	//add to score db uses ajax incompat with middleware as-is
-	Route::get('rpgGame', function () {
-		return view('rpgGame');
-	})->name('rpgGame')->middleware('auth:rpgUser');
+	//Route::get('rpgGame', function () {
+	//	return view('rpgGame');
+	//})->name('rpgGame')->middleware('auth:rpgUser');
+	
+	Route::get('rpgGame', 'rpggameRegistrationController@home')->middleware('auth:rpgUser');
 	
 	//scores
 	Route::get('rpgGame/scores', 'ScoreViewController@scores')->middleware('auth:rpgUser');

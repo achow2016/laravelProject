@@ -152,7 +152,7 @@ class rpggameRegistrationController extends Controller
 	public function addAvatar(Request $request) 
 	{
 		//gets user, to update record with an avatar image
-		$username = auth()->user()->name;
+		$username = auth::guard('rpgUser')->user()->name;
 		$myUser = RpgGameUser::where('name', $username)->first();
 		//if has image, processes and stores
 		if($request->hasFile('avatar')) {
@@ -164,6 +164,15 @@ class rpggameRegistrationController extends Controller
             $myUser->avatar = url('/img/rpgGame/' . $name);
 			$myUser->save();	
         }
-		return view('rpgGame');
+		//return view('rpgGame');
+		return redirect()->to('/rpgGame')->with('avatar', $myUser->avatar);
 	}	
+	
+	public function home(Request $request) 
+	{
+		$username = auth::guard('rpgUser')->user()->name;
+		$myUser = RpgGameUser::where('name', $username)->first();
+		$request->session()->put('avatar', $myUser->avatar);
+		return view('rpgGame');	
+	}
 }
