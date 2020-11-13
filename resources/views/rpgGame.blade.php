@@ -43,17 +43,42 @@
 						<div id="gameTitle">
 							<img class="mx-auto d-block" src="/img/gameTitleTempImage.jpg" width="150px" height="150px" alt="Game Title Art"/>
 							<h1>My Game</h1>
-								 @if( auth()->check() )
-								<p>Welcome, {{ auth()->user()->name }}</p>
-								<a class="nav-link" href="/rpgGame/logout">logout</a>
+							
+							@if( auth()->check() )
+							<p>Welcome, {{ auth()->user()->name }}</p>
+							<a class="nav-link" href="/rpgGame/logout">logout</a>
+							
+							<div id="avatarMenu" style="display:none">
 								<form method="post" action="{{ action('rpggameRegistrationController@addAvatar') }}" enctype="multipart/form-data">
 									Avatar
 									<input type="file" name="avatar" id="avatar">
 									<input type="submit" value="Upload Image" name="submit">
 								</form>
 								<br>
-								<img class="col" src="{{ session()->get( 'avatar' ) }}" alt="avatar" >
-								@endif
+							</div>
+							
+							@if(session()->has('avatar'))
+								<img class="col mb-1" src="{{ session()->get( 'avatar' ) }}" alt="avatar">
+								<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active w-100">Upload Avatar</button>
+								<button style="display:none" id="hideAvatarMenu" type="button" class="btn btn-primary active w-100">Close Avatar Menu</button>
+							@else 
+								<p>No Avatar</p>
+								<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active w-100">Upload Avatar</button>
+								<button style="display:none" id="hideAvatarMenu" type="button" class="btn btn-primary active w-100">Close Avatar Menu</button>
+							@endif
+							
+							@endif
+							
+							<div class="col">
+								<form method="POST" id="payment-form" action="/rpgGame/pay">
+								{{ csrf_field() }}
+								<p>Fund With Paypal</p>
+								<label><b>Enter Amount</b></label>
+								<input name="amount" type="text"></p>      
+								<button class="btn btn-primary active">Pay with PayPal</button></p>
+								</form>
+							</div>	
+							
 						</div>
 					</div>
 				</div>
@@ -802,28 +827,6 @@
 						</div>	
 					</div>	
 				</div>
-				
-				
-				<!--div id="playerPanel" class="container tab-pane fade">
-					<img src="data:," alt="Player Image" class="playerImage" height="80px" width="80px">
-					<p class="playerName" data-toggle="tooltip" title=""></p>
-					<p class="playerHealth" data-toggle="tooltip" title=""></p>
-					<p class="playerArmourName" data-toggle="tooltip" title=""></p>
-					<p class="playerArmour" data-toggle="tooltip" title=""></p>
-					<p class="playerAttackWeapon" data-toggle="tooltip" title=""></p>
-					<p class="playerAttack" data-toggle="tooltip" title=""></p>	
-					<p class="playerAgility" data-toggle="tooltip" title=""></p>
-				</div>
-				
-				<div id="scorePanel" class="container tab-pane fade"><br>
-					<p class="playerScore" data-toggle="tooltip" title=""></p>
-					<p class="playerKills" data-toggle="tooltip" title=""></p>
-					<p class="playerDamageDone" data-toggle="tooltip" title=""></p>
-					<p class="playerDamageReceived" data-toggle="tooltip" title=""></p>
-					<p class="playerChaptersCleared" data-toggle="tooltip" title=""></p>
-					<p class="mapPlayerMoney" data-toggle="tooltip" title=""></p>
-				</div-->
-				
 			</div>
 		</div>
 		

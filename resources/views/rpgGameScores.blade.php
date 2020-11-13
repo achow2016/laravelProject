@@ -60,7 +60,11 @@
 
 			@isset($profile)
 			<div class="text-center">
+				@if(session()->has('otherAvatar'))
 				<img class="col" src="{{ session()->get( 'otherAvatar' ) }}" alt="avatar" >
+				@else
+				<p>No Avatar</p>
+				@endif
 				<p>Name: {{$profile->name}}</p>
 				<p>Kills: {{$profile->kills}}</p>
 				<p>Dmg Done: {{$profile->damageDone}}</p>

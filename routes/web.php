@@ -28,6 +28,10 @@ use Illuminate\Support\Facades\Route;
 	
 	Route::get('rpgGame', 'rpggameRegistrationController@home')->middleware('auth:rpgUser');
 	
+	//payments
+	Route::post('/rpgGame/pay', 'RpgGamePaymentController@createPayment')->name('create-payment');
+	Route::get('/rpgGame/confirm', 'RpgGamePaymentController@confirmPayment')->name('confirm-payment');
+	
 	//scores
 	Route::get('rpgGame/scores', 'ScoreViewController@scores')->middleware('auth:rpgUser');
 	Route::get('rpgGame/friends', 'ScoreViewController@friends')->middleware('auth:rpgUser');

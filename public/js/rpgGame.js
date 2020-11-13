@@ -501,9 +501,9 @@ class Actor {
 	}	
 
 	setEarningsTotal(earningsTotal) {
-		this.score -= this.earningsTotal;
+		//this.score -= this.earningsTotal;
 		this.earningsTotal = earningsTotal;
-		this.score += this.earningsTotal;
+		//this.score += this.earningsTotal;
 	}
 
 	getEarningsTotal() {
@@ -721,7 +721,7 @@ class Actor {
 				}
 			}
 			else if((this.statusBuffArray)[i].getEffect() == "Direct Damage") {
-				let damage = (this.statusBuffArray)[i].getEffectNumberAmount() - parseInt(this.armourValue);
+				let damage = parseInt(this.statusBuffArray)[i].getEffectNumberAmount() - parseInt(this.armourValue);
 				let tempScore = this.getScore() + damage;
 				this.setScore(tempScore);
 				let tempDamageTotal = this.getDamageDone() + damage;
@@ -1881,10 +1881,11 @@ function postAttackUpdates() {
 			player.addToItemInventory(enemyItemList[z].name, parseInt(enemyItemList[z].quantity));
 			loot += enemyItemList[z].name + " ";
 		}	
-		//win enemy money, add to total earned
+		//win enemy money, add to total earned and score
 		let goldLoot = parseInt(enemy.getMoney());
 		player.setMoney(player.getMoney() + goldLoot);
 		player.setEarningsTotal(player.getEarningsTotal() + goldLoot);
+		player.setScore(player.getScore() + goldLoot);
 
 		$("#playerGameStatus").text("You win!");
 		$("#playerStatus").text("Gained: " + loot + ", $" + goldLoot);
@@ -3640,7 +3641,7 @@ $(document).ready(function(){
 
 		player.setMapPosition(playerData.mapPosition);	
 		
-		player.setScore(playerData.score);	
+		player.setScore(playerData.score);
 		player.setKills(playerData.kills);	
 		player.setDamageDone(playerData.damageDone);	
 		player.setDamageReceived(playerData.damageReceived);	
@@ -3911,4 +3912,17 @@ $(document).ready(function(){
 		$("#examMain").show();
 		$("#examineControl").hide();
 	});
+	
+	$("#showAvatarMenu").click(function() {
+		$("#avatarMenu").show();
+		$("#hideAvatarMenu").show();
+		$("#showAvatarMenu").hide();
+	});
+	
+	$("#hideAvatarMenu").click(function() {
+		$("#avatarMenu").hide();
+		$("#hideAvatarMenu").hide();
+		$("#showAvatarMenu").show();
+	});
+	
 });
