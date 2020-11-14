@@ -19,9 +19,13 @@ use PayPal\Api\PaymentExecution;
 use Illuminate\Support\Facades\Input;
 use Redirect;
 use URL;
+
+use App\Models\rpgGameUser;
+
 class RpgGamePaymentController extends Controller
 {
 	private $api_context;
+	private $credits;
 	
 	public function __construct()
 	{
@@ -50,6 +54,10 @@ class RpgGamePaymentController extends Controller
 		$itemList->setItems(array($item));
 		// Create and setup the total amount.
 		$amount = new Amount();
+		
+		//store amount for db update later if successful
+		$this->credits = $amount;
+		
 		$amount->setCurrency('EUR')->setTotal($pay_amount);
 		// Create a transaction and amount and description.
 		$transaction = new Transaction();
@@ -97,7 +105,8 @@ class RpgGamePaymentController extends Controller
 	{
 		// If query data not available... no payments was made.
 		if (empty($request->query('paymentId')) || empty($request->query('PayerID')) || empty($request->query('token')))
-		return redirect('/checkout')->withError('Payment was not successful.');
+			//return redirect('/checkout')->withError('Payment was not successful.');
+			return redirect('/rpgGame')->withError('Payment was not successful.');
 		// We retrieve the payment from the paymentId.
 		$payment = Payment::get($request->query('paymentId'), $this->api_context);
 		// We create a payment execution with the PayerId
@@ -109,7 +118,14 @@ class RpgGamePaymentController extends Controller
 		// $value = $request->session()->pull('key', 'default');
 		// Check if payment is approved
 		if ($result->getState() != 'approved')
-		return redirect('/checkout')->withError('Payment was not successful.');
-		return redirect('/checkout')->withSuccess('Payment made successfully');
+			return redirect('/rpgGame')->withError('Payment was not successful.');
+		else {
+			$username = auth::guard('rpgUser')->user()->name;
+			$user = RpgGameUser::where('name', $username)->first();
+			$newUserCredits = $this->credits + $user->credits;
+			$user->credits = $newUserCredits;
+			$user->save();
+			return redirect('/rpgGame')->withSuccess('Payment made successfully');
+		}
 	}
 }	

@@ -20,6 +20,7 @@ class CreateRpgusersTable extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
 			$table->binary('avatar')->nullable(); //avatar image
+			$table->integer('credits');
             $table->rememberToken();
             $table->timestamps();
         });

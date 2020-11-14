@@ -73,6 +73,9 @@
 								<form method="POST" id="payment-form" action="/rpgGame/pay">
 								{{ csrf_field() }}
 								<p>Fund With Paypal</p>
+								@if (session('error') || session('success'))
+								<div class="{{session('error') ? 'error':'success'}}">{{session('error') ?? session('success')}</div>
+								@endif						
 								<label><b>Enter Amount</b></label>
 								<input name="amount" type="text"></p>      
 								<button class="btn btn-primary active">Pay with PayPal</button></p>
