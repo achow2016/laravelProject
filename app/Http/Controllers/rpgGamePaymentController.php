@@ -21,11 +21,11 @@ use Redirect;
 use URL;
 
 use App\Models\rpgGameUser;
+use Illuminate\Support\Facades\Auth;
 
 class RpgGamePaymentController extends Controller
 {
 	private $api_context;
-	private $credits;
 	
 	public function __construct()
 	{
@@ -54,10 +54,6 @@ class RpgGamePaymentController extends Controller
 		$itemList->setItems(array($item));
 		// Create and setup the total amount.
 		$amount = new Amount();
-		
-		//store amount for db update later if successful
-		$this->credits = $amount;
-		
 		$amount->setCurrency('EUR')->setTotal($pay_amount);
 		// Create a transaction and amount and description.
 		$transaction = new Transaction();
@@ -77,9 +73,9 @@ class RpgGamePaymentController extends Controller
 		try {
 			$payment->create($this->api_context);
 		} catch (PayPalConnectionException $ex){
-			return back()->withError('Some error occur, sorry for inconvenient');
+			return back()->with('error', 'Some error occur, sorry for inconvenient');
 		} catch (Exception $ex) {
-			return back()->withError('Some error occur, sorry for inconvenient');
+			return back()->with('error', 'Some error occur, sorry for inconvenient');
 		}
 		// We get 'approval_url' a paypal url to go to for payments.
 		foreach($payment->getLinks() as $link) {
@@ -89,13 +85,14 @@ class RpgGamePaymentController extends Controller
 			}
 		}
 		// You can set a custom data in a session
-				// $request->session()->put('key', 'value');;
+		$request->session()->put('creditAmount', $pay_amount);
+		
 		// We redirect to paypal tp make payment
 		if(isset($redirect_url)) {
 			return redirect($redirect_url);
 		}
 		// If we don't have redirect url, we have unknown error.
-		return redirect()->back()->withError('Unknown error occurred');
+		return redirect()->back()->with('error', 'Unknown error occurred');
 	}	
 	/**
 	** This method confirms if payment with paypal was processed successful and then execute the payment, 
@@ -106,7 +103,7 @@ class RpgGamePaymentController extends Controller
 		// If query data not available... no payments was made.
 		if (empty($request->query('paymentId')) || empty($request->query('PayerID')) || empty($request->query('token')))
 			//return redirect('/checkout')->withError('Payment was not successful.');
-			return redirect('/rpgGame')->withError('Payment was not successful.');
+			return redirect('/rpgGame')->with('error', 'Payment was not successful.');
 		// We retrieve the payment from the paymentId.
 		$payment = Payment::get($request->query('paymentId'), $this->api_context);
 		// We create a payment execution with the PayerId
@@ -118,14 +115,14 @@ class RpgGamePaymentController extends Controller
 		// $value = $request->session()->pull('key', 'default');
 		// Check if payment is approved
 		if ($result->getState() != 'approved')
-			return redirect('/rpgGame')->withError('Payment was not successful.');
+			return redirect('/rpgGame')->with('error', 'Payment was not successful.');
 		else {
 			$username = auth::guard('rpgUser')->user()->name;
 			$user = RpgGameUser::where('name', $username)->first();
-			$newUserCredits = $this->credits + $user->credits;
+			$newUserCredits = $request->session()->pull('creditAmount', '') + $user->credits;
 			$user->credits = $newUserCredits;
 			$user->save();
-			return redirect('/rpgGame')->withSuccess('Payment made successfully');
+			return redirect('/rpgGame')->with('success', 'Payment made successfully');
 		}
 	}
 }	

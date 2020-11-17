@@ -32,13 +32,13 @@ var implantObj = [
 var personalityObj = [
 	{ 
 		"type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"100", 
-		"itemPercent":"0", "staminaCautionThreshold":"3", "healthCautionThreshold":"3" 
+		"recoveryItemPercent":"100", "staminaCautionThreshold":"3", "healthCautionThreshold":"50" 
 	}, 
 ];	
 
 var enemyObj = [
 	{ 
-		"name":"guard", "race":"human", "actorClass":"none", "health":"10", "attack":"10", "stamina":"100", 
+		"name":"guard", "race":"human", "actorClass":"none", "health":"50", "attack":"10", "stamina":"100", 
 		"staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "money":"100",
 		"skills":["Arm Smash", "Advancing Swing II"], 
 		"itemLootInventory":[
@@ -132,11 +132,11 @@ var meleeSkillObj = [
 		"staminaCost":"5" 
 	},
 	{ 
-		"name":"Advancing Swing II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Decrease Distance", 
+		"name":"Advancing Swing", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Decrease Distance", 
 		"range":"2", "effectQuantity":"2", "percent":"100", "meleePercentagePenalty":"0", "staminaCost":"10" 
 	},
 	{ 
-		"name":"Retreating Cut II", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Increase Distance", 
+		"name":"Retreating Cut", "bodyTarget":"100100000", "stanceResult":"110110111", "debuff":"none", "effect":"Increase Distance", 
 		"range":"6", "effectQuantity":"2", "percent":"100", "meleePercentagePenalty":"50", "staminaCost":"10" 
 	},
 	{ 
@@ -603,13 +603,15 @@ class Actor {
 		let choice = personalityObj.findIndex(function(personality, i) {
 			return personality.type == personalityType;
 		});
-		if((this.getHealthThreshold() <  parseInt(personalityObj[choice].healthCautionThreshold))) {
+		if((this.getHealthThreshold() >  parseInt(personalityObj[choice].healthCautionThreshold)) ||
+			(getRandomInteger(0, 100) > personalityObj[choice].recoveryItemPercent)) {
 			return false;
 		} 
 		else {
 			for(let i = 0; i < this.itemInventory.length; i++) {
-				if(this.itemInventory[i].getEffect() == "regen") {
-					useItem(this.itemInventory[i].getName(), "self");
+				console.log(this.itemInventory[i].effect);
+				if(this.itemInventory[i].effect === "Regen") {
+					this.useItem(this.itemInventory[i].name, "self");
 				}
 			}
 			return true;
@@ -875,8 +877,8 @@ class Actor {
 						enemy.addToStatusBuffArray(buff);	
 					}
 					//decrement item quantity, remove from item array if zero	
-					this.itemInventory[j].decrementQuantity();
-					if(this.itemInventory[j].getQuantity() == 0) {
+					this.itemInventory[j].quantity--;
+					if(this.itemInventory[j].quantity == 0) {
 						this.removeEmptyFromItemInventory();
 					}	
 				}
@@ -893,9 +895,9 @@ class Actor {
 					player.addToStatusBuffArray(buff);	
 					
 					//decrement item quantity, remove from item array if zero	
-					this.itemInventory[j].decrementQuantity();
-					if(this.itemInventory[j].getQuantity() == 0) {
-						this.removeEmptyFromItemInventory(this.itemInventory[j].getName());
+					this.itemInventory[j].quantity--;
+					if(this.itemInventory[j].quantity == 0) {
+						this.removeEmptyFromItemInventory(this.itemInventory[j].name);
 					}	
 				}
 			}
@@ -903,7 +905,7 @@ class Actor {
 	
 		if(actor === "self") {
 			for(var j = 0; j < this.itemInventory.length; j++) {
-				if((this.itemInventory[j].getName()) === item) {
+				if(this.itemInventory[j].name === item) {
 					//applies item effect
 					var buff = new BuffStatus(this.itemInventory[j].name, this.itemInventory[j].effect,
 						this.itemInventory[j].stackLimit, this.itemInventory[j].effectPercent,
@@ -912,9 +914,9 @@ class Actor {
 					this.addToStatusBuffArray(buff);	
 					
 					//decrement item quantity, remove from item array if zero	
-					this.itemInventory[j].decrementQuantity();
-					if(this.itemInventory[j].getQuantity() == 0) {
-						this.removeEmptyFromItemInventory(this.itemInventory[j].getName());
+					this.itemInventory[j].quantity--;
+					if(this.itemInventory[j].quantity == 0) {
+						this.removeEmptyFromItemInventory(this.itemInventory[j].name);
 					}	
 				}
 			}
@@ -922,7 +924,7 @@ class Actor {
 	}
 	
 	removeEmptyFromItemInventory() {
-		var processedItemList = (this.itemInventory).filter(item => item.getQuantity() != 0);
+		var processedItemList = (this.itemInventory).filter(item => item.quantity != 0);
 		this.setItemInventory(processedItemList);
 	}	
 	
@@ -1755,6 +1757,8 @@ function postAttackUpdates() {
 	};
 	if(tempBuffArray.length != 0)
 		$("#playerConditionTriangle").css('border-top', '20px solid orange');
+	else
+		$("#playerConditionTriangle").css('border-top', '20px solid blue');
 
 	//set status conditions enemy
 	tempBuffArray = enemy.getStatusBuffArray();
@@ -1767,7 +1771,8 @@ function postAttackUpdates() {
 	};
 	if(tempBuffArray.length != 0)
 		$("#enemyConditionTriangle").css('border-top', '20px solid orange');
-	
+	else
+		$("#enemyConditionTriangle").css('border-top', '20px solid blue');
 
 	//set condition text for player based on health
 	switch (player.getHealthThreshold()) {
@@ -3271,6 +3276,11 @@ $(document).ready(function(){
 
 		//check against their stamina risk threshold, if at then enemy defends	
 		enemyDefend = enemy.considerRest();
+	
+		//check against recovery item use. if true item was used and enemy attack phase is done
+		enemyAttackMade = enemy.considerRecoveryItem();
+		if(enemyAttackMade)
+			enemyDamage = 0;
 	
 		if(enemyDefend) {
 			$("#enemyGameStatus").text("Defends");
