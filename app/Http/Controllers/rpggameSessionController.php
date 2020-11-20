@@ -6,14 +6,16 @@ use Illuminate\Http\Request;
 use App\Models\rpgGameUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-class rpgGameSessionController extends Controller
+use Illuminate\Support\Facades\Cookie;
 
+class rpgGameSessionController extends Controller
 {
     public function create()
     {
         return view('register');
     }
-
+	
+	//login, record playtime
     public function store(Request $request)
     {
 		//$user = rpgGameUser::find();
@@ -33,16 +35,27 @@ class rpgGameSessionController extends Controller
 		//check password, returns error if incorrect
 		if($check) {
 			Auth::guard('rpgUser')->login($user, true);
-			return redirect('/rpgGame'); 
+			$timeCookie = Cookie::make("gameTime", date("h:i:s"));
+			return redirect('/rpgGame')->withCookie($timeCookie); 
 		}
 		else {
 			return redirect('/login')->with('message', 'Wrong password!'); 
 		}
     }
-    
-    public function destroy()
+    //logout, record playtime
+    public function destroy(Request $request)
     {
+		$timeCookie = $request->cookie('gameTime');
+		$currentTime =  time();
+		$playTime = $currentTime - strtotime($timeCookie);
+		$username = auth::guard('rpgUser')->user()->name;
+		$user = RpgGameUser::where('name', $username)->first();
+		$userPlaytime = intval($playTime) + $user->playtime;
+		$user->playtime = $userPlaytime;
+		$user->save();
+		
         Auth::guard('rpgUser')->logout();
         return redirect()->to('/rpgGame/');
+        //return redirect('/login')->with('message', $playTime); 
     }
 }

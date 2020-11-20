@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\Route;
 	Route::get('/', function () {
 		return view('rpgGame');
 	})->name('home');
-
 	
 	//all but login and register requires logged in user
 	//add to score db uses ajax incompat with middleware as-is
@@ -76,7 +75,15 @@ use Illuminate\Support\Facades\Route;
 	Route::post('newPass', 'rpggameRegistrationController@newPass');
 	
 	
+	//user account management
+	Route::get('/rpgGame/userManagement', function () {
+		return view('rpgGameUserPanel');
+	})->name('rpgGameUserPanel');
 
+	//user cash shop
+	Route::get('/rpgGame/userCashStore', function () {
+		return view('rpgGameStore');
+	})->name('rpgGameStore');
 
 
 /*

@@ -46,8 +46,10 @@
 							
 							@if( auth()->check() )
 							<p>Welcome, {{ auth()->user()->name }}</p>
-							<a class="nav-link" href="/rpgGame/logout">logout</a>
-							
+							<a class="nav-link" href="/rpgGame/userManagement">Account</a>
+							<a class="nav-link" href="/rpgGame/userCashStore">Store</a>
+							<a class="nav-link" href="/rpgGame/logout">Logout</a>
+							<!--
 							<div id="avatarMenu" style="display:none">
 								<form method="post" action="{{ action('rpggameRegistrationController@addAvatar') }}" enctype="multipart/form-data">
 									Avatar
@@ -66,10 +68,10 @@
 								<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active w-100">Upload Avatar</button>
 								<button style="display:none" id="hideAvatarMenu" type="button" class="btn btn-primary active w-100">Close Avatar Menu</button>
 							@endif
-							
+							-->
 							@endif
 							
-							<div class="col">
+							<!--div class="col">
 								<form method="POST" id="payment-form" action="/rpgGame/pay">
 								{{ csrf_field() }}
 								<p>Fund With Paypal</p>
@@ -93,7 +95,7 @@
 								<button class="btn btn-primary active">Pay with PayPal</button></p>
 								</form>
 							</div>	
-							
+							-->
 						</div>
 					</div>
 				</div>

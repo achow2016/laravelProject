@@ -32,7 +32,7 @@ var implantObj = [
 var personalityObj = [
 	{ 
 		"type":"aggressive" , "attackPercent":"100", "defendPercent":"0", "skillPercent":"100", 
-		"recoveryItemPercent":"100", "staminaCautionThreshold":"3", "healthCautionThreshold":"50" 
+		"recoveryItemPercent":"25", "staminaCautionThreshold":"3", "healthCautionThreshold":"50" 
 	}, 
 ];	
 
@@ -40,9 +40,27 @@ var enemyObj = [
 	{ 
 		"name":"guard", "race":"human", "actorClass":"none", "health":"50", "attack":"10", "stamina":"100", 
 		"staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "money":"100",
-		"skills":["Arm Smash", "Advancing Swing II"], 
+		"skills":["Arm Smash", "Advancing Swing"], 
 		"itemLootInventory":[
 			{"name":"First Aid Injector", "quantity":"1"}
+		], 
+		"avatar":"/img/enemyFace.jpg" 
+	},
+	{ 
+		"name":"brute", "race":"human", "actorClass":"none", "health":"60", "attack":"11", "stamina":"100", 
+		"staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "money":"100",
+		"skills":["Heavy Attack"], 
+		"itemLootInventory":[
+			{"name":"First Aid Injector", "quantity":"2"}
+		], 
+		"avatar":"/img/enemyFace.jpg" 
+	},
+	{ 
+		"name":"duelist", "race":"human", "actorClass":"none", "health":"60", "attack":"10", "stamina":"100", 
+		"staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "money":"100",
+		"skills":["Retreating Cut", "Advancing Swing"], 
+		"itemLootInventory":[
+			{"name":"First Aid Injector", "quantity":"2"}
 		], 
 		"avatar":"/img/enemyFace.jpg" 
 	},
@@ -71,7 +89,7 @@ var storyObj = [
 		],
 		"enemyEquipmentTier" :"1",
 		"enemyCoords":[[4,8],[4,4]],
-		"chestCoords":[[2,3], [3,3]],
+		"chestCoords":[[2,3],[3,3]],
 		"chestLoot":[
 			{"name":"Small Treatment Kit"},
 			{"name":"First Aid Injector"},
@@ -3933,6 +3951,14 @@ $(document).ready(function(){
 		$("#avatarMenu").hide();
 		$("#hideAvatarMenu").hide();
 		$("#showAvatarMenu").show();
+	});
+	
+	$("#returnFromPanel").click(function() {
+		window.location.href='/rpgGame';
+	});
+	
+	$("#returnFromStore").click(function() {
+		window.location.href='/rpgGame';
 	});
 	
 });

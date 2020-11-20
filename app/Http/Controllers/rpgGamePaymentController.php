@@ -103,7 +103,7 @@ class RpgGamePaymentController extends Controller
 		// If query data not available... no payments was made.
 		if (empty($request->query('paymentId')) || empty($request->query('PayerID')) || empty($request->query('token')))
 			//return redirect('/checkout')->withError('Payment was not successful.');
-			return redirect('/rpgGame')->with('error', 'Payment was not successful.');
+			return redirect('/rpgGame/userCashStore')->with('error', 'Payment was not successful.');
 		// We retrieve the payment from the paymentId.
 		$payment = Payment::get($request->query('paymentId'), $this->api_context);
 		// We create a payment execution with the PayerId
@@ -115,14 +115,14 @@ class RpgGamePaymentController extends Controller
 		// $value = $request->session()->pull('key', 'default');
 		// Check if payment is approved
 		if ($result->getState() != 'approved')
-			return redirect('/rpgGame')->with('error', 'Payment was not successful.');
+			return redirect('/rpgGame/userCashStore')->with('error', 'Payment was not successful.');
 		else {
 			$username = auth::guard('rpgUser')->user()->name;
 			$user = RpgGameUser::where('name', $username)->first();
 			$newUserCredits = $request->session()->pull('creditAmount', '') + $user->credits;
 			$user->credits = $newUserCredits;
 			$user->save();
-			return redirect('/rpgGame')->with('success', 'Payment made successfully');
+			return redirect('/rpgGame/userCashStore')->with('success', 'Payment made successfully');
 		}
 	}
 }	
