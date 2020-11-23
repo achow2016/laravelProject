@@ -11,6 +11,8 @@ use Carbon\Carbon;
 use Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use DateTime;
+use DateInterval;
 
 class rpggameRegistrationController extends Controller
 {
@@ -174,5 +176,29 @@ class rpggameRegistrationController extends Controller
 		$myUser = RpgGameUser::where('name', $username)->first();
 		$request->session()->put('avatar', $myUser->avatar);
 		return view('rpgGame');	
+	}
+	
+	public function addMembership(Request $request) 
+	{
+		$username = auth::guard('rpgUser')->user()->name;
+		$myUser = RpgGameUser::where('name', $username)->first();
+		$userCredits = $myUser->credits;
+		if($myUser->credits < 10) {
+			return view('rpgGameStore', ['credits' => $userCredits, 'message' => 'Not enough credits.']);
+		}
+		else if ($myUser->membership == true){
+			return view('rpgGameStore', ['credits' => $userCredits, 'message' => 'Already have membership.']);
+		}	
+		else {
+			$myUser->credits -= 10;
+			$date = new DateTime("now");
+			$myUser->membershipBegin = $date;
+			$expiryDate = new DateTime("now");
+			$expiryDate->add(new DateInterval('P30D'));
+			$myUser->membershipEnd = $expiryDate;
+			$myUser->membership = true;
+			$myUser->save();
+			return view('rpgGameStore', ['credits' => $userCredits, 'message' => 'Membership added.']);
+		}
 	}
 }

@@ -17,6 +17,9 @@
     <body>
 		<div class="row">
 			<div class="col text-center">
+				<h1>Store</h1>
+				<p><?php echo $message; ?></p>
+				<p>Credits: <?php echo $credits; ?></p>
 				<form method="POST" id="payment-form" action="/rpgGame/pay">
 					{{ csrf_field() }}
 					<p>Fund With Paypal</p>
@@ -36,10 +39,20 @@
 					@endif	
 					
 					<label><b>Enter Amount</b></label>
-					<input name="amount" type="text"></p>      
-					<button class="btn btn-primary active">Pay with PayPal</button></p>
+					<br>
+					<input name="amount" type="text">    
+					<br>
+					<br>
+					<button class="btn btn-primary active">Pay with PayPal</button>
+					<br>
+					<br>
 				</form>
 			</div>
+		</div>
+		<div class="row">
+			<p class="col">Membership</p>
+			<p class="col">30 Days</p>
+			<button id="buyMembership10" class="col btn btn-primary active">10 C</button>
 		</div>
 		<div class="btn-group d-flex w-100 fixed-bottom" role="group">
 			<button id="returnFromStore" type="button" class="introButtons btn btn-primary active w-100">Home</button>

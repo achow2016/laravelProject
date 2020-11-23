@@ -78,13 +78,16 @@ use Illuminate\Support\Facades\Route;
 	//user account management
 	Route::get('/rpgGame/userManagement', function () {
 		return view('rpgGameUserPanel');
-	})->name('rpgGameUserPanel');
+	})->name('rpgGameUserPanel')->middleware('auth:rpgUser');
 
 	//user cash shop
+	/*
 	Route::get('/rpgGame/userCashStore', function () {
 		return view('rpgGameStore');
 	})->name('rpgGameStore');
-
+	*/
+	Route::get('/rpgGame/userCashStore', 'RpgGamePaymentController@getStorePage')->middleware('auth:rpgUser');
+	Route::get('/rpgGame/buyMembership', 'rpggameRegistrationController@addMembership')->middleware('auth:rpgUser');
 
 /*
 //main site routes

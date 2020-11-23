@@ -3961,4 +3961,8 @@ $(document).ready(function(){
 		window.location.href='/rpgGame';
 	});
 	
+	$("#buyMembership10").click(function() {
+		window.location.href='/rpgGame/buyMembership';
+	});
+	
 });

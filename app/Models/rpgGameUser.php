@@ -18,7 +18,7 @@ class RpgGameUser extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'avatar', 'credits', 'membership', 'membership-start', 'membership-end', 'playtime'
+        'name', 'email', 'password', 'avatar', 'credits', 'membership', 'membershipBegin', 'membershipEnd', 'playtime'
     ];
 
     /**

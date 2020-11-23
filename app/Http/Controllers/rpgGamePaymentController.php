@@ -125,4 +125,13 @@ class RpgGamePaymentController extends Controller
 			return redirect('/rpgGame/userCashStore')->with('success', 'Payment made successfully');
 		}
 	}
+	public function getStorePage(Request $request) {
+		$username = auth::guard('rpgUser')->user()->name;
+		$user = RpgGameUser::where('name', $username)->first();
+		$userCredits = $user->credits;
+		if($userCredits == null)
+			$userCredits = 0;
+		//return redirect('/rpgGame/userCashStore')->with('credits', $userCredits);
+		return view('rpgGameStore', ['credits' => $userCredits, 'message' => 'Welcome to the store.']);
+	}	
 }	

@@ -22,8 +22,8 @@ class CreateRpgusersTable extends Migration
 			$table->binary('avatar')->nullable();
 			$table->integer('credits')->nullable();
 			$table->boolean('membership')->nullable();
-			$table->date('membership_begin')->nullable();
-			$table->date('membership_end')->nullable();
+			$table->date('membershipBegin')->nullable();
+			$table->date('membershipEnd')->nullable();
 			$table->integer('playtime')->nullable();
             $table->rememberToken();
             $table->timestamps();
