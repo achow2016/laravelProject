@@ -18,8 +18,8 @@
 		<div class="row">
 			<div class="col text-center">
 				<h1>Store</h1>
-				<p><?php echo $message; ?></p>
-				<p>Credits: <?php echo $credits; ?></p>
+				<p><?php echo $message ?? ''; ?></p>
+				<p>Credits: <?php echo $credits ?? ''; ?></p>
 				<form method="POST" id="payment-form" action="/rpgGame/pay">
 					{{ csrf_field() }}
 					<p>Fund With Paypal</p>

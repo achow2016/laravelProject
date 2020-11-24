@@ -21,7 +21,7 @@
         <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1">
 
         <!-- Fonts -->
-        <link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet">
+        <!--link href="https://fonts.googleapis.com/css?family=Nunito:200,600" rel="stylesheet"-->
 		
 		<!--styles-->
 		
@@ -43,59 +43,14 @@
 						<div id="gameTitle">
 							<img class="mx-auto d-block" src="/img/gameTitleTempImage.jpg" width="150px" height="150px" alt="Game Title Art"/>
 							<h1>My Game</h1>
-							
+							<p>Membership: <?php echo $membership ?? ''; ?></p>
+							<p><?php echo $endDate ?? ''; ?></p>
 							@if( auth()->check() )
 							<p>Welcome, {{ auth()->user()->name }}</p>
 							<a class="nav-link" href="/rpgGame/userManagement">Account</a>
 							<a class="nav-link" href="/rpgGame/userCashStore">Store</a>
 							<a class="nav-link" href="/rpgGame/logout">Logout</a>
-							<!--
-							<div id="avatarMenu" style="display:none">
-								<form method="post" action="{{ action('rpggameRegistrationController@addAvatar') }}" enctype="multipart/form-data">
-									Avatar
-									<input type="file" name="avatar" id="avatar">
-									<input type="submit" value="Upload Image" name="submit">
-								</form>
-								<br>
-							</div>
-							
-							@if(session()->has('avatar'))
-								<img class="col mb-1" src="{{ session()->get( 'avatar' ) }}" alt="avatar">
-								<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active w-100">Upload Avatar</button>
-								<button style="display:none" id="hideAvatarMenu" type="button" class="btn btn-primary active w-100">Close Avatar Menu</button>
-							@else 
-								<p>No Avatar</p>
-								<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active w-100">Upload Avatar</button>
-								<button style="display:none" id="hideAvatarMenu" type="button" class="btn btn-primary active w-100">Close Avatar Menu</button>
 							@endif
-							-->
-							@endif
-							
-							<!--div class="col">
-								<form method="POST" id="payment-form" action="/rpgGame/pay">
-								{{ csrf_field() }}
-								<p>Fund With Paypal</p>
-								@if (\Session::has('success'))
-								<div class="alert alert-success">
-									<ul>
-										<li>{!! \Session::get('success') !!}</li>
-									</ul>
-								</div>
-								@endif	
-								@if (\Session::has('error'))
-								<div class="alert alert-danger">
-									<ul>
-										<li>{!! \Session::get('error') !!}</li>
-									</ul>
-								</div>
-								@endif	
-								
-								<label><b>Enter Amount</b></label>
-								<input name="amount" type="text"></p>      
-								<button class="btn btn-primary active">Pay with PayPal</button></p>
-								</form>
-							</div>	
-							-->
 						</div>
 					</div>
 				</div>

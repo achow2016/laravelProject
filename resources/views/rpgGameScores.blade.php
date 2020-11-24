@@ -19,6 +19,9 @@
 			@isset($errorMessage)
 			<p>{{$errorMessage}}</p>
 			@endisset
+			@isset($message)
+			<p>{{$message}}</p>
+			@endisset
 			
 			@isset($scores)
 			<table class="table">

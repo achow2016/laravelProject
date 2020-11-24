@@ -7,6 +7,7 @@ use App\Models\rpgGameUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cookie;
+use DateTime;
 
 class rpgGameSessionController extends Controller
 {
@@ -21,7 +22,7 @@ class rpgGameSessionController extends Controller
 		//$user = rpgGameUser::find();
 		$email = $request->input('email');
 		$password = $request->input('password');
-		$user = RpgGameUser::where('email', $email)->first();
+		$user = RpgGameUser::where('email', $email)->first();	
 
 		//if user not found, will setup return to login
 		if($user)
@@ -36,6 +37,16 @@ class rpgGameSessionController extends Controller
 		if($check) {
 			Auth::guard('rpgUser')->login($user, true);
 			$timeCookie = Cookie::make("gameTime", date("h:i:s"));
+
+			//check if premium expires today, removes if true
+			$date = new DateTime("now");
+			if(!$user->membershipEnd >= $date) {
+				$user->membershipBegin = null;
+				$user->membershipEnd  = null;
+				$user->membership = false;
+				$user->save();
+			}
+			
 			return redirect('/rpgGame')->withCookie($timeCookie); 
 		}
 		else {

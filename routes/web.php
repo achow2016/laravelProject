@@ -58,6 +58,7 @@ use Illuminate\Support\Facades\Route;
 		return view('rpgGameLogin');
 	})->name('login');
 
+	//password reset routes
 	Route::get('rpgGameResetMail', function () {
 		return view('rpgGameResetMail');
 	})->name('rpgGameResetMail');
@@ -74,18 +75,19 @@ use Illuminate\Support\Facades\Route;
 	Route::post('resetPasswordToken', 'rpggameRegistrationController@resetPass');
 	Route::post('newPass', 'rpggameRegistrationController@newPass');
 	
-	
 	//user account management
+	/*
 	Route::get('/rpgGame/userManagement', function () {
 		return view('rpgGameUserPanel');
 	})->name('rpgGameUserPanel')->middleware('auth:rpgUser');
+	*/
+	Route::get('rpgGame/userManagement', 'rpggameRegistrationController@userManagement');
+	Route::post('rpgGame/addAvatar', 'rpggameRegistrationController@addAvatar');
+	Route::post('rpgGame/updateName', 'rpggameRegistrationController@updateName');
+	Route::post('rpgGame/updateEmail', 'rpggameRegistrationController@updateEmail');
+	Route::post('rpgGame/updatePassword', 'rpggameRegistrationController@updatePassword');
 
 	//user cash shop
-	/*
-	Route::get('/rpgGame/userCashStore', function () {
-		return view('rpgGameStore');
-	})->name('rpgGameStore');
-	*/
 	Route::get('/rpgGame/userCashStore', 'RpgGamePaymentController@getStorePage')->middleware('auth:rpgUser');
 	Route::get('/rpgGame/buyMembership', 'rpggameRegistrationController@addMembership')->middleware('auth:rpgUser');
 

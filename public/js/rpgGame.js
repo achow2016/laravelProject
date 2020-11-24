@@ -38,7 +38,7 @@ var personalityObj = [
 
 var enemyObj = [
 	{ 
-		"name":"guard", "race":"human", "actorClass":"none", "health":"50", "attack":"10", "stamina":"100", 
+		"name":"guard", "race":"human", "actorClass":"none", "health":"30", "attack":"10", "stamina":"100", 
 		"staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "money":"100",
 		"skills":["Arm Smash", "Advancing Swing"], 
 		"itemLootInventory":[
@@ -47,7 +47,7 @@ var enemyObj = [
 		"avatar":"/img/enemyFace.jpg" 
 	},
 	{ 
-		"name":"brute", "race":"human", "actorClass":"none", "health":"60", "attack":"11", "stamina":"100", 
+		"name":"brute", "race":"human", "actorClass":"none", "health":"40", "attack":"11", "stamina":"100", 
 		"staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "money":"100",
 		"skills":["Heavy Attack"], 
 		"itemLootInventory":[
@@ -56,7 +56,7 @@ var enemyObj = [
 		"avatar":"/img/enemyFace.jpg" 
 	},
 	{ 
-		"name":"duelist", "race":"human", "actorClass":"none", "health":"60", "attack":"10", "stamina":"100", 
+		"name":"duelist", "race":"human", "actorClass":"none", "health":"50", "attack":"10", "stamina":"100", 
 		"staminaRegen":"10", "healthRegen":"0", "baseAttackCost":"10", "agility":"10", "money":"100",
 		"skills":["Retreating Cut", "Advancing Swing"], 
 		"itemLootInventory":[
@@ -627,7 +627,6 @@ class Actor {
 		} 
 		else {
 			for(let i = 0; i < this.itemInventory.length; i++) {
-				console.log(this.itemInventory[i].effect);
 				if(this.itemInventory[i].effect === "Regen") {
 					this.useItem(this.itemInventory[i].name, "self");
 				}
@@ -1911,7 +1910,10 @@ function postAttackUpdates() {
 		player.setScore(player.getScore() + goldLoot);
 
 		$("#playerGameStatus").text("You win!");
-		$("#playerStatus").text("Gained: " + loot + ", $" + goldLoot);
+		if(loot === "")
+			$("#playerStatus").text("Gained: " + goldLoot);
+		else
+			$("#playerStatus").text("Gained: " + loot + ", $" + goldLoot);
 
 		enemyCount--; 
 		enemies[currentEnemy] = enemy; //assign updated value to enemy array

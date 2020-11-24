@@ -69,7 +69,6 @@ class ScoreViewController extends Controller {
 	
 	public function addFriend(Request $request) 
 	{
-		
 		//first check if duplicates
 		//$username = auth()->user()->name;
 		$username = auth::guard('rpgUser')->user()->name;
@@ -88,10 +87,10 @@ class ScoreViewController extends Controller {
 			$user = $user->friends()->save($friend);
 
 			$scores = RpgGameScore::all();
-			return view('rpgGameScores', ['scores' => $scores]);
+			return view('rpgGameScores', ['scores' => $scores, 'message' => 'Added ' . $request->input('name') . ' to friend list!']);
 		}
 		else {
-			$errorMessage = "Duplicate friend, not added!";
+			$errorMessage = $request->input('name') . ' is already a friend!';
 			$scores = RpgGameScore::all();
 			return view('rpgGameScores', ['scores' => $scores, 'errorMessage' => $errorMessage]);
 		}	
