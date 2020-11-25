@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\Route;
 	Route::get('rpgGame/scores/detail', 'ScoreViewController@detail')->name('detail')->middleware('auth:rpgUser');
 	Route::get('rpgGame/scores/addFriend', 'ScoreViewController@addFriend')->name('friend')->middleware('auth:rpgUser');
 	Route::post('rpgGame/add', 'ScoreViewController@add');//)->middleware('auth:rpgUser');
+	//Route::post('rpgGame/add', 'ScoreViewController@add')->middleware('auth:rpgUser');
 	Route::post('rpgGame/addAvatar', 'rpggameRegistrationController@addAvatar');//)->middleware('auth:rpgUser');
 	
 	//user account auth
@@ -86,6 +87,9 @@ use Illuminate\Support\Facades\Route;
 	Route::post('rpgGame/updateName', 'rpggameRegistrationController@updateName');
 	Route::post('rpgGame/updateEmail', 'rpggameRegistrationController@updateEmail');
 	Route::post('rpgGame/updatePassword', 'rpggameRegistrationController@updatePassword');
+
+	//game backup
+	Route::post('rpgGame/backup', 'rpggameSessionController@backup');
 
 	//user cash shop
 	Route::get('/rpgGame/userCashStore', 'RpgGamePaymentController@getStorePage')->middleware('auth:rpgUser');

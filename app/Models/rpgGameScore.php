@@ -14,7 +14,12 @@ class RpgGameScore extends Model
      * @var array
      */
     protected $fillable = [
-		'name', 'kills', 'damageDone', 'damageReceived', 'chaptersCleared', 'totalEarnings', 'scoreTotal'
+		'name', 'kills', 'damageDone', 'damageReceived', 'chaptersCleared', 'totalEarnings', 'scoreTotal', 'rpg_game_user_id'
     ];
+	
+	 public function user()
+    {
+        return $this->belongsTo('App\Models\rpgGameUser', 'rpg_game_user_id');
+    }
 }
 ?>

@@ -11,8 +11,14 @@ class CreateRpgusersTable extends Migration
      *
      * @return void
      */
+	 
+	protected $casts = [
+        'saveGame' => 'array'
+    ];
+	
     public function up()
     {
+		Schema::dropIfExists('rpgGameUsers');
         Schema::create('rpgGameUsers', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
@@ -25,6 +31,7 @@ class CreateRpgusersTable extends Migration
 			$table->date('membershipBegin')->nullable();
 			$table->date('membershipEnd')->nullable();
 			$table->integer('playtime')->nullable();
+			$table->json('saveGame')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });

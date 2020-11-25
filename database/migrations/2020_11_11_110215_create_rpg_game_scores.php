@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class RpgGameScores extends Migration
+class CreateRpgGameScores extends Migration
 {
     /**
      * Run the migrations.
@@ -13,6 +13,7 @@ class RpgGameScores extends Migration
      */
     public function up()
     {
+		Schema::dropIfExists('rpgGameScore');
         Schema::create('rpgGameScore', function (Blueprint $table) {
             $table->increments('id');
 			$table->string('name');
@@ -22,8 +23,9 @@ class RpgGameScores extends Migration
 			$table->integer('chaptersCleared');
 			$table->integer('earningsTotal');
 			$table->integer('scoreTotal');
-			
+			$table->integer('rpg_game_user_id')->unsigned();
             $table->timestamps();
+			$table->foreign('rpg_game_user_id')->references('id')->on('rpgGameUsers')->onDelete('cascade'); 
         });
     }
 

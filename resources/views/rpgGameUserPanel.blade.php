@@ -64,6 +64,9 @@
 					@isset($currentName)
 					{{$currentName}}
 					@endisset
+					@empty($currentName)
+					No name set
+					@endempty
 					<br>
 					<input type="text" name="name" id="name" placeholder="new name" required>
 					<br><br>
@@ -80,6 +83,9 @@
 					@isset($currentEmail)
 					{{$currentEmail}}
 					@endisset
+					@empty($currentEmail)
+					No email set
+					@endempty
 					<br>
 					<input type="text" name="email" id="email" placeholder="new email" required>
 					<br><br>

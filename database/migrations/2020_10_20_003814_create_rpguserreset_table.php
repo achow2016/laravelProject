@@ -13,8 +13,9 @@ class CreateRpguserresetTable extends Migration
      */
     public function up()
     {
+		Schema::dropIfExists('rpguserreset');
         Schema::create('rpguserreset', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
 			$table->string('email');
 			$table->string('token');
             $table->timestamps();

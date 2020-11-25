@@ -13,8 +13,9 @@ class CreateFriendTable extends Migration
      */
     public function up()
     {
+		Schema::dropIfExists('friends');
         Schema::create('friends', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->increments('id');
 			$table->integer('rpg_game_user_id')->unsigned();
 			$table->string('name');
 			$table->integer('score');

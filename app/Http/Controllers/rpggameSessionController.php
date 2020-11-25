@@ -69,4 +69,13 @@ class rpgGameSessionController extends Controller
         return redirect()->to('/rpgGame/');
         //return redirect('/login')->with('message', $playTime); 
     }
+	
+	public function backup(Request $request) 
+	{
+		$name = $request->input('name');
+		$saveGame = $request->input('archive');
+		$profile = RpgGameUser::where('name', $name)->first();
+		$profile->saveGame = $saveGame;
+		$profile->save();
+	}
 }

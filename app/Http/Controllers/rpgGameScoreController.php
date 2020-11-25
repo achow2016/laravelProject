@@ -63,6 +63,10 @@ class ScoreViewController extends Controller {
 		$rpgGameScore->setAttribute('earningsTotal', $earningsTotal);
 		$rpgGameScore->setAttribute('scoreTotal', $scoreTotal);
 
+		$username = $request->input('name');
+		$user = RpgGameUser::where('name', $username)->first();
+		$rpgGameScore->setAttribute('rpg_game_user_id', $user->id);
+		
 		$rpgGameScore->save();	
 		return view('rpgGame');
 	}

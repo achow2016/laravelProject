@@ -18,7 +18,8 @@ class RpgGameUser extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'avatar', 'credits', 'membership', 'membershipBegin', 'membershipEnd', 'playtime'
+        'name', 'email', 'password', 'avatar', 'credits', 'membership', 'membershipBegin', 
+			'membershipEnd', 'playtime', 'saveGame'
     ];
 
     /**
@@ -50,5 +51,10 @@ class RpgGameUser extends Authenticatable
 	public function friends()
 	{
 		return $this->hasMany('App\Models\rpgGameFriend', 'rpg_game_user_id', 'id');
+	}
+	
+	public function score()
+	{
+		return $this->hasOne('App\Models\rpgGameScore', 'rpg_game_user_id', 'id');
 	}
 }

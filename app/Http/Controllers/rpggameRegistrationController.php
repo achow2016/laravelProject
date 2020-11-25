@@ -234,14 +234,26 @@ class rpggameRegistrationController extends Controller
 		$myUser = RpgGameUser::where('name', $authName)->first();
 		$userName = $request->name;
 		$userNameConf = $request->nameConf;
-		$email = $myUser->email; //pop field
+		//pop field
+		$email = $myUser->email;
+		
 		if($userName === $userNameConf) {
 			$myUser->name = $userName;
 			$myUser->save();
-			return view('rpgGameUserPanel', ['message' => 'Changed name from ' . $authName . ' to ' . $userName, 'currentName' => $name, 'currentEmail' => $email]);
+			//update friend db for new name
+			$friends = $myUser->friends;
+			foreach ($friends as $friend) {
+				$friend->name = $userName;
+				$friend->save();
+			}
+			//update score db for new name
+			$score = $myUser->score;
+			$score->name = $userName;
+			$score->save();
+			return view('rpgGameUserPanel', ['message' => 'Changed name from ' . $authName . ' to ' . $userName, 'currentName' => $userName, 'currentEmail' => $email]);
 		}
 		else
-			return view('rpgGameUserPanel', ['errorMessage' => 'Fields don\'t match.', 'currentName' => $authName, 'currentEmail' => $email]);
+			return view('rpgGameUserPanel', ['errorMessage' => 'Names don\'t match.', 'currentName' => $authName, 'currentEmail' => $email]);
 	}
 	
 	public function updateEmail(Request $request) 
@@ -251,18 +263,34 @@ class rpggameRegistrationController extends Controller
 		$origEmail = $myUser->email;
 		$email = $request->email;
 		$emailConf = $request->emailConf;
-		$name = $myUser->name; //pop field
+		//pop field
+		$name = $myUser->name;
 		if($email === $emailConf) {
 			$myUser->email = $email;
 			$myUser->save();
 			return view('rpgGameUserPanel', ['message' => 'Changed email from ' . $origEmail . ' to ' . $email, 'currentName' => $name, 'currentEmail' => $email]);
 		}
 		else
-			return view('rpgGameUserPanel', ['errorMessage' => 'Fields don\'t match.', 'currentName' => $name, 'currentEmail' => $email]);
+			return view('rpgGameUserPanel', ['errorMessage' => 'Emails don\'t match.', 'currentName' => $name, 'currentEmail' => $email]);
 	}
 	
 	public function updatePassword(Request $request) 
 	{
-	
+		$authName = auth::guard('rpgUser')->user()->name;
+		$myUser = RpgGameUser::where('name', $authName)->first();
+		$password = $request->password;
+		$passwordConf = $request->passwordConf;
+		$origPass = $myUser->password;
+		//pop fields
+		$name = $myUser->name;
+		$email = $myUser->email;
+		if($password === $passwordConf) {
+			$myUser->password = $password;
+			$myUser->save();
+			return view('rpgGameUserPanel', ['message' => 'Password updated.', 'currentName' => $name, 'currentEmail' => $email]);
+		}
+		else
+			return view('rpgGameUserPanel', ['errorMessage' => 'Passwords don\'t match.', 'currentName' => $name, 'currentEmail' => $email]);		
+		
 	}
 }
