@@ -3986,4 +3986,28 @@ $(document).ready(function(){
 		window.location.href='/rpgGame/buyMembership';
 	});
 	
+	$("#restoreButton").click(function() {
+		playerData = JSON.parse(window.localStorage.getItem('player'));
+		var name = playerData.name; 
+		
+		$.ajaxSetup({
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			}
+		});
+		
+		$.ajax({
+			type: 'GET',
+			url: 'http://localhost:8082/rpgGame/getBackup',
+			dataType: 'json',
+			data: { name: name },
+			success: function(data) {
+				console.log(data);
+			},
+			error: function(data) {
+				console.log(data);	
+			}	
+		});		
+	});
+	
 });

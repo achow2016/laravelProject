@@ -50,6 +50,7 @@
 							<a class="nav-link" href="/rpgGame/userManagement">Account</a>
 							<a class="nav-link" href="/rpgGame/userCashStore">Store</a>
 							<a class="nav-link" href="/rpgGame/logout">Logout</a>
+							<button id="restoreButton" type="button" class="introButtons btn btn-primary active w-100">Load Backup Data</button>
 							@endif
 						</div>
 					</div>

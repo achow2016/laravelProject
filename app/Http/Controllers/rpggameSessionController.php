@@ -70,6 +70,7 @@ class rpgGameSessionController extends Controller
         //return redirect('/login')->with('message', $playTime); 
     }
 	
+	//saves localstorage into db (json field)
 	public function backup(Request $request) 
 	{
 		$name = $request->input('name');
@@ -77,5 +78,15 @@ class rpgGameSessionController extends Controller
 		$profile = RpgGameUser::where('name', $name)->first();
 		$profile->saveGame = $saveGame;
 		$profile->save();
+	}
+	
+	//restores localstorage from db (json field)
+	public function getBackup(Request $request) 
+	{
+		$name = $request->input('name');
+		$user = RpgGameUser::where('name', $name)->first();
+		$saveGame = $user->saveGame;
+		echo json_encode($saveGame);
+		exit;
 	}
 }
