@@ -3570,6 +3570,7 @@ $(document).ready(function(){
 		window.localStorage.setItem('currentEnemy', currentEnemy);
 		
 		$(".saveGame").text("Saved").prop('disabled', true);
+		$("#restoreButton").prop('disabled', false);
 	});	
 	
 	//save and quit
@@ -3987,27 +3988,61 @@ $(document).ready(function(){
 	});
 	
 	$("#restoreButton").click(function() {
-		playerData = JSON.parse(window.localStorage.getItem('player'));
-		var name = playerData.name; 
+		//playerData = JSON.parse(window.localStorage.getItem('player'));
+		//var name = playerData.name; 
+		//var name = $("#authName").text();
 		
-		$.ajaxSetup({
-			headers: {
-				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-			}
-		});
+		if($("#restoreEmail").val() == "" || $("#restorePass").val() == "") {
+			$("#backupAuthForm").show();
+			$("#restoreButton").text("Restore");
+		}	
 		
-		$.ajax({
-			type: 'GET',
-			url: 'http://localhost:8082/rpgGame/getBackup',
-			dataType: 'json',
-			data: { name: name },
-			success: function(data) {
-				console.log(data);
-			},
-			error: function(data) {
-				console.log(data);	
-			}	
-		});		
+		else {	
+			console.log("hi");
+			var email = $("#restoreEmail").val();
+			var password = $("#restorePass").val();
+			
+			$.ajaxSetup({
+				headers: {
+					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+				}
+			});
+			
+			var response = $.ajax({
+				type: 'GET',
+				url: 'http://localhost:8082/rpgGame/getBackup',
+				dataType: 'json',
+				data: {
+					name:name, 
+					email:email, 
+					password:password 
+				},	
+				success: function(data) {
+					//console.log(JSON.parse(data));	
+					//console.log(JSON.parse(data)[0]);
+					//parses data from "x=x" into key value object accessable with ex obj.enemies
+					
+					var jsonData = (JSON.parse(data));
+					var obj = {};
+					for (var i = 0; i < jsonData.length; i++) {
+						var split = jsonData[i].split('=');
+						obj[split[0].trim()] = split[1].trim();
+					}
+					console.log(obj) //prints key value pairs (obj.enemies) but arrays are still in json
+					console.log(JSON.parse(obj.enemies)[0]); //gets enemy one, proper format
+				},
+				error: function(data) {
+					console.log(data);	
+				},	
+				complete: function(r){
+				   //alert(r.responseText);
+					if((r.responseText).charAt(0) == '"')
+						$("#restoreButton").text("Complete (Retry)");
+					else
+					$("#restoreButton").text(r.responseText);
+				}
+			});	
+		}
 	});
 	
 });

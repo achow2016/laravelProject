@@ -43,14 +43,22 @@
 						<div id="gameTitle">
 							<img class="mx-auto d-block" src="/img/gameTitleTempImage.jpg" width="150px" height="150px" alt="Game Title Art"/>
 							<h1>My Game</h1>
+							<!--Flashed message from AJAX middleware if direct url access-->
+							{{session('message')}}
 							<p>Membership: <?php echo $membership ?? ''; ?></p>
 							<p><?php echo $endDate ?? ''; ?></p>
 							@if( auth()->check() )
-							<p>Welcome, {{ auth()->user()->name }}</p>
+							<p>Welcome, <span id="authName">{{ auth()->user()->name }}</span></p>
 							<a class="nav-link" href="/rpgGame/userManagement">Account</a>
 							<a class="nav-link" href="/rpgGame/userCashStore">Store</a>
 							<a class="nav-link" href="/rpgGame/logout">Logout</a>
-							<button id="restoreButton" type="button" class="introButtons btn btn-primary active w-100">Load Backup Data</button>
+							<?php echo $data ?? ''; ?></p> <!--backup load button only available if save data available-->
+							<!--button disabled id="restoreButton" type="button" class="introButtons btn btn-primary active w-100">Load Backup Data</button-->
+							<div id="backupAuthForm" style="display:none">
+								<input type="text" name="restoreEmail" id="restoreEmail" placeholder="confirm email">
+								<br>
+								<input type="text" name="restorePass" id="restorePass" placeholder="confirm password">
+							</div>
 							@endif
 						</div>
 					</div>

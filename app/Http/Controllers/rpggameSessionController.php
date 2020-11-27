@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Cookie;
 use DateTime;
 
 class rpgGameSessionController extends Controller
-{
+{	
     public function create()
     {
         return view('register');
@@ -83,9 +83,20 @@ class rpgGameSessionController extends Controller
 	//restores localstorage from db (json field)
 	public function getBackup(Request $request) 
 	{
-		$name = $request->input('name');
-		$user = RpgGameUser::where('name', $name)->first();
-		$saveGame = $user->saveGame;
+		header("Access-Control-Allow-Origin: *");
+		$user = RpgGameUser::where('email', $request->email)->first();	
+		if($user)
+			$check = Hash::check($request->password, $user->password);
+		else {
+			echo 'User does not exist! (Retry)';
+			exit;
+		}
+		if($check) 
+			$saveGame = $user->saveGame;
+		else {
+			echo 'Wrong password! (Retry)';
+			exit;
+		}
 		echo json_encode($saveGame);
 		exit;
 	}

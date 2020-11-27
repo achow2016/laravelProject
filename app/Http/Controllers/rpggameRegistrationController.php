@@ -186,12 +186,20 @@ class rpggameRegistrationController extends Controller
 				$myUser->membership = false;
 				$myUser->save();
 			}
-			
-			return view('rpgGame', ['membership' => 'Premium', 'endDate' => 'till: ' . $myUser->membershipEnd]);
+			if($myUser->saveGame != null)
+				return view('rpgGame', 
+					['data' => '<button id="restoreButton" type="button" class="introButtons btn btn-primary active w-100">Load Backup Data</button>', 
+					'membership' => 'Premium', 'endDate' => 'till: ' . $myUser->membershipEnd]);
+			else	
+				return view('rpgGame', ['membership' => 'Premium', 'endDate' => 'till: ' . $myUser->membershipEnd]);
 		}
 		else
-			//return view('rpgGame');	
-			return view('rpgGame', ['membership' => 'Normal', 'endDate' => '']);
+			if($myUser->saveGame != null)
+				return view('rpgGame', 
+					['data' => '<button id="restoreButton" type="button" class="introButtons btn btn-primary active w-100">Load Backup Data</button>', 
+					'membership' => 'Normal', 'endDate' => '']);
+			else
+				return view('rpgGame', ['membership' => 'Normal', 'endDate' => '']);
 	}
 	
 	public function addMembership(Request $request) 

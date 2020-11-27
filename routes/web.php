@@ -90,7 +90,12 @@ use Illuminate\Support\Facades\Route;
 
 	//game backup
 	Route::post('rpgGame/backup', 'rpggameSessionController@backup');
-	Route::get('rpgGame/getBackup', 'rpggameSessionController@getBackup');
+	
+	Route::get('rpgGame/getBackup', 'rpggameSessionController@getBackup')->middleware('ajax');
+	//Route::get('rpgGame/getBackup', 'rpggameSessionController@getBackup')->middleware('auth:rpgUser');
+
+	
+	
 
 	//user cash shop
 	Route::get('/rpgGame/userCashStore', 'RpgGamePaymentController@getStorePage')->middleware('auth:rpgUser');
