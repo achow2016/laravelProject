@@ -48,7 +48,7 @@
 							<p>Membership: <?php echo $membership ?? ''; ?></p>
 							<p><?php echo $endDate ?? ''; ?></p>
 							@if( auth()->check() )
-							<p>Welcome, <span id="authName">{{ auth()->user()->name }}</span></p>
+							<p id="authName">User: {{ auth()->user()->name }}</p>
 							<a class="nav-link" href="/rpgGame/userManagement">Account</a>
 							<a class="nav-link" href="/rpgGame/userCashStore">Store</a>
 							<a class="nav-link" href="/rpgGame/logout">Logout</a>
@@ -214,12 +214,22 @@
 				
 				<div class="row storyMenu">
 					<div class="col">
-						<div id="ctrlButtonContainer">
+						<!--div id="ctrlButtonContainer">
 							<button id="storyProgress" type="button" class="btn btn-primary active">Next</button>
 							<button style="display:none" id="storyEnd" type="button" class="btn btn-primary active"></button>
 							<button type="button" class="saveGame btn btn-primary active">QSave</button>
 							<button type="button" class="saveQuit btn btn-primary active">Save and Quit</button>
+						</div-->
+						
+						<div id="ctrlButtonContainer" class="btn-group d-flex w-100 fixed-bottom" role="group">
+							<button id="storyProgress" type="button" class="btn btn-primary active w-100">Next</button>
+							<button style="display:none" id="storyEnd" type="button" class="btn btn-primary active w-100"></button>
+							<button type="button" class="saveGame btn btn-primary active w-100">QSave</button>
+							<button type="button" class="saveQuit btn btn-primary active w-100">Save and Quit</button>
 						</div>
+					</div>	
+					
+					
 					</div>	
 				</div>						
 			</div>

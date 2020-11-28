@@ -2783,6 +2783,7 @@ function progressStory() {
 		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "fight") {
 			$("#storyEnd").text("Fight!").show();
 			$("#storyEnd").click(function() {
+				$(".saveGame").text("QSave").prop('disabled', false);
 				$("#storyMain").hide();
 				startBattle();
 			});	
@@ -2793,6 +2794,7 @@ function progressStory() {
 		if(Object.keys(storyObj[currentChapter].nextState[currentState]) == "end") {
 			$("#storyEnd").text("Next chapter!").show();
 			$("#storyEnd").click(function() {
+				$(".saveGame").text("QSave").prop('disabled', false);
 				currentChapter++;
 				player.addChapterCleared();
 				currentPage = 0;
@@ -2829,6 +2831,7 @@ function progressStory() {
 					player.setMapPosition(newPosition);
 					$("#storyEnd").text("To Map").show();
 					$("#storyEnd").click(function() {
+						$(".saveGame").text("QSave").prop('disabled', false);
 						$("#storyMain").hide();
 						populateMap();
 						updateMap("player", null);
@@ -3987,18 +3990,157 @@ $(document).ready(function(){
 		window.location.href='/rpgGame/buyMembership';
 	});
 	
-	$("#restoreButton").click(function() {
-		//playerData = JSON.parse(window.localStorage.getItem('player'));
-		//var name = playerData.name; 
-		//var name = $("#authName").text();
+	function restoreFromJson(data) {
+		//console.log(JSON.parse(obj.enemies)[0]); //gets enemy one, proper format
+		//console.log(data);
+		//player init
+		playerData = JSON.parse(data.player);
 		
+		//console.log(playerData);
+		
+		player = new Actor(playerData.name, playerData.race, playerData.actorClass, playerData.health, 
+			playerData.attack, playerData.stamina, playerData.staminaRegen, playerData.baseAttackCost,
+			playerData.agility, playerData.avatar);			
+		
+		player.equipWeapon(
+			playerData.weaponName, 
+			playerData.weaponDamage,
+			playerData.weaponCost
+		);
+
+		player.equipArmour(
+			playerData.armourName, 
+			playerData.armourValue,
+			playerData.armourCost
+		);	
+
+		player.setCurrentHealth(playerData.currentHealth);
+		player.setCurrentStamina(playerData.currentStamina);
+		player.setMeleeSkills(playerData.meleeSkillArray);
+
+		for(var i = 0; i < (playerData.itemInventory).length; i++) {
+			let tempItem = new Item((playerData.itemInventory)[i].name, (playerData.itemInventory)[i].effect, 
+				(playerData.itemInventory)[i].stackLimit, (playerData.itemInventory)[i].effectPercent, 
+				(playerData.itemInventory)[i].cost, (playerData.itemInventory)[i].duration,
+				(playerData.itemInventory)[i].quantity);
+			player.addToItemInventory(tempItem, 0);
+		}
+
+		for(var i = 0; i < (playerData.equipmentArray).length; i++) {
+			player.addEquipment({name: (playerData.equipmentArray)[i].name, 
+				value: (playerData.equipmentArray)[i].value,
+				cost: (playerData.equipmentArray)[i].cost	
+			});
+		}
+
+		player.setMapPosition(playerData.mapPosition);	
+		
+		player.setScore(playerData.score);
+		player.setKills(playerData.kills);	
+		player.setDamageDone(playerData.damageDone);	
+		player.setDamageReceived(playerData.damageReceived);	
+		player.setChaptersCleared(playerData.chaptersCleared);
+		player.setEarningsTotal(playerData.earningsTotal);
+		player.setMoney(playerData.money);
+		
+		//console.log(player);
+
+		currentState = JSON.parse(data.state);
+		currentChapter = parseInt(JSON.parse(data.chapter));
+		currentPage = JSON.parse(data.page);
+		JSON.parse(data.mapLoaded);
+		
+		//chests init, if any
+		chests.length = 0;
+		var chestData = playerData = JSON.parse(data.chests);
+		if((chestData.length) > 0) {
+			let chestCount = (storyObj[currentChapter].chestCoords).length;
+			for(var i = 0; i < chestCount; i++) {
+				chest = new Chest(chestData[i].money, chestData[i].inventory);
+				chests.push(chest);
+			}
+		}	
+		
+		//console.log(chests);
+		
+		//enemies init, if any
+		enemies.length = 0;
+		enemyData = JSON.parse(data.enemies);
+
+		if((enemyData.length) > 0) {
+
+			//currentChapter = window.localStorage.getItem('chapter');
+			let enemyCount = parseInt(storyObj[currentChapter].enemyCount);
+			for(var i = 0; i < enemyCount; i++) {
+				enemy = new Actor(enemyData[i].name, enemyData[i].race, enemyData[i].actorClass, enemyData[i].health, 
+					enemyData[i].attack, enemyData[i].stamina, enemyData[i].staminaRegen, enemyData[i].baseAttackCost,
+					enemyData[i].agility, enemyData[i].avatar);			
+				
+				enemy.equipWeapon(
+					enemyData[i].weaponName, 
+					enemyData[i].weaponDamage,
+					enemyData[i].weaponCost
+				);
+
+				enemy.equipArmour(
+					enemyData[i].armourName, 
+					enemyData[i].armourValue,
+					enemyData[i].armourCost
+				);
+
+				enemy.setCurrentHealth(enemyData[i].currentHealth);
+				enemy.setCurrentStamina(enemyData[i].currentStamina);	
+				enemy.setMeleeSkills(enemyData[i].meleeSkillArray);
+				enemy.setItemInventory(enemyData[i].itemInventory);
+				enemy.setMapPosition(enemyData[i].mapPosition);		
+				enemy.setPersonality(enemyData[i].personality);			
+				enemy.setMoney(enemyData[i].money);	
+				enemies.push(enemy);
+			}
+			
+			//current enemy
+			currentEnemy = JSON.parse(data.currentEnemy);
+			enemy = enemies[currentEnemy];
+		}
+		
+		//console.log(enemies);
+		//console.log(currentEnemy);
+		
+		
+		//shop
+		shopData = JSON.parse(data.shopkeeper);;
+		shopkeeper = new Shopkeeper(shopData.money, shopData.inventory);
+		
+		refreshItems();
+		refreshSkills();
+		refreshEquipment();
+		refreshShopMoney();
+		
+		window.localStorage.setItem('player', JSON.stringify(player));
+		window.localStorage.setItem('enemy', JSON.stringify(enemy));
+		window.localStorage.setItem('shopkeeper', JSON.stringify(shopkeeper));
+		window.localStorage.setItem('enemies', JSON.stringify(enemies));
+		window.localStorage.setItem('chests', JSON.stringify(chests));
+		window.localStorage.setItem('state', currentState);
+		window.localStorage.setItem('chapter', currentChapter);
+		window.localStorage.setItem('page', currentPage);
+		window.localStorage.setItem('mapLoaded', mapLoaded);
+		window.localStorage.setItem('currentEnemy', currentEnemy);
+		
+		//ui restore
+		uiReset();
+		$("#gameIntroMenu").hide();
+		startStory();	
+	}	
+	
+	//restores player data from save data in db row server side
+	$("#restoreButton").click(function() {
 		if($("#restoreEmail").val() == "" || $("#restorePass").val() == "") {
 			$("#backupAuthForm").show();
 			$("#restoreButton").text("Restore");
 		}	
 		
-		else {	
-			console.log("hi");
+		else {
 			var email = $("#restoreEmail").val();
 			var password = $("#restorePass").val();
 			
@@ -4028,21 +4170,62 @@ $(document).ready(function(){
 						var split = jsonData[i].split('=');
 						obj[split[0].trim()] = split[1].trim();
 					}
-					console.log(obj) //prints key value pairs (obj.enemies) but arrays are still in json
-					console.log(JSON.parse(obj.enemies)[0]); //gets enemy one, proper format
+					//console.log(obj) //prints key value pairs (obj.enemies) but arrays are still in json
+					//console.log(JSON.parse(obj.enemies)[0]); //gets enemy one, proper format
+					restoreFromJson(obj);
 				},
 				error: function(data) {
 					console.log(data);	
 				},	
 				complete: function(r){
-				   //alert(r.responseText);
-					if((r.responseText).charAt(0) == '"')
-						$("#restoreButton").text("Complete (Retry)");
+					if((r.responseText).charAt(0) == '"') {
+						//$("#restoreButton").text("Complete (Retry)");
+						$("#restoreEmail").val("")
+						$("#restorePass").val("");
+						$("#backupAuthForm").hide();
+						$("#restoreButton").text("Load Backup Data");
+					}
 					else
-					$("#restoreButton").text(r.responseText);
+						$("#restoreButton").text(r.responseText);
 				}
 			});	
 		}
 	});
 	
+	//menu system scripts for user management page
+	$("#selectAvatarRow").click(function() {
+		if($("#avatarRow").css("display") == "none") {
+			$(".mgmtRow").hide();
+			$("#avatarRow").show();
+		}	
+		else
+			$("#avatarRow").hide();
+	});	
+	
+	$("#selectNameRow").click(function() {
+		if($("#nameRow").css("display") == "none") {
+			$(".mgmtRow").hide();
+			$("#nameRow").show();
+		}	
+		else
+			$("#nameRow").hide();
+	});	
+	
+	$("#selectEmailRow").click(function() {
+		if($("#emailRow").css("display") == "none") {
+			$(".mgmtRow").hide();
+			$("#emailRow").show();
+		}	
+		else
+			$("#emailRow").hide();
+	});	
+	
+	$("#selectPasswordRow").click(function() {
+		if($("#passRow").css("display") == "none") {
+			$(".mgmtRow").hide();			
+			$("#passRow").show();
+		}	
+		else
+			$("#passRow").hide();
+	});		
 });

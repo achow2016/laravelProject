@@ -16,7 +16,7 @@
     </head>
     <body>
 		<div>
-			<div class="row">
+			<div class="row text-center">
 				<div class="col">
 					<h2 class="text-center">Register</h2>
 					<form method="POST" action="/rpgGame/register">
@@ -38,6 +38,7 @@
 
 						<div class="form-group">
 							<button type="submit" class="btn btn-primary">Submit</button>
+							<br><br>
 							<a href="/login">Login</a>
 						</div>
 					</form>

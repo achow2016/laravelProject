@@ -15,7 +15,7 @@
 		<!--javascript at bottom-->
     </head>
     <body>
-		<div>
+		<div class="col">
 			@isset($errorMessage)
 			<p>{{$errorMessage}}</p>
 			@endisset
@@ -64,7 +64,7 @@
 			@isset($profile)
 			<div class="text-center">
 				@if(session()->has('otherAvatar'))
-				<img class="col" src="{{ session()->get( 'otherAvatar' ) }}" alt="avatar" >
+				<img class="img-responsive" src="{{ session()->get( 'otherAvatar' ) }}" alt="avatar" >
 				@else
 				<p>No Avatar</p>
 				@endif
@@ -88,6 +88,7 @@
 					<button type="button" class="listFriendsButton introButtons scoreButton btn btn-primary active w-100">Friends</button>
 				</div>					
 			</div>
+			
 		</div>
 		<!--scripts-->
 		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" 

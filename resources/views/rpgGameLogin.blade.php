@@ -16,7 +16,7 @@
     </head>
     <body>
 		<div>
-			<div class="row">
+			<div class="row text-center">
 				<div class="col">
 					<h2>Log In</h2>
 					<form method="POST" action="/rpgGame/login">
@@ -42,7 +42,7 @@
 				</div>
 			</div>
 
-			<div class="row">
+			<div class="row text-center">
 				<div class="col">
 					@if (Session::has('message'))
 						{{ Session::get('message') }}

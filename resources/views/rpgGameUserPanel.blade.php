@@ -15,6 +15,12 @@
 		<!--javascript at bottom-->
     </head>
     <body>
+		<header class="row">
+			<div class="col text-center">
+				<h1>User Account</h1>
+			</div>
+		</header>
+	
 		@isset($errorMessage)
 		<div class="row">
 			<div class="col text-center">
@@ -31,38 +37,45 @@
 		</div>
 		@endisset
 	
-		<div class="row">
+		<button id="selectAvatarRow" type="button" class="btn btn-primary active w-100">Avatars</button>
+
+		<div class="row mgmtRow mb-1" id="avatarRow" style="display:none">
 			<div class="col">
 				<div class="text-center" id="avatarMenu" style="display:none">
 					<form method="post" action="/rpgGame/addAvatar" enctype="multipart/form-data">
 						Avatar
 						<input type="file" name="avatar" id="avatar">
+						<br><br>
 						<input type="submit" value="Upload Image" name="submit">
 					</form>
 					<br>
 				</div>
 				<div class="text-center">
 					<div class="col">
-						@if(session()->has('avatar'))
-							<img class="col mb-1" src="{{ session()->get( 'avatar' ) }}" alt="avatar">
-							<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active">Upload Avatar</button>
-							<button style="display:none" id="hideAvatarMenu" type="button" class="btn btn-primary active w-100">Close Avatar Menu</button>
+						@if (!empty($avatar))
+						Current Avatar	
+						<img class="img-responsive mt-1 mb-1" src="{{$avatar}}" alt="avatar">
+						<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active">Upload Avatar</button>
+						<button style="display:none" id="hideAvatarMenu" type="button" class="btn btn-primary active w-100">Close Avatar Menu</button>
 						@else 
-							<p>No Avatar</p>
-							<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active">Upload Avatar</button>
-							<button style="display:none" id="hideAvatarMenu" type="button" class="btn btn-primary active w-100">Close Avatar Menu</button>
+						<p>No Avatar</p>
+						<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active">Upload Avatar</button>
+						<button style="display:none" id="hideAvatarMenu" type="button" class="btn btn-primary active w-100">Close Avatar Menu</button-->
 						@endif
 					</div>
 				</div>
 			</div>
 		</div>
-		<div class="row mb-2">
+		
+		<button id="selectNameRow" type="button" class="btn btn-primary active w-100">Username</button>
+		
+		<div class="row mb-2 mgmtRow" id="nameRow" style="display:none">
 			<div class="col text-center">
 				<form method="post" action="/rpgGame/updateName" enctype="multipart/form-data">
 					Update Name
 					<br>
 					@isset($currentName)
-					{{$currentName}}
+					Current Name: {{$currentName}}
 					@endisset
 					@empty($currentName)
 					No name set
@@ -75,12 +88,17 @@
 				</form>		
 			</div>
 		</div>
-		<div class="row mb-2">
+		
+		<button id="selectEmailRow" type="button" class="btn btn-primary active w-100">Email</button>
+		
+		<div class="row mb-2 mgmtRow" id="emailRow" style="display:none">
 			<div class="col text-center">
 				<form method="post" action="/rpgGame/updateEmail" enctype="multipart/form-data">
 					Update Email
 					<br>
 					@isset($currentEmail)
+					Current Email: 
+					<br>
 					{{$currentEmail}}
 					@endisset
 					@empty($currentEmail)
@@ -93,8 +111,11 @@
 					<input type="submit" name="submit" value=">">
 				</form>					
 			</div>
-		</div>	
-		<div class="row mb-2">
+		</div>
+
+		<button id="selectPasswordRow" type="button" class="btn btn-primary active w-100">Password</button>
+		
+		<div class="row mb-2 mgmtRow" id="passRow" style="display:none">
 			<div class="col text-center">
 				<form method="post" action="/rpgGame/updatePassword" enctype="multipart/form-data">
 					Update Password

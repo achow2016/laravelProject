@@ -16,7 +16,7 @@
     </head>
     <body>
 		<div>
-			<div class="row">
+			<div class="row text-center">
 				<div class="col">
 					<h2>Reset Login</h2>
 					<form method="POST" action="{{ url('/resetPassword') }}">

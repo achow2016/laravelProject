@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 use Closure;
 
+//used to prevent direct access of URL used for ajax in the app
 class AjaxWare
 {
     /**
