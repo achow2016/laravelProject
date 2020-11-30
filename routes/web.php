@@ -96,6 +96,10 @@ use Illuminate\Support\Facades\Route;
 	Route::get('/rpgGame/userCashStore', 'RpgGamePaymentController@getStorePage')->middleware('auth:rpgUser');
 	Route::get('/rpgGame/buyMembership', 'rpggameRegistrationController@addMembership')->middleware('auth:rpgUser');
 
+	//social textboard
+	Route::get('/rpgGame/textBoard', 'RpgGameChatController@getPosts')->middleware('auth:rpgUser');
+	Route::get('/rpgGame/textBoard/confirmPost', 'RpgGameChatController@confirmPost')->middleware('auth:rpgUser');
+	Route::get('/rpgGame/textBoard/add', 'RpgGameChatController@add')->middleware('auth:rpgUser');
 /*
 //main site routes
 

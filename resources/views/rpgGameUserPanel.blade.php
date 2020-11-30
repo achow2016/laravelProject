@@ -39,7 +39,7 @@
 	
 		<button id="selectAvatarRow" type="button" class="btn btn-primary active w-100">Avatars</button>
 
-		<div class="row mgmtRow mb-1" id="avatarRow" style="display:none">
+		<div class="row mgmtRow mb-1" id="avatarRow">
 			<div class="col">
 				<div class="text-center" id="avatarMenu" style="display:none">
 					<form method="post" action="/rpgGame/addAvatar" enctype="multipart/form-data">

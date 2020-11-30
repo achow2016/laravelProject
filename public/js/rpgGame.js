@@ -3990,13 +3990,10 @@ $(document).ready(function(){
 		window.location.href='/rpgGame/buyMembership';
 	});
 	
+	//restores game data to local storage from server
 	function restoreFromJson(data) {
-		//console.log(JSON.parse(obj.enemies)[0]); //gets enemy one, proper format
-		//console.log(data);
 		//player init
 		playerData = JSON.parse(data.player);
-		
-		//console.log(playerData);
 		
 		player = new Actor(playerData.name, playerData.race, playerData.actorClass, playerData.health, 
 			playerData.attack, playerData.stamina, playerData.staminaRegen, playerData.baseAttackCost,
@@ -4043,8 +4040,7 @@ $(document).ready(function(){
 		player.setEarningsTotal(playerData.earningsTotal);
 		player.setMoney(playerData.money);
 		
-		//console.log(player);
-
+		//cuurent story state restore
 		currentState = JSON.parse(data.state);
 		currentChapter = parseInt(JSON.parse(data.chapter));
 		currentPage = JSON.parse(data.page);
@@ -4061,15 +4057,11 @@ $(document).ready(function(){
 			}
 		}	
 		
-		//console.log(chests);
-		
 		//enemies init, if any
 		enemies.length = 0;
 		enemyData = JSON.parse(data.enemies);
 
 		if((enemyData.length) > 0) {
-
-			//currentChapter = window.localStorage.getItem('chapter');
 			let enemyCount = parseInt(storyObj[currentChapter].enemyCount);
 			for(var i = 0; i < enemyCount; i++) {
 				enemy = new Actor(enemyData[i].name, enemyData[i].race, enemyData[i].actorClass, enemyData[i].health, 
@@ -4103,10 +4095,6 @@ $(document).ready(function(){
 			enemy = enemies[currentEnemy];
 		}
 		
-		//console.log(enemies);
-		//console.log(currentEnemy);
-		
-		
 		//shop
 		shopData = JSON.parse(data.shopkeeper);;
 		shopkeeper = new Shopkeeper(shopData.money, shopData.inventory);
@@ -4135,6 +4123,10 @@ $(document).ready(function(){
 	
 	//restores player data from save data in db row server side
 	$("#restoreButton").click(function() {
+		//hide other menu options
+		$("#mainUserOptions").hide();
+		$("#closeRestore").attr("disabled", false).show();
+		
 		if($("#restoreEmail").val() == "" || $("#restorePass").val() == "") {
 			$("#backupAuthForm").show();
 			$("#restoreButton").text("Restore");
@@ -4160,18 +4152,12 @@ $(document).ready(function(){
 					password:password 
 				},	
 				success: function(data) {
-					//console.log(JSON.parse(data));	
-					//console.log(JSON.parse(data)[0]);
-					//parses data from "x=x" into key value object accessable with ex obj.enemies
-					
 					var jsonData = (JSON.parse(data));
 					var obj = {};
 					for (var i = 0; i < jsonData.length; i++) {
 						var split = jsonData[i].split('=');
 						obj[split[0].trim()] = split[1].trim();
 					}
-					//console.log(obj) //prints key value pairs (obj.enemies) but arrays are still in json
-					//console.log(JSON.parse(obj.enemies)[0]); //gets enemy one, proper format
 					restoreFromJson(obj);
 				},
 				error: function(data) {
@@ -4179,7 +4165,6 @@ $(document).ready(function(){
 				},	
 				complete: function(r){
 					if((r.responseText).charAt(0) == '"') {
-						//$("#restoreButton").text("Complete (Retry)");
 						$("#restoreEmail").val("")
 						$("#restorePass").val("");
 						$("#backupAuthForm").hide();
@@ -4191,6 +4176,14 @@ $(document).ready(function(){
 			});	
 		}
 	});
+	
+	//restores display of other menu options outside restore
+	$("#closeRestore").click(function() {
+		$("#mainUserOptions").show();
+		$("#backupAuthForm").hide();
+		$("#closeRestore").attr("disabled", true).hide();
+		$("#restoreButton").text("Load Backup Data");
+	});	
 	
 	//menu system scripts for user management page
 	$("#selectAvatarRow").click(function() {
@@ -4227,5 +4220,13 @@ $(document).ready(function(){
 		}	
 		else
 			$("#passRow").hide();
-	});		
+	});	
+
+	$("#returnFromPostsButton").click(function() {	
+		window.location.href='/rpgGame/';
+	});
+	
+	$("#refreshPostsButton").click(function() {	
+		window.location.href='/rpgGame/textBoard';
+	});
 });

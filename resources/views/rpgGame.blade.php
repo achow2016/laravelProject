@@ -49,16 +49,21 @@
 							<p><?php echo $endDate ?? ''; ?></p>
 							@if( auth()->check() )
 							<p id="authName">User: {{ auth()->user()->name }}</p>
-							<a class="nav-link" href="/rpgGame/userManagement">Account</a>
-							<a class="nav-link" href="/rpgGame/userCashStore">Store</a>
-							<a class="nav-link" href="/rpgGame/logout">Logout</a>
-							<?php echo $data ?? ''; ?></p> <!--backup load button only available if save data available-->
-							<!--button disabled id="restoreButton" type="button" class="introButtons btn btn-primary active w-100">Load Backup Data</button-->
-							<div id="backupAuthForm" style="display:none">
+							<div id="mainUserOptions">
+								<a class="nav-link" href="/rpgGame/userManagement">Account</a>
+								<a class="nav-link" href="/rpgGame/userCashStore">Store</a>
+								<a class="nav-link" href="/rpgGame/textBoard">Textboard</a>
+								<a class="nav-link" href="/rpgGame/logout">Logout</a>
+							</div>
+							<div id="backupAuthForm" class="mb-3" style="display:none">
 								<input type="text" name="restoreEmail" id="restoreEmail" placeholder="confirm email">
 								<br>
 								<input type="text" name="restorePass" id="restorePass" placeholder="confirm password">
+								<br><br>
+								<button disabled id="closeRestore" type="button" class="introButtons btn btn-primary active w-100">Close</button>
 							</div>
+							<?php echo $data ?? ''; ?></p> <!--backup load button only available if save data available-->
+							<!--button disabled id="restoreButton" type="button" class="introButtons btn btn-primary active w-100">Load Backup Data</button-->
 							@endif
 						</div>
 					</div>
