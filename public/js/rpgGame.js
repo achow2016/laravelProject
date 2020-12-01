@@ -3609,7 +3609,8 @@ $(document).ready(function(){
 			let chaptersCleared = tempPlayerData.chaptersCleared;
 			let earningsTotal = tempPlayerData.earningsTotal;
 			let scoreTotal = kills + damageDone + damageReceived + chaptersCleared + earningsTotal;
-
+			
+			
 			$.ajaxSetup({
 				headers: {
 					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -4223,7 +4224,7 @@ $(document).ready(function(){
 	});	
 
 	$("#returnFromPostsButton").click(function() {	
-		window.location.href='/rpgGame/';
+		window.location.href='/rpgGame';
 	});
 	
 	$("#refreshPostsButton").click(function() {	

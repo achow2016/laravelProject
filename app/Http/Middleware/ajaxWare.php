@@ -17,13 +17,29 @@ class AjaxWare
      */
     public function handle($request, Closure $next)
     {
+		if($request->ajax()){
+            return $next($request);
+        }
+		else {
+			return redirect('rpgGame')->with(['message' => 'Invalid request.']);
+		}
+		/*
+		if($request->ajax()){
+            return $next($request);
+        }
+			
         //return $next($request);
-		if ($request->expectsJson()) {
+		else if ($request->expectsJson()) {
+			return $next($request);
+        }
+		else if ($request->isMethod('post')) {
 			return $next($request);
         }
 		//redirects to home page if not an ajax request (direct url access)
-		if (!$request->expectsJson()) {
+		//if (!$request->expectsJson()) {
+		else {
             return redirect('rpgGame')->with(['message' => 'Invalid request.']);
         }
+		*/
     }
 }

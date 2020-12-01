@@ -12,6 +12,10 @@
 
 		<link href="{{ asset('css/all.css') }}" rel="stylesheet">
 		<link href="{{ asset('css/rpgGame.css') }}" rel="stylesheet">
+		
+		<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+	
 		<!--javascript at bottom-->
     </head>
     <body>
@@ -19,6 +23,9 @@
 			<div class="row text-center">
 				<div class="col">
 					<h2>Log In</h2>
+					@if($errors->any())
+					<p>{{$errors->first()}}</p>
+					@endif
 					<form method="POST" action="/rpgGame/login">
 						{{ csrf_field() }}
 						<div class="form-group">
@@ -32,6 +39,8 @@
 						</div>
 
 						<div class="form-group">
+							<div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.sitekey') }}"></div>
+
 							<button type="submit" class="btn btn-primary">Login</button>
 							<br><br>
 							<a href="/register">Register</a>

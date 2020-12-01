@@ -7,6 +7,7 @@ use App\Models\rpgGameUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Validator;
 use DateTime;
 
 class rpgGameSessionController extends Controller
@@ -19,6 +20,35 @@ class rpgGameSessionController extends Controller
 	//login, record playtime
     public function store(Request $request)
     {
+		$data = $request->all();
+		
+		$rules = [
+			'email' => 'required',
+			'password' => 'required',
+			'g-recaptcha-response' => 'required'
+		];
+		
+		$validator = Validator::make($request->all(), $rules);
+		if ($validator->fails()) {
+			return back()->withErrors(['Input(s) missing.']);
+		}
+
+		//$secret = env("RECAPTCHA_SECRET");
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL,"https://www.google.com/recaptcha/api/siteverify");
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS,
+		//"secret=".$secret."&response=".$data['g-recaptcha-response']);
+		"secret=".env('RECAPTCHA_SECRET')."&response=".$data['g-recaptcha-response']);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		$result = curl_exec($ch);
+		$responseData = json_decode($result , TRUE);
+		curl_close ($ch);
+
+		if($responseData['success'] == false){
+			return back()->withErrors(['Recaptcha not completed.']);
+		}
+	
 		//$user = rpgGameUser::find();
 		$email = $request->input('email');
 		$password = $request->input('password');
@@ -51,7 +81,7 @@ class rpgGameSessionController extends Controller
 		}
 		else {
 			return redirect('/login')->with('message', 'Wrong password!'); 
-		}
+		}		
     }
     //logout, record playtime
     public function destroy(Request $request)

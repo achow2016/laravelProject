@@ -31,7 +31,6 @@
 		<link href="{{ asset('css/all.css') }}" rel="stylesheet">
 		<link href="{{ asset('css/rpgGame.css') }}" rel="stylesheet">
 		<!--javascript at bottom-->
-		
     </head>
     <body>
 		<div class="content .container" id="outer">
@@ -41,7 +40,7 @@
 				<div class="row">
 					<div class="col">
 						<div id="gameTitle">
-							<img class="mx-auto d-block" src="/img/gameTitleTempImage.jpg" width="150px" height="150px" alt="Game Title Art"/>
+							<img class="mx-auto d-block mt-2" src="/img/gameTitleTempImage.jpg" width="120px" height="120px" alt="Game Title Art"/>
 							<h1>My Game</h1>
 							<!--Flashed message from AJAX middleware if direct url access-->
 							{{session('message')}}
