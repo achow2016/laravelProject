@@ -12,6 +12,8 @@ class EncryptCookies extends Middleware
      * @var array
      */
     protected $except = [
-        //
+		//name cookie on login for notification work with ajax, checked on server side
+		//if wrong, will require logging in again to be reset
+		'login_name'
     ];
 }

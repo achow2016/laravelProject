@@ -67,6 +67,8 @@ class rpgGameSessionController extends Controller
 		if($check) {
 			Auth::guard('rpgUser')->login($user, true);
 			$timeCookie = Cookie::make("gameTime", date("h:i:s"));
+			//name cookie for pusher, without encryption, checked against auth when performing operations later server side
+			$nameCookie = Cookie::make("login_name", $user->name, 9999, null, null, false, false);
 
 			//check if premium expires today, removes if true
 			$date = new DateTime("now");
@@ -76,8 +78,10 @@ class rpgGameSessionController extends Controller
 				$user->membership = false;
 				$user->save();
 			}
-			
-			return redirect('/rpgGame')->withCookie($timeCookie); 
+			//with time cookie and name cookie(for pusher)
+			return redirect('/rpgGame')
+				->withCookie($timeCookie) 
+				->withCookie($nameCookie); 
 		}
 		else {
 			return redirect('/login')->with('message', 'Wrong password!'); 

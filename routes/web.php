@@ -103,6 +103,10 @@ use Illuminate\Support\Facades\Route;
 	Route::get('/rpgGame/textBoard', 'RpgGameChatController@getPosts')->middleware('auth:rpgUser');
 	Route::get('/rpgGame/textBoard/confirmPost', 'RpgGameChatController@confirmPost')->middleware('auth:rpgUser');
 	Route::get('/rpgGame/textBoard/add', 'RpgGameChatController@add')->middleware('auth:rpgUser');
+	
+	//pusher notifications
+	//Route::post('rpgGame/storeNotification', 'RpgGameNotificationController@store')->middleware('ajax');
+	Route::post('rpgGame/storeNotification', 'RpgGameNotificationController@store');
 /*
 //main site routes
 

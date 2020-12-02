@@ -30,6 +30,8 @@
 
 		<link href="{{ asset('css/all.css') }}" rel="stylesheet">
 		<link href="{{ asset('css/rpgGame.css') }}" rel="stylesheet">
+		
+		<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
 		<!--javascript at bottom-->
     </head>
     <body>
@@ -40,6 +42,32 @@
 				<div class="row">
 					<div class="col">
 						<div id="gameTitle">
+						
+							<!--notification box-->
+							<div class="text-center d-flex w-100 fixed-top flex-row-reverse">
+								<div class="p-2">
+									<button disabled id="openNotifications" type="button" class="introButtons btn btn-primary active w-100">Admin &#9993</button>
+								</div>
+							</div>
+							<!--notification modal-->
+							<div class="modal fade" id="notificationModal" role="dialog">
+								<div class="modal-dialog">
+									<!--Modal content-->
+									<div class="modal-content">
+										<div class="modal-header">
+											<button type="button" class="close" data-dismiss="modal">&times;</button>
+										</div>
+										<div class="modal-body">
+											<p id="notificationText"></p>
+										</div>
+										<div class="modal-footer centered-button">
+											<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+										</div>
+									</div>	
+								</div>	
+							</div>
+							
+						
 							<img class="mx-auto d-block mt-2" src="/img/gameTitleTempImage.jpg" width="120px" height="120px" alt="Game Title Art"/>
 							<h1>My Game</h1>
 							<!--Flashed message from AJAX middleware if direct url access-->
