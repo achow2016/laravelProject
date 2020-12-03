@@ -4231,21 +4231,18 @@ $(document).ready(function(){
 		window.location.href='/rpgGame/textBoard';
 	});
 	
-	//pusher notifications (front page button)
+	//get pusher notifications (front page button)
+	//get pusher notifications (front page button)
 	$('#openNotifications').click(function() {	
+		$("#openNotifications").attr("class", "introButtons btn btn-primary active w-100");
+		localStorage.removeItem('notificationsPresent', 'true');
+		$('#notificationText').empty();
+		$('#notiPassword').val("");
 		$('#notificationModal').modal('toggle');
 	});
 	
-	// Enable pusher logging - don't include this in production
-	Pusher.logToConsole = true;
-
-	var pusher = new Pusher('403928fd9724d481a2eb', {
-		cluster: 'us3'
-	});
-
-	var channel = pusher.subscribe('my-channel');
-	channel.bind('my-event', function(data) {
-			
+	$('#loadNotifications').click(function() {
+		//get user name from cookie
 		var loginName;
 		var name = "login_name" + "=";
 		var decodedCookie = decodeURIComponent(document.cookie);
@@ -4260,8 +4257,8 @@ $(document).ready(function(){
 			}
 		}
 		
-		var noteData = data;
-		
+		var password = $('#notiPassword').val();
+	
 		$.ajaxSetup({
 			headers: {
 				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -4269,26 +4266,33 @@ $(document).ready(function(){
 		});
 		
 		$.ajax({
-			type: "POST",
-			url: 'http://localhost:8082/rpgGame/storeNotification',
+			type: 'GET',
+			url: 'http://localhost:8082/rpgGame/getNotifications',
+			//dataType: {},
 			data: {
 				loginName:loginName,
-				noteData:noteData},
+				password:password
+			},	
+			success: function(data) {
+				//console.log(JSON.parse(data)); get javascript array
+				var jData = JSON.parse(data); // array
+				jData.forEach(
+					element => 
+						$('#notificationText').append("<div class='row'><div class='col'>" + 
+							"Time: " + element.created_at +
+							"<br>" +
+							"Message: " + element.text +
+							"<div class='row'><div class='col'>")
+				);
 				
-				error: function(data) {
-					console.log(data);	
-				},	
-				
-			}).done(function( msg ) {
-			alert( msg );
+			},
+			error: function(data) {
+				console.log("error: " + data);	
 			}
-		);	
+			//,complete: function(data){
+			//	console.log(data);	
+			//}
+		});
 		
-		//console.log(noteData + " " + loginName);
-		//alert(JSON.stringify(data));
-		//$("#notificationText").text(data);
-		//$("#openNotifications").prop("disabled",false);
 	});
-
-
 });

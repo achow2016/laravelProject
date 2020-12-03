@@ -13,6 +13,8 @@
 		<link href="{{ asset('css/all.css') }}" rel="stylesheet">
 		<link href="{{ asset('css/rpgGame.css') }}" rel="stylesheet">
 		<!--javascript at bottom-->
+		<script src="https://js.pusher.com/7.0/pusher.min.js"></script>
+		
     </head>
     <body>
 		<div class="col text-center">
@@ -65,5 +67,6 @@
 		crossorigin="anonymous">
 		</script>
 		<script src="/js/rpgGame.js"></script>
+		<script src="/js/rpgGamePusher.js"></script>
 	</body>
 </html>

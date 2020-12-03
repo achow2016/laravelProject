@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\rpgGameUser;
 use App\Models\rpgGameNotification;
+use Illuminate\Support\Facades\Hash;
 
 class RpgGameNotificationController extends Controller {
 
@@ -23,5 +24,26 @@ class RpgGameNotificationController extends Controller {
 		
 		//echo("<script>console.log('PHP: " . $notificationText . "');</script>");
 	}
+	
+	public function get(Request $request)
+	{
+		header("Access-Control-Allow-Origin: *");
+		$user = RpgGameUser::where('name', $request->loginName)->first();	
+		if($user)
+			$check = Hash::check($request->password, $user->password);
+		else {
+			echo 'User does not exist! (Retry)';
+			exit;
+		}
+		if($check) 
+			$notifications = $user->notifications;
+		else {
+			echo 'Wrong password! (Retry)';
+			exit;
+		}
+		echo json_encode($notifications);
+		//echo $notifications;
+		exit;
+	}	
 }
 ?>

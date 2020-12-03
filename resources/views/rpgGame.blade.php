@@ -46,7 +46,7 @@
 							<!--notification box-->
 							<div class="text-center d-flex w-100 fixed-top flex-row-reverse">
 								<div class="p-2">
-									<button disabled id="openNotifications" type="button" class="introButtons btn btn-primary active w-100">Admin &#9993</button>
+									<button id="openNotifications" type="button" class="introButtons btn btn-primary active w-100">Admin &#9993</button>
 								</div>
 							</div>
 							<!--notification modal-->
@@ -55,10 +55,15 @@
 									<!--Modal content-->
 									<div class="modal-content">
 										<div class="modal-header">
+											<p>Admin Notifications Center</p>
 											<button type="button" class="close" data-dismiss="modal">&times;</button>
 										</div>
 										<div class="modal-body">
-											<p id="notificationText"></p>
+											<form action="javascript:void(0);">
+												<input type="password" name="password" id="notiPassword" placeholder="Enter Password">
+												<button id="loadNotifications" type="button" class="btn btn-default primary">Load</button>
+											</form>
+											<div id="notificationText"></div>
 										</div>
 										<div class="modal-footer centered-button">
 											<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -858,11 +863,10 @@
 		integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" 
 		crossorigin="anonymous"></script>
 		-->
-<script
-  src="https://code.jquery.com/jquery-3.5.1.js"
-  integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
-  crossorigin="anonymous"></script>
-		
+		<script src="https://code.jquery.com/jquery-3.5.1.js"
+		integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc="
+		crossorigin="anonymous"></script>
+				
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" 
 		integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" 
 		crossorigin="anonymous"></script>
@@ -872,6 +876,7 @@
 		crossorigin="anonymous"></script>
 		
 		<script src="/js/rpgGame.js"></script>
+		<script src="/js/rpgGamePusher.js"></script>
 		
 	
     </body>

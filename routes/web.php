@@ -107,6 +107,7 @@ use Illuminate\Support\Facades\Route;
 	//pusher notifications
 	//Route::post('rpgGame/storeNotification', 'RpgGameNotificationController@store')->middleware('ajax');
 	Route::post('rpgGame/storeNotification', 'RpgGameNotificationController@store');
+	Route::get('rpgGame/getNotifications', 'RpgGameNotificationController@get');
 /*
 //main site routes
 
