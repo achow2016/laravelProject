@@ -3,9 +3,9 @@
 namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
-class RpgGameNotification extends Model{
+class RpgGameMessage extends Model{
 	
-	protected $table = 'notifications';
+	protected $table = 'messages';
 	protected $primaryKey = 'id';
 	
 	/**

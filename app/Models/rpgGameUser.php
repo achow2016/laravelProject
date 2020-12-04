@@ -53,9 +53,9 @@ class RpgGameUser extends Authenticatable
 		return $this->hasMany('App\Models\rpgGameFriend', 'rpg_game_user_id', 'id');
 	}
 	
-	public function notifications()
+	public function messages()
 	{
-		return $this->hasMany('App\Models\rpgGameNotification', 'rpg_game_user_id', 'id');
+		return $this->hasMany('App\Models\rpgGameMessage', 'rpg_game_user_id', 'id');
 	}
 	
 	public function score()

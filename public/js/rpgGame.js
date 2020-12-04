@@ -4231,17 +4231,16 @@ $(document).ready(function(){
 		window.location.href='/rpgGame/textBoard';
 	});
 	
-	//get pusher notifications (front page button)
-	//get pusher notifications (front page button)
-	$('#openNotifications').click(function() {	
-		$("#openNotifications").attr("class", "introButtons btn btn-primary active w-100");
-		localStorage.removeItem('notificationsPresent', 'true');
-		$('#notificationText').empty();
-		$('#notiPassword').val("");
-		$('#notificationModal').modal('toggle');
+	//get pusher messages (front page button)
+	$('#openMessages').click(function() {	
+		$("#openMessages").attr("class", "introButtons btn btn-primary active w-100");
+		localStorage.removeItem('messagesPresent', 'true');
+		$('#messageText').empty();
+		$('#messagePassword').val("");
+		$('#messageModal').modal('toggle');
 	});
 	
-	$('#loadNotifications').click(function() {
+	$('#loadMessages').click(function() {
 		//get user name from cookie
 		var loginName;
 		var name = "login_name" + "=";
@@ -4257,7 +4256,7 @@ $(document).ready(function(){
 			}
 		}
 		
-		var password = $('#notiPassword').val();
+		var password = $('#messagePassword').val();
 	
 		$.ajaxSetup({
 			headers: {
@@ -4267,7 +4266,7 @@ $(document).ready(function(){
 		
 		$.ajax({
 			type: 'GET',
-			url: 'http://localhost:8082/rpgGame/getNotifications',
+			url: 'http://localhost:8082/rpgGame/getMessages',
 			//dataType: {},
 			data: {
 				loginName:loginName,
@@ -4278,13 +4277,12 @@ $(document).ready(function(){
 				var jData = JSON.parse(data); // array
 				jData.forEach(
 					element => 
-						$('#notificationText').append("<div class='row'><div class='col'>" + 
+						$('#messageText').append("<div class='row'><div class='col'>" + 
 							"Time: " + element.created_at +
 							"<br>" +
 							"Message: " + element.text +
 							"<div class='row'><div class='col'>")
 				);
-				
 			},
 			error: function(data) {
 				console.log("error: " + data);	
@@ -4295,4 +4293,27 @@ $(document).ready(function(){
 		});
 		
 	});
+	
+	
+	$('#test').click(function() {
+		var userName = $('#msgUserName').val();
+		var userMessage = $('#msgUserMessage').val();
+		$.ajax({
+			type: 'GET',
+			url: 'http://localhost:8082/rpgGame/privateMessage',
+			//dataType: {},
+			data: {
+				userName:userName,
+				userMessage:userMessage
+			},	
+			success: function(data) {
+			},
+			error: function(data) {
+			}
+			//,complete: function(data){
+			//	console.log(data);	
+			//}
+		});
+	});	
+	
 });

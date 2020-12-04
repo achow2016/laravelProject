@@ -104,10 +104,18 @@ use Illuminate\Support\Facades\Route;
 	Route::get('/rpgGame/textBoard/confirmPost', 'RpgGameChatController@confirmPost')->middleware('auth:rpgUser');
 	Route::get('/rpgGame/textBoard/add', 'RpgGameChatController@add')->middleware('auth:rpgUser');
 	
-	//pusher notifications
+	//pusher messages
 	//Route::post('rpgGame/storeNotification', 'RpgGameNotificationController@store')->middleware('ajax');
-	Route::post('rpgGame/storeNotification', 'RpgGameNotificationController@store');
-	Route::get('rpgGame/getNotifications', 'RpgGameNotificationController@get');
+	Route::post('rpgGame/storeMessage', 'RpgGameMessageController@store');
+	Route::get('rpgGame/getMessages', 'RpgGameMessageController@get');
+	/*
+	Route::get('rpgGame/privateMessage', function () {
+		event(new App\Events\PrivateMessage('a', 'aa', 'a'));
+		//return "Event has been sent!";
+	});
+	*/
+	Route::get('rpgGame/privateMessage', 'RpgGameMessageController@send');
+	
 /*
 //main site routes
 

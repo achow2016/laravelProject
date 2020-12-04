@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateNotificationsTable extends Migration
+class CreateMessagesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class CreateNotificationsTable extends Migration
      */
     public function up()
     {
-		Schema::dropIfExists('notifications');
-        Schema::create('notifications', function (Blueprint $table) {
+		Schema::dropIfExists('messages');
+        Schema::create('messages', function (Blueprint $table) {
             $table->increments('id');
             $table->string('text');
 			$table->integer('rpg_game_user_id')->unsigned();
@@ -30,6 +30,6 @@ class CreateNotificationsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('messages');
     }
 }

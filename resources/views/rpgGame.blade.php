@@ -46,24 +46,31 @@
 							<!--notification box-->
 							<div class="text-center d-flex w-100 fixed-top flex-row-reverse">
 								<div class="p-2">
-									<button id="openNotifications" type="button" class="introButtons btn btn-primary active w-100">Admin &#9993</button>
+									<button id="openMessages" type="button" class="introButtons btn btn-primary active w-100">Messages &#9993</button>
 								</div>
 							</div>
 							<!--notification modal-->
-							<div class="modal fade" id="notificationModal" role="dialog">
+							<div class="modal fade" id="messageModal" role="dialog">
 								<div class="modal-dialog">
 									<!--Modal content-->
 									<div class="modal-content">
 										<div class="modal-header">
-											<p>Admin Notifications Center</p>
+											Messages Center
 											<button type="button" class="close" data-dismiss="modal">&times;</button>
 										</div>
 										<div class="modal-body">
 											<form action="javascript:void(0);">
-												<input type="password" name="password" id="notiPassword" placeholder="Enter Password">
-												<button id="loadNotifications" type="button" class="btn btn-default primary">Load</button>
+												Send Message
+												<input type="text" name="msgUserName" id="msgUserName" placeholder="Enter User">
+												<input type="text" name="msgUserMessage" id="msgUserMessage" placeholder="Enter Message">
+												<br>
+												<button id="test" type="button" class="btn btn-primary primary mt-1">Send</button>
+												<br>
+												Load Messages
+												<input type="password" name="password" id="messagePassword" placeholder="Enter Password">
+												<button id="loadMessages" type="button" class="btn btn-primary primary">Load</button>
 											</form>
-											<div id="notificationText"></div>
+											<div id="messageText"></div>
 										</div>
 										<div class="modal-footer centered-button">
 											<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
