@@ -13,7 +13,7 @@
 		<link href="{{ asset('css/all.css') }}" rel="stylesheet">
 		<link href="{{ asset('css/rpgGame.css') }}" rel="stylesheet">
 		
-		<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+		<!--script src="https://www.google.com/recaptcha/api.js" async defer></script-->
 
 	
 		<!--javascript at bottom-->
@@ -39,7 +39,7 @@
 						</div>
 
 						<div class="form-group">
-							<div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.sitekey') }}"></div>
+							<!--div class="g-recaptcha" data-sitekey="{{ config('services.recaptcha.sitekey') }}"></div-->
 
 							<button type="submit" class="btn btn-primary">Login</button>
 							<br><br>

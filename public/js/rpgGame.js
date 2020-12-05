@@ -3637,7 +3637,6 @@ $(document).ready(function(){
 			for (; key = keys[i]; i++) {
 				archive.push( key + '=' + localStorage.getItem(key));
 			}
-			//console.log( archive);
 			
 			$.ajax({
 				type: "POST",

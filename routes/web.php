@@ -25,19 +25,23 @@ use Illuminate\Support\Facades\Route;
 	//	return view('rpgGame');
 	//})->name('rpgGame')->middleware('auth:rpgUser');
 	
+	
 	Route::get('rpgGame', 'rpggameRegistrationController@home')->middleware('auth:rpgUser');
+	//passport
+	//Route::get('rpgGame', 'rpggameRegistrationController@home')->middleware('auth:api');
+	
 	
 	//payments
-	Route::post('/rpgGame/pay', 'RpgGamePaymentController@createPayment')->name('create-payment')->middleware('auth:rpgUser');;
-	Route::get('/rpgGame/confirm', 'RpgGamePaymentController@confirmPayment')->name('confirm-payment')->middleware('auth:rpgUser');;
+	Route::post('/rpgGame/pay', 'RpgGamePaymentController@createPayment')->name('create-payment')->middleware('auth:rpgUser');
+	Route::get('/rpgGame/confirm', 'RpgGamePaymentController@confirmPayment')->name('confirm-payment')->middleware('auth:rpgUser');
 	
 	//scores
 	Route::get('rpgGame/scores', 'ScoreViewController@scores')->middleware('auth:rpgUser');
 	Route::get('rpgGame/friends', 'ScoreViewController@friends')->middleware('auth:rpgUser');
 	Route::get('rpgGame/scores/detail', 'ScoreViewController@detail')->name('detail')->middleware('auth:rpgUser');
 	Route::get('rpgGame/scores/addFriend', 'ScoreViewController@addFriend')->name('friend')->middleware('auth:rpgUser');
-	Route::post('rpgGame/add', 'ScoreViewController@add')->middleware('ajax');
-	//Route::post('rpgGame/add', 'ScoreViewController@add');
+	//Route::post('rpgGame/add', 'ScoreViewController@add')->middleware('ajax');
+	Route::post('rpgGame/add', 'ScoreViewController@add');
 	//Route::post('rpgGame/add', 'ScoreViewController@add')->middleware('auth:rpgUser');
 	Route::post('rpgGame/addAvatar', 'rpggameRegistrationController@addAvatar')->middleware('auth:rpgUser');//)->middleware('auth:rpgUser');
 	
@@ -90,10 +94,10 @@ use Illuminate\Support\Facades\Route;
 	Route::post('rpgGame/updatePassword', 'rpggameRegistrationController@updatePassword')->middleware('auth:rpgUser');
 
 	//game backup
-	Route::post('rpgGame/backup', 'rpggameSessionController@backup')->middleware('ajax');
-	//Route::post('rpgGame/backup', 'rpggameSessionController@backup');
-	Route::get('rpgGame/getBackup', 'rpggameSessionController@getBackup')->middleware('ajax');
-	//Route::get('rpgGame/getBackup', 'rpggameSessionController@getBackup');
+	//Route::post('rpgGame/backup', 'rpggameSessionController@backup')->middleware('ajax');
+	Route::post('rpgGame/backup', 'rpggameSessionController@backup');
+	//Route::get('rpgGame/getBackup', 'rpggameSessionController@getBackup')->middleware('ajax');
+	Route::get('rpgGame/getBackup', 'rpggameSessionController@getBackup');
 
 	//user cash shop
 	Route::get('/rpgGame/userCashStore', 'RpgGamePaymentController@getStorePage')->middleware('auth:rpgUser');

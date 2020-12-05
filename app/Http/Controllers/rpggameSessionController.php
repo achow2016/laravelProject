@@ -25,7 +25,7 @@ class rpgGameSessionController extends Controller
 		$rules = [
 			'email' => 'required',
 			'password' => 'required',
-			'g-recaptcha-response' => 'required'
+			//'g-recaptcha-response' => 'required'
 		];
 		
 		$validator = Validator::make($request->all(), $rules);
@@ -34,6 +34,7 @@ class rpgGameSessionController extends Controller
 		}
 
 		//$secret = env("RECAPTCHA_SECRET");
+		/*
 		$ch = curl_init();
 		curl_setopt($ch, CURLOPT_URL,"https://www.google.com/recaptcha/api/siteverify");
 		curl_setopt($ch, CURLOPT_POST, 1);
@@ -48,26 +49,34 @@ class rpgGameSessionController extends Controller
 		if($responseData['success'] == false){
 			return back()->withErrors(['Recaptcha not completed.']);
 		}
-	
-		//$user = rpgGameUser::find();
+		*/
+		
 		$email = $request->input('email');
 		$password = $request->input('password');
 		$user = RpgGameUser::where('email', $email)->first();	
-
+		
+		
 		//if user not found, will setup return to login
+		
 		if($user)
 			$check = Hash::check($password, $user->password);
 		else
 			return redirect('/login')->with('message', 'User does not exist!'); 
-
+		
 		//debug helper
 		//echo("<script>console.log('PHP: " . $user . "');</script>");
 		
 		//check password, returns error if incorrect
 		if($check) {
+			//passport
+			//auth()->user()->createToken('rpgGameUser')->accessToken;
+			//Auth::guard('api')->login($user, true);
+			
 			Auth::guard('rpgUser')->login($user, true);
+			
 			$timeCookie = Cookie::make("gameTime", date("h:i:s"));
 			//name cookie for pusher, without encryption, checked against auth when performing operations later server side
+			//$nameCookie = Cookie::make("login_name", $user->name, 9999, null, null, false, false);
 			$nameCookie = Cookie::make("login_name", $user->name, 9999, null, null, false, false);
 
 			//check if premium expires today, removes if true
@@ -108,6 +117,7 @@ class rpgGameSessionController extends Controller
 	public function backup(Request $request) 
 	{
 		$name = $request->input('name');
+		//$name = $request->user()->name;
 		$saveGame = $request->input('archive');
 		$profile = RpgGameUser::where('name', $name)->first();
 		$profile->saveGame = $saveGame;

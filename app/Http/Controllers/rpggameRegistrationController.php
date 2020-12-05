@@ -37,7 +37,9 @@ class rpggameRegistrationController extends Controller
 		$user = RpgGameUser::create(request(['name', 'email', 'password']));
 		
 		Auth::guard('rpgUser')->login($user, true);
-		
+		//Auth::guard('api')->login($user, true);
+		//$token = $user->createToken('rpgGameUser')->accessToken;
+		 
 		return redirect()->to('/rpgGame');
 	}
 
@@ -170,6 +172,9 @@ class rpggameRegistrationController extends Controller
 	public function home(Request $request) 
 	{
 		$username = auth::guard('rpgUser')->user()->name;
+		
+		//$username = auth('api')->user();
+		//passport
 		$myUser = RpgGameUser::where('name', $username)->first();
 		$request->session()->put('avatar', $myUser->avatar);
 		

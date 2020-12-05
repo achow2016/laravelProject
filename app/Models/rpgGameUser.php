@@ -6,9 +6,12 @@ namespace App\Models;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+//use Laravel\Passport\HasApiTokens;
+
 class RpgGameUser extends Authenticatable
 {
     use Notifiable;
+	//use HasApiTokens, Notifiable;
 
 	protected $table = 'rpgGameUsers';
 

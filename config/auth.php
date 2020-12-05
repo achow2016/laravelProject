@@ -38,7 +38,8 @@ return [
     'guards' => [
         'web' => [
             'driver' => 'session',
-            'provider' => 'users',
+           // 'provider' => 'users',
+		   'provider' => 'rpgUsers',
         ],
 		
 		'member' => [
@@ -59,8 +60,11 @@ return [
         ],
 
         'api' => [
-            'driver' => 'token',
-            'provider' => 'users',
+            //'driver' => 'token',
+            'driver' => 'session',
+            //'driver' => 'passport',
+			//'provider' => 'users',
+			'provider' => 'rpgUsers',
             'hash' => false,
         ],
 		
