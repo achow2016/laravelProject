@@ -11,3 +11,6 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
+app.yaml
+graceful-splice-297902-8a9a7d209bc1.json
+laravel.sql

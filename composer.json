@@ -22,7 +22,6 @@
         "pusher/pusher-php-server": "^4.1"
     },
     "require-dev": {
-        "facade/ignition": "^1.4",
         "fzaninotto/faker": "^1.4",
         "mockery/mockery": "^1.0",
         "nunomaduro/collision": "^3.0",
@@ -56,6 +55,9 @@
     "prefer-stable": true,
     "scripts": {
         "post-autoload-dump": [
+		
+			"mkdir -p ./bootstrap/cache/", 
+			
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
