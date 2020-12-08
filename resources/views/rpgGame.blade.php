@@ -43,13 +43,13 @@
 					<div class="col">
 						<div id="gameTitle">
 						
-							<!--notification box-->
+							<!--messages box-->
 							<div class="text-center d-flex w-100 fixed-top flex-row-reverse">
 								<div class="p-2">
 									<button id="openMessages" type="button" class="introButtons btn btn-primary active w-100">Messages &#9993</button>
 								</div>
 							</div>
-							<!--notification modal-->
+							<!--messages modal-->
 							<div class="modal fade" id="messageModal" role="dialog">
 								<div class="modal-dialog">
 									<!--Modal content-->
@@ -61,15 +61,17 @@
 										<div class="modal-body">
 											<form action="javascript:void(0);">
 												Send Message
-												<input type="text" name="msgUserName" id="msgUserName" placeholder="Enter User">
+												<input type="text" name="msgUserName" id="msgUserName" placeholder="Enter Target User">
 												<input type="text" name="msgUserMessage" id="msgUserMessage" placeholder="Enter Message">
 												<br>
-												<button id="test" type="button" class="btn btn-primary primary mt-1">Send</button>
+												<button id="sendMessage" type="button" class="btn btn-primary primary mt-1">Send</button>
 												<br>
-												Load Messages
-												<input type="password" name="password" id="messagePassword" placeholder="Enter Password">
-												<button id="loadMessages" type="button" class="btn btn-primary primary">Load</button>
 											</form>
+											Load Messages
+											<br>
+											<button id="loadMessages" type="button" class="btn btn-primary primary mb-2">Load</button>
+											<br>
+											<input type="password" name="password" id="messagePassword" placeholder="Confirm Password">
 											<div id="messageText"></div>
 										</div>
 										<div class="modal-footer centered-button">

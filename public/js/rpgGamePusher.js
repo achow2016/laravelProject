@@ -25,11 +25,10 @@ for(var i = 0; i <ca.length; i++) {
 	}
 }
 
-//opens private channel for pusher, on receive message store to db
-var privateChannel = pusher.subscribe(loginName);
-privateChannel.bind(loginName, function(data) {
+//opens own channel for pusher, on receive message store to db
+var channel2 = pusher.subscribe(loginName);
+channel2.bind('App\\Events\\PrivateMessage', function(data) {
 	var noteData = data.message;
-	
 	$.ajaxSetup({
 		headers: {
 			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -48,10 +47,16 @@ privateChannel.bind(loginName, function(data) {
 			},	
 			
 		}).done(function( msg ) {
-			console.log(msg);	
+			//console.log(msg);	
 		}
 	);	
+	
+	localStorage.setItem('messagesPresent', 'true');
+	if(localStorage.hasOwnProperty('messagesPresent') && (window.location.href).slice(-7) === "rpgGame") {
+		$("#openMessages").attr("class", "introButtons btn btn-warning active w-100");
+	}	
 });
+
 
 //joins public admin channel for pusher, on receive message store to db
 //receives messages send through debug console on pusher
@@ -76,7 +81,7 @@ channel.bind('admin', function(data) {
 			console.log(data);	
 		},	
 		}).done(function( msg ) {
-			console.log( msg );
+			//console.log( msg );
 		}
 	);	
 	

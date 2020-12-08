@@ -4235,6 +4235,8 @@ $(document).ready(function(){
 		$("#openMessages").attr("class", "introButtons btn btn-primary active w-100");
 		localStorage.removeItem('messagesPresent', 'true');
 		$('#messageText').empty();
+		$('#msgUserName').val("");
+		$('#msgUsermessage').val("");
 		$('#messagePassword').val("");
 		$('#messageModal').modal('toggle');
 	});
@@ -4282,36 +4284,70 @@ $(document).ready(function(){
 							"Message: " + element.text +
 							"<div class='row'><div class='col'>")
 				);
+				$('#msgUserName').val("");
+				$('#msgUserMessage').val("");
+				$('#messagePassword').val("");
 			},
 			error: function(data) {
-				console.log("error: " + data);	
-			}
-			//,complete: function(data){
-			//	console.log(data);	
+				$('#messageText').empty();
+				$('#messageText').text(JSON.parse(data.responseText).error);
+			},
+			//complete: function(data){
+				//console.log(data);	
 			//}
 		});
 		
 	});
 	
 	
-	$('#test').click(function() {
-		var userName = $('#msgUserName').val();
+	$('#sendMessage').click(function() {
+		var loginName;
+		var name = "login_name" + "=";
+		var decodedCookie = decodeURIComponent(document.cookie);
+		var ca = decodedCookie.split(';');
+		for(var i = 0; i <ca.length; i++) {
+			var c = ca[i];
+			while (c.charAt(0) == ' ') {
+				c = c.substring(1);
+			}
+			if (c.indexOf(name) == 0) {
+				loginName = c.substring(name.length, c.length);
+			}
+		}
 		var userMessage = $('#msgUserMessage').val();
+		var userMessageTarget = $('#msgUserName').val();
+		var password = $('#messagePassword').val();
+		
+		$.ajaxSetup({
+			headers: {
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+			}
+		});
+		
 		$.ajax({
 			type: 'GET',
 			url: 'http://localhost:8082/rpgGame/privateMessage',
 			//dataType: {},
 			data: {
-				userName:userName,
-				userMessage:userMessage
+				loginName:loginName,
+				userMessageTarget:userMessageTarget,
+				userMessage:userMessage,
+				password:password
 			},	
 			success: function(data) {
+				$('#msgUserName').val("");
+				$('#msgUserMessage').val("");
+				$('#messagePassword').val("");
+				$('#messageText').empty();
+				$('#messageText').text(data.message);
 			},
 			error: function(data) {
+				$('#messageText').empty();
+				$('#messageText').text(JSON.parse(data.responseText).error);
+			},
+			complete: function(data){
+				//console.log(data);	
 			}
-			//,complete: function(data){
-			//	console.log(data);	
-			//}
 		});
 	});	
 	

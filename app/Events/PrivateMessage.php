@@ -14,7 +14,7 @@ class PrivateMessage implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-	//public $username;
+	public $username;
 	public $channel;
     public $message;
 	
@@ -23,11 +23,12 @@ class PrivateMessage implements ShouldBroadcast
      *
      * @return void
      */
-    //public function __construct($username, $message, $channel)
-    public function __construct($channel, $message)
+    public function __construct($username, $message, $channel)
+	//public function __construct($channel, $message)
+    //public function __construct($username, $message)
     {
         //
-		//$this->username = $username;
+		$this->username = $username;
 		$this->channel = $channel;
 		$this->message = $message;
     }
