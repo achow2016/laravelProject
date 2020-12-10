@@ -10,6 +10,8 @@ use App\Models\rpgGameUser;
 use App\Models\rpgGameScore;
 use App\Models\rpgGameFriend;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Hash;
 
 class ScoreViewController extends Controller {
 
@@ -42,33 +44,45 @@ class ScoreViewController extends Controller {
 
 	public function add(Request $request)
 	{
+		$password = $request->input('password');
 		$profile = RpgGameScore::where('name', $request->input('name'))->first();
-		if($profile != null)
+		
+		if($profile) {
+			$user = RpgGameUser::where('name', $request->input('name'))->first();
+			$check = Hash::check($request->password, $user->password);
+		}
+		else
+			return Response::json(['error' => 'User does not exist.'],400);
+		
+		if($check) {		
 			RpgGameScore::where('name', $request->input('name'))->delete();
 
-		$name = $request->input('name');
-		$kills = $request->input('kills');
-		$damageDone = $request->input('damageDone');
-		$damageReceived = $request->input('damageReceived');
-		$chaptersCleared = $request->input('chaptersCleared');
-		$earningsTotal = $request->input('earningsTotal');
-		$scoreTotal = $request->input('scoreTotal');
-		
-		$rpgGameScore = new RpgGameScore();
-		$rpgGameScore->setAttribute('name', $name);
-		$rpgGameScore->setAttribute('kills', $kills);
-		$rpgGameScore->setAttribute('damageDone', $damageDone);
-		$rpgGameScore->setAttribute('damageReceived', $damageReceived);
-		$rpgGameScore->setAttribute('chaptersCleared', $chaptersCleared);
-		$rpgGameScore->setAttribute('earningsTotal', $earningsTotal);
-		$rpgGameScore->setAttribute('scoreTotal', $scoreTotal);
+			$name = $request->input('name');
+			$kills = $request->input('kills');
+			$damageDone = $request->input('damageDone');
+			$damageReceived = $request->input('damageReceived');
+			$chaptersCleared = $request->input('chaptersCleared');
+			$earningsTotal = $request->input('earningsTotal');
+			$scoreTotal = $request->input('scoreTotal');
+			
+			$rpgGameScore = new RpgGameScore();
+			$rpgGameScore->setAttribute('name', $name);
+			$rpgGameScore->setAttribute('kills', $kills);
+			$rpgGameScore->setAttribute('damageDone', $damageDone);
+			$rpgGameScore->setAttribute('damageReceived', $damageReceived);
+			$rpgGameScore->setAttribute('chaptersCleared', $chaptersCleared);
+			$rpgGameScore->setAttribute('earningsTotal', $earningsTotal);
+			$rpgGameScore->setAttribute('scoreTotal', $scoreTotal);
 
-		$username = $request->input('name');
-		$user = RpgGameUser::where('name', $username)->first();
-		$rpgGameScore->setAttribute('rpg_game_user_id', $user->id);
-		
-		$rpgGameScore->save();	
-		return view('rpgGame');
+			$username = $request->input('name');
+			$user = RpgGameUser::where('name', $username)->first();
+			$rpgGameScore->setAttribute('rpg_game_user_id', $user->id);
+			
+			$rpgGameScore->save();	
+			return view('rpgGame');
+		}
+		else
+			return Response::json(['error' => 'Password is incorrect.'],400);
 	}
 	
 	public function addFriend(Request $request) 

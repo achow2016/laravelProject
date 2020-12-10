@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Validator;
 use DateTime;
+use Illuminate\Support\Facades\Response;
 
 class rpgGameSessionController extends Controller
 {	
@@ -116,12 +117,24 @@ class rpgGameSessionController extends Controller
 	//saves localstorage into db (json field)
 	public function backup(Request $request) 
 	{
-		$name = $request->input('name');
-		//$name = $request->user()->name;
-		$saveGame = $request->input('archive');
-		$profile = RpgGameUser::where('name', $name)->first();
-		$profile->saveGame = $saveGame;
-		$profile->save();
+		$password = $request->input('password');
+		$profile = RpgGameUser::where('name', $request->input('name'))->first();
+		
+		if($profile)
+			$check = Hash::check($request->password, $profile->password);
+		else
+			return Response::json(['error' => 'User does not exist.'],400);
+		
+		if($check) {
+			$name = $request->input('name');
+			//$name = $request->user()->name;
+			$saveGame = $request->input('archive');
+			$profile = RpgGameUser::where('name', $name)->first();
+			$profile->saveGame = $saveGame;
+			$profile->save();
+		}
+		else
+			return Response::json(['error' => 'Password is incorrect.'],400);
 	}
 	
 	//restores localstorage from db (json field)

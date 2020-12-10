@@ -94,10 +94,10 @@ use Illuminate\Support\Facades\Route;
 	Route::post('rpgGame/updatePassword', 'rpggameRegistrationController@updatePassword')->middleware('auth:rpgUser');
 
 	//game backup
-	//Route::post('rpgGame/backup', 'rpggameSessionController@backup')->middleware('ajax');
-	Route::post('rpgGame/backup', 'rpggameSessionController@backup');
+	Route::post('rpgGame/backup', 'rpggameSessionController@backup')->middleware('ajax');
+	//Route::post('rpgGame/backup', 'rpggameSessionController@backup');
 	//Route::get('rpgGame/getBackup', 'rpggameSessionController@getBackup')->middleware('ajax');
-	Route::get('rpgGame/getBackup', 'rpggameSessionController@getBackup');
+	Route::get('rpgGame/getBackup', 'rpggameSessionController@getBackup')->middleware('ajax');
 
 	//user cash shop
 	Route::get('/rpgGame/userCashStore', 'RpgGamePaymentController@getStorePage')->middleware('auth:rpgUser');
@@ -110,15 +110,15 @@ use Illuminate\Support\Facades\Route;
 	
 	//pusher messages
 	//Route::post('rpgGame/storeNotification', 'RpgGameNotificationController@store')->middleware('ajax');
-	Route::post('rpgGame/storeMessage', 'RpgGameMessageController@store');
-	Route::get('rpgGame/getMessages', 'RpgGameMessageController@get');
+	Route::post('rpgGame/storeMessage', 'RpgGameMessageController@store')->middleware('ajax');
+	Route::get('rpgGame/getMessages', 'RpgGameMessageController@get')->middleware('ajax');
 	/*
 	Route::get('rpgGame/privateMessage', function () {
 		event(new App\Events\PrivateMessage('a', 'aa', 'a'));
 		//return "Event has been sent!";
 	});
 	*/
-	Route::get('rpgGame/privateMessage', 'RpgGameMessageController@send');
+	Route::get('rpgGame/privateMessage', 'RpgGameMessageController@send')->middleware('ajax');
 	
 /*
 //main site routes

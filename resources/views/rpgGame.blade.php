@@ -260,18 +260,19 @@
 				
 				<div class="row storyMenu">
 					<div class="col">
-						<!--div id="ctrlButtonContainer">
-							<button id="storyProgress" type="button" class="btn btn-primary active">Next</button>
-							<button style="display:none" id="storyEnd" type="button" class="btn btn-primary active"></button>
-							<button type="button" class="saveGame btn btn-primary active">QSave</button>
-							<button type="button" class="saveQuit btn btn-primary active">Save and Quit</button>
-						</div-->
-						
-						<div id="ctrlButtonContainer" class="btn-group d-flex w-100 fixed-bottom" role="group">
+						<div id="ctrlButtonContainer" class="btn-group w-100 fixed-bottom" role="group">
 							<button id="storyProgress" type="button" class="btn btn-primary active w-100">Next</button>
 							<button style="display:none" id="storyEnd" type="button" class="btn btn-primary active w-100"></button>
 							<button type="button" class="saveGame btn btn-primary active w-100">QSave</button>
-							<button type="button" class="saveQuit btn btn-primary active w-100">Save and Quit</button>
+							<button id="storySaveQuit" type="button" class="btn btn-primary active w-100">Save and Quit</button>
+						</div>
+						<p class="saveMessage"></p>
+						<div id="storySaveQuitMenu" style="display:none" class="btn-group w-100 fixed-bottom">
+							<form action="javascript:void(0);">
+								<input type="password" class="archivePassCheckStory w-100 text-center" name="archivePassCheck" placeholder="Confirm Password">
+								<button type="button" class="saveQuit btn btn-primary active w-100">Confirm</button>
+								<button id="storySaveClose" class="btn btn-primary active w-100">Close</button>
+							</form>
 						</div>
 					</div>	
 					
@@ -341,13 +342,23 @@
 				<!--Modal content-->
 						<div class="modal-content">
 							<div class="modal-header">
-								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<div class="row w-100">
+									<p class="col-11 saveMessage"></p>
+									<button type="button" class="col-1 close" data-dismiss="modal">&times;</button>
+								</div>
 							</div>
 							<div class="modal-body">
-								<div class="" id="gameIntroMenu" role="group">
-									<button type="button" class="saveQuit btn btn-primary active w-100 mb-1">Save and Quit</button>
+								<div class="gameOpMenu" role="group">
+									<button type="button" class="menuSaveQuit btn btn-primary active w-100 mb-2">Save and Quit</button>
 									<button type="button" class="returnButton btn btn-primary active w-100">Quit</button>
-								</div>	
+								</div>
+								<div style="display:none" class="modalSaveQuitMenu btn-group w-100">
+									<form action="javascript:void(0);">
+										<input type="password" class="archivePassCheckMap w-100 text-center mb-2" name="archivePassCheck" placeholder="Confirm Password">
+										<button type="button" class="saveQuit btn btn-primary active w-100 mb-2">Confirm</button>
+										<button class="modalSaveClose btn btn-primary active w-100 mb-2">Close</button>
+									</form>
+								</div>								
 							</div>
 							<div class="modal-footer centered-button">
 								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
@@ -805,14 +816,25 @@
 				<!--Modal content-->
 						<div class="modal-content">
 							<div class="modal-header">
-								<button type="button" class="close" data-dismiss="modal">&times;</button>
+								<div class="row w-100">
+									<p class="col-11 saveMessage"></p>
+									<button type="button" class="col-1 close" data-dismiss="modal">&times;</button>
+								</div>
 							</div>
 							<div class="modal-body">
-								<div class="" id="gameIntroMenu" role="group">
-									<button type="button" class="saveQuit btn btn-primary active w-100 mb-1">Save and Quit</button>
-									<button type="button" class="returnButton btn btn-primary active w-100 mb-1">Quit</button>
-									<button type="button" class="saveGame btn btn-primary active w-100">QSave</button>
-								</div>	
+								<div class="gameOpMenu" role="group">
+									<button type="button" class="saveGame btn btn-primary active w-100 mb-2">QSave</button>
+									<button type="button" class="menuSaveQuit btn btn-primary active w-100 mb-2">Save and Quit</button>
+									<button type="button" class="returnButton btn btn-primary active w-100">Quit</button>
+								</div>
+								<div style="display:none" class="modalSaveQuitMenu btn-group w-100">
+									<form action="javascript:void(0);">
+										<input type="password" class="archivePassCheckBattle w-100 text-center mb-2" name="archivePassCheck" placeholder="Confirm Password">
+										<button type="button" class="saveQuit btn btn-primary active w-100 mb-2">Confirm</button>
+										<button class="modalSaveClose btn btn-primary active w-100 mb-2">Close</button>
+									</form>
+								</div>
+								
 							</div>
 							<div class="modal-footer centered-button">
 								<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

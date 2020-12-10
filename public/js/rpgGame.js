@@ -3576,9 +3576,219 @@ $(document).ready(function(){
 		$("#restoreButton").prop('disabled', false);
 	});	
 	
+	function saveScoreAjax(name,kills,damageDone,damageReceived,chaptersCleared,earningsTotal,scoreTotal,password) {
+		$('.saveMessage').text("Saving score data...");
+		return new Promise(function(resolve, reject) {
+			$.ajaxSetup({
+				headers: {
+					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+					'X-Requested-With': 'XMLHttpRequest'
+				}
+			});
+			$.ajax({
+				type: "POST",
+				url: 'http://localhost:8082/rpgGame/add',
+				data: {name:name,kills:kills,
+					damageDone:damageDone, 
+					damageReceived:damageReceived,
+					chaptersCleared:chaptersCleared,
+					earningsTotal:earningsTotal,
+					scoreTotal:scoreTotal,
+					password:password
+				},
+				success: function(data) {
+					resolve(data);
+				},
+				error: function(data) {
+					$('.saveMessage').text(JSON.parse(data.responseText).error);
+					console.log(JSON.parse(data.responseText).error);
+					$(".modalSaveQuitMenu").show();
+					$("#storySaveQuitMenu").show();
+					reject(data);
+				},
+				}).done(function( msg ) {
+				//alert( msg );
+			});			
+		});
+	}	
+	
+	function backupAjax(name,archive,password) {
+		$('.saveMessage').text("Saving player data...");
+		return new Promise(function(resolve, reject) {
+			$.ajaxSetup({
+				headers: {
+					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+					'X-Requested-With': 'XMLHttpRequest'
+				}
+			});
+			$.ajax({
+				type: "POST",
+				url: 'http://localhost:8082/rpgGame/backup',
+				data: {
+					name:name, 
+					archive:archive, 
+					password:password
+				},
+				success: function(data) {
+					resolve(data);
+				},
+				error: function(data) {
+					$('.saveMessage').text(JSON.parse(data.responseText).error);
+					console.log(JSON.parse(data.responseText).error);
+					$(".modalSaveQuitMenu").show();
+					$("#storySaveQuitMenu").show();
+					reject(data);
+				},
+				}).done(function( msg ) {
+				//alert( msg );
+			});
+		});	
+	}
+	
 	//save and quit
 	//from modal go to title after saving scores to database
 	$(".saveQuit").click(function() {
+		
+		if(window.localStorage.getItem('player')) {
+			var tempPlayerData = JSON.parse(window.localStorage.getItem('player'));
+			var name = tempPlayerData.name;
+			var kills = tempPlayerData.kills;
+			var damageDone = tempPlayerData.damageDone;
+			var damageReceived = tempPlayerData.damageReceived;
+			var chaptersCleared = tempPlayerData.chaptersCleared;
+			var earningsTotal = tempPlayerData.earningsTotal;
+			var scoreTotal = kills + damageDone + damageReceived + chaptersCleared + earningsTotal;
+			var password;
+			var passwordOne = $(".archivePassCheckMap").val();
+			var passwordTwo = $(".archivePassCheckBattle").val();
+			var passwordThree = $(".archivePassCheckStory").val();
+			if(passwordOne == "" && passwordTwo == "" && passwordThree == "")
+				return false;
+			if(passwordOne != "")
+				password = passwordOne;
+			if(passwordTwo != "")
+				password = passwordTwo;
+			if(passwordThree != "")
+				password = passwordThree;
+			
+			$(".modalSaveQuitMenu").hide();
+			$("#storySaveQuitMenu").hide();
+			/*
+			$.ajaxSetup({
+				headers: {
+					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+					'X-Requested-With': 'XMLHttpRequest'
+				}
+			});
+			$.ajax({
+				type: "POST",
+				url: 'http://localhost:8082/rpgGame/add',
+				data: {name:name,kills:kills,
+					damageDone:damageDone, 
+					damageReceived:damageReceived,
+					chaptersCleared:chaptersCleared,
+					earningsTotal:earningsTotal,
+					scoreTotal:scoreTotal,
+					password:password
+				},
+				error: function(data) {
+					$('.saveMessage').text(JSON.parse(data.responseText).error);
+					console.log(JSON.parse(data.responseText).error);
+					return false;
+				},
+				}).done(function( msg ) {
+				//alert( msg );
+			});
+			*/
+			
+			saveScoreAjax(name,kills,damageDone,damageReceived,chaptersCleared,earningsTotal,scoreTotal,password).then(function(data) {
+				//move entire localstorage into db field (json cast into array)
+				var archive = [],
+				keys = Object.keys(localStorage),
+				i = 0, key;
+
+				for (; key = keys[i]; i++) {
+					archive.push( key + '=' + localStorage.getItem(key));
+				}
+				backupAjax(name,archive,password).then(function(data) {
+					//ui resets
+					$(".saveQuit").prop('disabled', false);
+					$(".saveGame").text("QSave").prop('disabled', false);
+				
+					if($('#battleMenuModal').hasClass('show'))
+						$('#battleMenuModal').modal('toggle');
+					if($('#mapScoreModal').hasClass('show'))
+						$('#mapScoreModal').modal('toggle');
+					if($('#mapMenuModal').hasClass('show'))
+						$('#mapMenuModal').modal('toggle');		
+
+					if(window.localStorage.getItem('player')) {
+						$("#continueButton").prop('disabled', false);	
+					}
+					$("#nextChapterButton").hide();
+					$("#gameIntroMenu").show();
+					$(".introButtons").show();
+					$("#battleMain").hide();
+					$("#gameTopTab").hide();
+					$("#storyMain").hide();
+					$("#mapMain").hide();
+
+					//restore menu states
+					$(".archivePassCheckMap").val("");
+					$(".archivePassCheckBattle").val("");
+					$('.saveMessage').text("");
+					//story bottom menu
+					$("#storySaveQuitMenu").hide();
+					$("#ctrlButtonContainer").show();
+					//in-game modals
+					$(".modalSaveQuitMenu").hide();
+					$("#storySaveQuitMenu").hide();
+					$(".gameOpMenu").show();					
+				}).catch(function(err) {
+					console.log(err)
+				});
+				
+			}).catch(function(err) {			  
+				console.log(err)
+			});
+			
+			/*
+			//move entire localstorage into db field (json cast into array)
+			var archive = [],
+			keys = Object.keys(localStorage),
+			i = 0, key;
+
+			for (; key = keys[i]; i++) {
+				archive.push( key + '=' + localStorage.getItem(key));
+			}
+			
+			$.ajaxSetup({
+				headers: {
+					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+					'X-Requested-With': 'XMLHttpRequest'
+				}
+			});
+			$.ajax({
+				type: "POST",
+				url: 'http://localhost:8082/rpgGame/backup',
+				data: {
+					name:name, 
+					archive:archive, 
+					password:password
+				},
+				error: function(data) {
+					$('.saveMessage').text(JSON.parse(data.responseText).error);
+					console.log(JSON.parse(data.responseText).error);
+					return false;
+				},
+				}).done(function( msg ) {
+				//alert( msg );
+			});
+		*/
+		}
+		
+		/*
+		//ui resets
 		$(".saveQuit").prop('disabled', false);
 		$(".saveGame").text("QSave").prop('disabled', false);
 	
@@ -3600,54 +3810,42 @@ $(document).ready(function(){
 		$("#storyMain").hide();
 		$("#mapMain").hide();
 
-		if(window.localStorage.getItem('player')) {
-			let tempPlayerData = JSON.parse(window.localStorage.getItem('player'));
-			let name = tempPlayerData.name;
-			let kills = tempPlayerData.kills;
-			let damageDone = tempPlayerData.damageDone;
-			let damageReceived = tempPlayerData.damageReceived;
-			let chaptersCleared = tempPlayerData.chaptersCleared;
-			let earningsTotal = tempPlayerData.earningsTotal;
-			let scoreTotal = kills + damageDone + damageReceived + chaptersCleared + earningsTotal;
-			
-			
-			$.ajaxSetup({
-				headers: {
-					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-				}
-			});
-			$.ajax({
-				type: "POST",
-				url: 'http://localhost:8082/rpgGame/add',
-				data: {name:name,kills:kills,
-					damageDone:damageDone, 
-					damageReceived:damageReceived,
-					chaptersCleared:chaptersCleared,
-					earningsTotal:earningsTotal,
-					scoreTotal:scoreTotal},
-				}).done(function( msg ) {
-				//alert( msg );
-			});
-		
-			//move entire localstorage into db field (json cast into array)
-			var archive = [],
-			keys = Object.keys(localStorage),
-			i = 0, key;
-
-			for (; key = keys[i]; i++) {
-				archive.push( key + '=' + localStorage.getItem(key));
-			}
-			
-			$.ajax({
-				type: "POST",
-				url: 'http://localhost:8082/rpgGame/backup',
-				data: {name:name, archive:archive},
-				}).done(function( msg ) {
-				//alert( msg );
-			});
-		}
+		//restore menu states
+		$(".archivePassCheck").val("");
+		$('.saveMessage').text();
+		//story bottom menu
+		$("#storySaveQuitMenu").hide();
+		$("#ctrlButtonContainer").show();
+		//in-game modals
+		$(".modalSaveQuitMenu").hide();
+		$(".gameOpMenu").show();
+		*/
+	});
+	
+	//show save quit on story page
+	$("#storySaveQuit").click(function() {
+		$("#storySaveQuitMenu").show();
+		$("#ctrlButtonContainer").hide();
+	});	
+	
+	//close the save and quit menu on story page
+	$("#storySaveClose").click(function() {
+		$("#storySaveQuitMenu").hide();
+		$("#ctrlButtonContainer").show();
+	});	
+	
+	//for game menu modals, on save and quit display menu demanding password
+	$(".menuSaveQuit").click(function() {
+		$(".modalSaveQuitMenu").show();
+		$(".gameOpMenu").hide();
 	});
 
+	//for game menu modals, on save and quit display menu demanding password
+	$(".modalSaveClose").click(function() {
+		$(".modalSaveQuitMenu").hide();
+		$(".gameOpMenu").show();
+	});
+	
 	//continue button
 	//loads player data from local storage, battle progress not saved 
 	$("#continueButton").click(function() {
@@ -4138,7 +4336,8 @@ $(document).ready(function(){
 			
 			$.ajaxSetup({
 				headers: {
-					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+					'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+					'X-Requested-With': 'XMLHttpRequest'
 				}
 			});
 			
@@ -4261,7 +4460,8 @@ $(document).ready(function(){
 	
 		$.ajaxSetup({
 			headers: {
-				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+				'X-Requested-With': 'XMLHttpRequest'
 			}
 		});
 		
@@ -4320,7 +4520,8 @@ $(document).ready(function(){
 		
 		$.ajaxSetup({
 			headers: {
-				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+				'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+				'X-Requested-With': 'XMLHttpRequest'
 			}
 		});
 		
