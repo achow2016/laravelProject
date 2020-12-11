@@ -120,6 +120,10 @@ use Illuminate\Support\Facades\Route;
 	*/
 	Route::get('rpgGame/privateMessage', 'RpgGameMessageController@send')->middleware('ajax');
 	
+	//jobs
+	//clears textboard contents on visit
+	//Route::get('rpgGame/clearTextboard', 'JobController@dispatch');
+	
 /*
 //main site routes
 
