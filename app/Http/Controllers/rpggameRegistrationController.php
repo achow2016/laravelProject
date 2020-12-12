@@ -48,10 +48,10 @@ class rpggameRegistrationController extends Controller
 		$user = RpgGameUser::where('email', $email)->first();
 		//Generates the password reset link and token
 		try {
-			$text = "127.0.0.1:8082/rpgGame/passwordReset?token=" . $token . "&email=" . urlencode($user->email);
+			$text = "127.0.0.1:8082/rpgGame/passwordReset?token=" . $token . "&email=" . urlencode($email);
 			$data = array('link' => $text);
 			Mail::send('rpgGameResetMail', $data, function($message) {
-				$message->to('tilldusk@gmail.com', 'user')->subject('RpgGame password reset email');
+				$message->to($email, 'user')->subject('RpgGame password reset email');
 				$message->from('alanygchow@gmail.com','Alan');
 			});
 
@@ -138,10 +138,9 @@ class rpggameRegistrationController extends Controller
 
 		//Send Email Reset Success Email
 		try {
-			
 			$data = array('note' => 'password reset successful!');
 			Mail::send('rpgGameResetMailConf', $data, function($message) {
-				$message->to('tilldusk@gmail.com', 'user')->subject('RpgGame password reset email');
+				$message->to($request->user)->subject('RpgGame password reset email');
 				$message->from('alanygchow@gmail.com','Alan');
 			});
 			return redirect('/login')->with('message', 'pass changed mail sent!'); 
@@ -263,11 +262,13 @@ class rpggameRegistrationController extends Controller
 			$score = $myUser->score;
 			$score->name = $userName;
 			$score->save();
-			return view('rpgGameUserPanel', ['avatar' => $myUser->avatar,'message' => 'Changed name from ' . $authName . ' to ' . $userName, 
+			return view('rpgGameUserPanel', 
+				['avatar' => $myUser->avatar,'message' => 'Changed name from ' . $authName . ' to ' . $userName, 
 				'currentName' => $userName, 'currentEmail' => $email]);
 		}
 		else
-			return view('rpgGameUserPanel', ['avatar' => $myUser->avatar,'errorMessage' => 'Names don\'t match.', 
+			return view('rpgGameUserPanel', 
+				['avatar' => $myUser->avatar,'errorMessage' => 'Names don\'t match.', 
 				'currentName' => $authName, 'currentEmail' => $email]);
 	}
 	
@@ -283,12 +284,14 @@ class rpggameRegistrationController extends Controller
 		if($email === $emailConf) {
 			$myUser->email = $email;
 			$myUser->save();
-			return view('rpgGameUserPanel', ['avatar' => $myUser->avatar,'message' => 'Changed email from ' . $origEmail . ' to ' . $email, 
+			return view('rpgGameUserPanel', 
+				['avatar' => $myUser->avatar,'message' => 'Changed email from ' . $origEmail . ' to ' . $email, 
 				'currentName' => $name, 'currentEmail' => $email]);
 		}
 		else
-			return view('rpgGameUserPanel', ['avatar' => $myUser->avatar,'errorMessage' => 'Emails don\'t match.', 'currentName' => $name, 
-				'currentEmail' => $email]);
+			return view('rpgGameUserPanel', 
+				['avatar' => $myUser->avatar,'errorMessage' => 'Emails don\'t match.',
+				'currentName' => $name, 'currentEmail' => $email]);
 	}
 	
 	public function updatePassword(Request $request) 
@@ -304,11 +307,45 @@ class rpggameRegistrationController extends Controller
 		if($password === $passwordConf) {
 			$myUser->password = $password;
 			$myUser->save();
-			return view('rpgGameUserPanel', ['avatar' => $myUser->avatar,'message' => 'Password updated.', 'currentName' => $name, 
-				'currentEmail' => $email]);
+			return view('rpgGameUserPanel', 
+				['avatar' => $myUser->avatar,'message' => 'Password updated.', 
+				'currentName' => $name, 'currentEmail' => $email]);
 		}
 		else
-			return view('rpgGameUserPanel', ['avatar' => $myUser->avatar,'errorMessage' => 'Passwords don\'t match.', 'currentName' => $name, 
-				'currentEmail' => $email]);		
+			return view('rpgGameUserPanel', 
+				['avatar' => $myUser->avatar,'errorMessage' => 'Passwords don\'t match.', 
+				'currentName' => $name, 'currentEmail' => $email]);		
+	}
+	
+	public function deleteAccount(Request $request) 
+	{
+		$this->validate(request(), [
+			'password' => 'required',
+			'passwordConf' => 'required'
+		]);
+		
+		$authName = auth::guard('rpgUser')->user()->name;
+		$myUser = RpgGameUser::where('name', $authName)->first();
+		$password = $request->password;
+		$passwordConf = $request->passwordConf;
+		
+		if($password === $passwordConf) {
+			$check = Hash::check($password, $myUser->password);
+			if($check) {
+				$myUser->delete();
+				Auth::guard('rpgUser')->logout();
+				//return redirect()->to('/rpgGame/');
+				return redirect('/login')->with('message', 'User ' . $authName . ' account deleted!'); 
+			}
+			else {
+				return view('rpgGameUserPanel', 
+				['avatar' => $myUser->avatar,'errorMessage' => 'Password is incorrect', 
+				'currentName' => $myUser->name, 'currentEmail' => $myUser->email]);	
+			}	
+		}
+		else
+			return view('rpgGameUserPanel', 
+				['avatar' => $myUser->avatar,'errorMessage' => 'Passwords don\'t match.', 
+				'currentName' => $name, 'currentEmail' => $email]);	
 	}
 }

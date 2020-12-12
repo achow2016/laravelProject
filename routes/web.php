@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Route;
 	//payments
 	Route::post('/rpgGame/pay', 'RpgGamePaymentController@createPayment')->name('create-payment')->middleware('auth:rpgUser');
 	Route::get('/rpgGame/confirm', 'RpgGamePaymentController@confirmPayment')->name('confirm-payment')->middleware('auth:rpgUser');
+	Route::get('/rpgGame/cashStore', 'RpgGamePaymentController@getStorePage')->name('storeHome')->middleware('auth:rpgUser');
 	
 	//scores
 	Route::get('rpgGame/scores', 'ScoreViewController@scores')->middleware('auth:rpgUser');
@@ -92,6 +93,7 @@ use Illuminate\Support\Facades\Route;
 	Route::post('rpgGame/updateName', 'rpggameRegistrationController@updateName')->middleware('auth:rpgUser');
 	Route::post('rpgGame/updateEmail', 'rpggameRegistrationController@updateEmail')->middleware('auth:rpgUser');
 	Route::post('rpgGame/updatePassword', 'rpggameRegistrationController@updatePassword')->middleware('auth:rpgUser');
+	Route::post('rpgGame/deleteAccount', 'rpggameRegistrationController@deleteAccount')->middleware('auth:rpgUser');
 
 	//game backup
 	Route::post('rpgGame/backup', 'rpggameSessionController@backup')->middleware('ajax');

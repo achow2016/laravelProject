@@ -65,4 +65,11 @@ class RpgGameUser extends Authenticatable
 	{
 		return $this->hasOne('App\Models\rpgGameScore', 'rpg_game_user_id', 'id');
 	}
+	
+	public function payments()
+	{
+		return $this->hasMany('App\Models\rpgGamePayment', 'rpg_game_user_id', 'id');
+	}
+	
+	
 }

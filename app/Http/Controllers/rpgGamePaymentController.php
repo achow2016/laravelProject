@@ -20,8 +20,11 @@ use Illuminate\Support\Facades\Input;
 use Redirect;
 use URL;
 
+use Mail;
 use App\Models\rpgGameUser;
+use App\Models\rpgGamePayment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class RpgGamePaymentController extends Controller
 {
@@ -63,7 +66,8 @@ class RpgGamePaymentController extends Controller
 		// Create a redirect urls, cancel url brings us back to current page, return url takes us to confirm payment.
 		$redirect_urls = new RedirectUrls();
 		$redirect_urls->setReturnUrl(route('confirm-payment'))
-			->setCancelUrl(url()->current());
+			//->setCancelUrl(url()->current());
+			->setCancelUrl(route('storeHome'));
 		// We set up the payment with the payer, urls and transactions.
 		// Note: you can have different itemLists, then different transactions for it.
 		$payment = new Payment();
@@ -117,12 +121,45 @@ class RpgGamePaymentController extends Controller
 		if ($result->getState() != 'approved')
 			return redirect('/rpgGame/userCashStore')->with('error', 'Payment was not successful.');
 		else {
+			//update user credits
 			$username = auth::guard('rpgUser')->user()->name;
 			$user = RpgGameUser::where('name', $username)->first();
-			$newUserCredits = $request->session()->pull('creditAmount', '') + $user->credits;
+			$purchasedCredits = $request->session()->pull('creditAmount', '');
+			//$newUserCredits = $request->session()->pull('creditAmount', '') + $user->credits;
+			$newUserCredits = $purchasedCredits + $user->credits;
 			$user->credits = $newUserCredits;
 			$user->save();
-			return redirect('/rpgGame/userCashStore')->with('success', 'Payment made successfully');
+			
+			//confirmation email and record of transaction
+			//update payments db table
+			$payment = new RpgGamePayment();
+			$payment->setAttribute('rpg_game_user_id', $user->id);
+			$payment->setAttribute('amount', $purchasedCredits);		
+			$user = $user->payments()->save($payment);
+			
+			//tries sending the confirmation email
+			try {
+				$text = "You have successfully purchased " . $purchasedCredits . " credits for rpgGame!";
+				$data = array('text' => $text);
+				Mail::send('rpgGameFundConfirm', $data, function($message) {
+					$message->to('tilldusk@gmail.com', 'user')->subject('RpgGame fund confirmation');
+					$message->from('alanygchow@gmail.com','Alan');
+				});
+				if( count(Mail::failures()) > 0 ) {
+					foreach(Mail::failures() as $emailAddr) {
+						Log::info('Failure on: ' . $emailAddr);
+					} 
+					return redirect('/rpgGame/userCashStore')->with('error', 'Account funded, email failed to be sent.');
+				} 
+				else {
+					return redirect('/rpgGame/userCashStore')->with('success', 'Payment made successfully, email sent.');
+				}
+			} 
+			catch (\Exception $e) {
+				Log::info('Exception:' . $e);
+				return redirect('/rpgGame/userCashStore')->with('error', 'Account funded, email failed to be sent.');
+			}
+			return redirect('/rpgGame/userCashStore')->with('success', 'Payment made successfully, email sent.');
 		}
 	}
 	public function getStorePage(Request $request) {

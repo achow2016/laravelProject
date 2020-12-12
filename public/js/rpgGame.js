@@ -4419,7 +4419,16 @@ $(document).ready(function(){
 		}	
 		else
 			$("#passRow").hide();
-	});	
+	});
+
+	$("#selectDeleteAcctRow").click(function() {
+		if($("#deleteAcctRow").css("display") == "none") {
+			$(".mgmtRow").hide();			
+			$("#deleteAcctRow").show();
+		}	
+		else
+			$("#deleteAcctRow").hide();
+	});		
 
 	$("#returnFromPostsButton").click(function() {	
 		window.location.href='/rpgGame';

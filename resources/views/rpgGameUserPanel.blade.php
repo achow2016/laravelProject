@@ -39,9 +39,9 @@
 		</div>
 		@endisset
 	
-		<button id="selectAvatarRow" type="button" class="btn btn-primary active w-100">Avatars</button>
+		<button id="selectAvatarRow" type="button" class="btn btn-primary active w-100 mb-2">Avatars</button>
 
-		<div class="row mgmtRow mb-1" id="avatarRow">
+		<div class="row mgmtRow mb-2" id="avatarRow">
 			<div class="col">
 				<div class="text-center" id="avatarMenu" style="display:none">
 					<form method="post" action="/rpgGame/addAvatar" enctype="multipart/form-data">
@@ -69,7 +69,7 @@
 			</div>
 		</div>
 		
-		<button id="selectNameRow" type="button" class="btn btn-primary active w-100">Username</button>
+		<button id="selectNameRow" type="button" class="btn btn-primary active w-100 mb-2">Username</button>
 		
 		<div class="row mb-2 mgmtRow" id="nameRow" style="display:none">
 			<div class="col text-center">
@@ -91,7 +91,7 @@
 			</div>
 		</div>
 		
-		<button id="selectEmailRow" type="button" class="btn btn-primary active w-100">Email</button>
+		<button id="selectEmailRow" type="button" class="btn btn-primary active w-100 mb-2">Email</button>
 		
 		<div class="row mb-2 mgmtRow" id="emailRow" style="display:none">
 			<div class="col text-center">
@@ -115,7 +115,7 @@
 			</div>
 		</div>
 
-		<button id="selectPasswordRow" type="button" class="btn btn-primary active w-100">Password</button>
+		<button id="selectPasswordRow" type="button" class="btn btn-primary active w-100 mb-2">Password</button>
 		
 		<div class="row mb-2 mgmtRow" id="passRow" style="display:none">
 			<div class="col text-center">
@@ -123,6 +123,21 @@
 					Update Password
 					<br>
 					<input type="text" name="password" id="password" placeholder="new password" required>
+					<br><br>
+					<input type="text" name="passwordConf" id="passwordConf" placeholder="password confirm" required>
+					<input type="submit" name="submit" value=">">
+				</form>			
+			</div>
+		</div>
+		
+		<button id="selectDeleteAcctRow" type="button" class="btn btn-primary active w-100 mb-2">Delete Account</button>
+		
+		<div class="row mb-2 mgmtRow" id="deleteAcctRow" style="display:none">
+			<div class="col text-center">
+				<form method="post" action="/rpgGame/deleteAccount" enctype="multipart/form-data">
+					Delete Account
+					<br>
+					<input type="text" name="password" id="password" placeholder="enter password" required>
 					<br><br>
 					<input type="text" name="passwordConf" id="passwordConf" placeholder="password confirm" required>
 					<input type="submit" name="submit" value=">">

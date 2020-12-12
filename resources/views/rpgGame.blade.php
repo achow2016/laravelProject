@@ -71,7 +71,11 @@
 											<br>
 											<button id="loadMessages" type="button" class="btn btn-primary primary mb-2">Load</button>
 											<br>
-											<input type="password" name="password" id="messagePassword" placeholder="Confirm Password">
+											
+											<div class="alert alert-info">
+												<input type="password" name="password" id="messagePassword" placeholder="Confirm Password">
+											</div>
+											
 											<div id="messageText"></div>
 										</div>
 										<div class="modal-footer centered-button">
