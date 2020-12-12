@@ -1,2 +1,2 @@
-### Reusing Assignment 2 Starter Kit from COMP4669 as template. Currently using as a platform to develop my browser game on for practice
+### Built on top of Assignment 2 Starter Kit from BCIT COMP4669 as template. Currently using to develop a mobile or web app for laravel development practice.
  
