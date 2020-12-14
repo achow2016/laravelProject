@@ -67,9 +67,12 @@
 												<button id="sendMessage" type="button" class="btn btn-primary primary mt-1">Send</button>
 												<br>
 											</form>
-											Load Messages
-											<br>
-											<button id="loadMessages" type="button" class="btn btn-primary primary mb-2">Load</button>
+											<form action="javascript:void(0);">
+												Load ("all" or a numeric value)
+												<br>
+												<input type="text" name="userMessageQty" id="userMessageQty" placeholder="Amount" value="all">
+												<button id="loadMessages" type="button" class="btn btn-primary primary mb-2">Load</button>
+											</form>	
 											<br>
 											
 											<div class="alert alert-info">

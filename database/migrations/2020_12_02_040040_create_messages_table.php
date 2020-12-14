@@ -17,8 +17,9 @@ class CreateMessagesTable extends Migration
         Schema::create('messages', function (Blueprint $table) {
             $table->increments('id');
             $table->string('text');
+            $table->string('author');
 			$table->integer('rpg_game_user_id')->unsigned();
-			$table->foreign('rpg_game_user_id')->references('id')->on('rpgGameUsers')->onDelete('cascade'); 
+			$table->foreign('rpg_game_user_id')->references('id')->on('rpgGameUsers')->onDelete('cascade');
             $table->timestamps();
         });
     }

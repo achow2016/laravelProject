@@ -47,9 +47,13 @@
 			</table>
 			@endisset
 			
-			<div style="opacity:0.6" class="btn-group d-flex w-100 fixed-bottom" role="group">
-				<button id="returnFromPostsButton" type="button" class="introButtons btn btn-primary active w-100">Home</button>
-				<button id="refreshPostsButton" type="button" class="introButtons btn btn-primary active w-100">Refresh</button>
+			<!--div style="opacity:0.6" class="btn-group d-flex w-100 fixed-bottom" role="group"-->
+			<div style="opacity:0.6" class="row d-flex fixed-bottom">
+				<!--button id="returnFromPostsButton" type="button" class="introButtons btn btn-primary active">Home</button>
+				<button id="refreshPostsButton" type="button" class="introButtons btn btn-primary active w-33">Refresh</button-->
+				<div id="returnFromPostsButton" class="col-3 introButtons btn btn-primary active float-left">&#9751;</div>
+				<div class="col-6"></div>
+				<div id="refreshPostsButton" class="col-3 introButtons btn btn-primary active float-right">&#9851;</div>
 			</div>	
 			
 		</div>

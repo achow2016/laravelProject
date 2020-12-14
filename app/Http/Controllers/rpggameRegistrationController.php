@@ -346,6 +346,6 @@ class rpggameRegistrationController extends Controller
 		else
 			return view('rpgGameUserPanel', 
 				['avatar' => $myUser->avatar,'errorMessage' => 'Passwords don\'t match.', 
-				'currentName' => $name, 'currentEmail' => $email]);	
+				'currentName' => $myUser->name, 'currentEmail' => $myUser->email]);	
 	}
 }

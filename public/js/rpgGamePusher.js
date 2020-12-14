@@ -28,6 +28,8 @@ for(var i = 0; i <ca.length; i++) {
 //opens own channel for pusher, on receive message store to db
 var channel2 = pusher.subscribe(loginName);
 channel2.bind('App\\Events\\PrivateMessage', function(data) {
+	
+	/*
 	var noteData = data.message;
 	$.ajaxSetup({
 		headers: {
@@ -50,6 +52,7 @@ channel2.bind('App\\Events\\PrivateMessage', function(data) {
 			//console.log(msg);	
 		}
 	);	
+	*/
 	
 	localStorage.setItem('messagesPresent', 'true');
 	if(localStorage.hasOwnProperty('messagesPresent') && (window.location.href).slice(-7) === "rpgGame") {
@@ -64,6 +67,7 @@ var channel = pusher.subscribe('admin');
 channel.bind('admin', function(data) {
 	var noteData = data;
 	
+	/*
 	$.ajaxSetup({
 		headers: {
 			'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -84,6 +88,7 @@ channel.bind('admin', function(data) {
 			//console.log( msg );
 		}
 	);	
+	*/
 	
 	//set local storage item and attempt to change notification button if it is present (correct url)
 	localStorage.setItem('messagesPresent', 'true');

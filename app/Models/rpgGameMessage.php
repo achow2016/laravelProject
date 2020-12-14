@@ -14,7 +14,7 @@ class RpgGameMessage extends Model{
      * @var array
      */
     protected $fillable = [
-		'text', 'rpg_game_user_id'
+		'author', 'text', 'rpg_game_user_id'
     ];
 	
     public function user() {

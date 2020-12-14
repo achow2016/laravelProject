@@ -4466,6 +4466,7 @@ $(document).ready(function(){
 		}
 		
 		var password = $('#messagePassword').val();
+		var loadQty = $('#userMessageQty').val();
 	
 		$.ajaxSetup({
 			headers: {
@@ -4480,15 +4481,18 @@ $(document).ready(function(){
 			//dataType: {},
 			data: {
 				loginName:loginName,
+				loadQty:loadQty,
 				password:password
 			},	
 			success: function(data) {
+				$('#messageText').empty();
 				//console.log(JSON.parse(data)); get javascript array
 				var jData = JSON.parse(data); // array
 				jData.forEach(
 					element => 
 						$('#messageText').append("<div class='row'><div class='col'>" + 
-							"Time: " + element.created_at +
+							"Author: " + element.author +
+							" Time: " + element.created_at +
 							"<br>" +
 							"Message: " + element.text +
 							"<div class='row'><div class='col'>")

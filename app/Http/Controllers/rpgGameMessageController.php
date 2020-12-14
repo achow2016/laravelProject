@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Response;
 
 use Event;
 use App\Events\PrivateMessage;
+use Illuminate\Support\Facades\Log;
 
 class RpgGameMessageController extends Controller {
 	//stores messages to hasMany db
@@ -38,11 +39,17 @@ class RpgGameMessageController extends Controller {
 		else {
 			return Response::json(['error' => 'User does not exist'],400);
 		}
-		if($check) 
-			$messages = $user->messages;
-		else {
-			return Response::json(['error' => 'Wrong password!'],400);
+		//get messages of qty
+		if($check) {
+			if(strcmp($request->loadQty, "all") == 0)
+				$messages = $user->messages;
+			else if(is_numeric($request->loadQty))
+				$messages = $user->messages->take($request->loadQty);
+			else
+				return Response::json(['error' => 'Invalid quantity!'],400);
 		}
+		else
+			return Response::json(['error' => 'Wrong password!'],400);
 		echo json_encode($messages);
 		exit;
 	}	
@@ -62,7 +69,18 @@ class RpgGameMessageController extends Controller {
 			if($user) {
 				$userName = $request->input('userMessageTarget');
 				$userMessage = $request->input('userMessage');
+				
+				//dispatch event to target user
 				Event::dispatch(new PrivateMessage($userName, $userMessage, $userName));
+				
+				//store to db on send
+				$profile = RpgGameUser::where('name', $userName)->first();			
+				$message = new RpgGameMessage();
+				$message->setAttribute('rpg_game_user_id', $profile->id);
+				$message->setAttribute('author', $user->name);	
+				$message->setAttribute('text', $userMessage);	
+				$profile = $profile->messages()->save($message);
+			
 				return Response::json(['message' => 'Message sent'],200);
 			}
 			else {

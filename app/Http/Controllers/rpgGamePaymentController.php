@@ -135,6 +135,8 @@ class RpgGamePaymentController extends Controller
 			$payment = new RpgGamePayment();
 			$payment->setAttribute('rpg_game_user_id', $user->id);
 			$payment->setAttribute('amount', $purchasedCredits);		
+			$payment->setAttribute('email', $user->email);		
+			$payment->setAttribute('name', $user->name);		
 			$user = $user->payments()->save($payment);
 			
 			//tries sending the confirmation email
