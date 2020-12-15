@@ -4450,6 +4450,25 @@ $(document).ready(function(){
 	});
 	
 	$('#loadMessages').click(function() {
+		
+		var password = $('#messagePassword').val();
+		var loadQty = $('#userMessageQty').val();
+		var msgSender = $('#userMessageSender').val();
+		
+		if(!(loadQty === "all") && !(Number.isInteger(parseInt(loadQty)))) {
+			$('#messageText').text('Wrong input!');
+			$('#messagePassword').val("");
+			$('#userMessageQty').val("all");
+			$('#userMessageSender').val("all");
+			return;
+		}	
+		if(password == null) {
+			$('#messageText').text('No password!');
+			$('#userMessageQty').val("all");
+			$('#userMessageSender').val("all");
+			return;
+		}
+		
 		//get user name from cookie
 		var loginName;
 		var name = "login_name" + "=";
@@ -4482,6 +4501,7 @@ $(document).ready(function(){
 			data: {
 				loginName:loginName,
 				loadQty:loadQty,
+				msgSender:msgSender,
 				password:password
 			},	
 			success: function(data) {
@@ -4500,9 +4520,12 @@ $(document).ready(function(){
 				$('#msgUserName').val("");
 				$('#msgUserMessage').val("");
 				$('#messagePassword').val("");
+				$('#userMessageQty').val("all");
 			},
 			error: function(data) {
 				$('#messageText').empty();
+				$('#userMessageQty').val("all");
+				$('#messagePassword').val("");
 				$('#messageText').text(JSON.parse(data.responseText).error);
 			},
 			//complete: function(data){

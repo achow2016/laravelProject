@@ -68,9 +68,17 @@
 												<br>
 											</form>
 											<form action="javascript:void(0);">
-												Load ("all" or a numeric value)
+												Load quantity
+												<br>
+												"all" or a numeric value
 												<br>
 												<input type="text" name="userMessageQty" id="userMessageQty" placeholder="Amount" value="all">
+												<br>
+												Load by sender(s) 
+												<br>
+												"all" or space-seperated names
+												<br>
+												<input type="text" name="userMessageSender" id="userMessageSender" placeholder="Amount" value="all">
 												<button id="loadMessages" type="button" class="btn btn-primary primary mb-2">Load</button>
 											</form>	
 											<br>

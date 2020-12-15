@@ -32,24 +32,51 @@ class RpgGameMessageController extends Controller {
 	//get all of users messages from the db
 	public function get(Request $request)
 	{
+		if(!strcmp($request->loadQty, "all") == 0 && !is_numeric($request->loadQty))
+			return Response::json(['error' => 'Wrong input!'],400);
+		if($request->password == null)
+			return Response::json(['error' => 'No password!'],400);
+		
 		header("Access-Control-Allow-Origin: *");
+		
 		$user = RpgGameUser::where('name', $request->loginName)->first();	
 		if($user)
 			$check = Hash::check($request->password, $user->password);
-		else {
+		else
 			return Response::json(['error' => 'User does not exist'],400);
-		}
-		//get messages of qty
+		
+		//get messages of qty, sender(s)
 		if($check) {
 			if(strcmp($request->loadQty, "all") == 0)
-				$messages = $user->messages;
-			else if(is_numeric($request->loadQty))
-				$messages = $user->messages->take($request->loadQty);
+				if(strcmp($request->msgSender, "all") == 0)
+					$messages = $user->messages;
+				else if(!is_array(explode(" ", $request->msgSender)))
+					$messages = RpgGameMessage
+						::where('rpg_game_user_id', $user->id)
+						->where('author', $request->msgSender)
+						->get();
+				else
+					$messages = RpgGameMessage
+						::where('rpg_game_user_id', $user->id)
+						->whereIn('author', explode(" ", $request->msgSender))
+						->get();
 			else
-				return Response::json(['error' => 'Invalid quantity!'],400);
+				if(strcmp($request->msgSender, "all") == 0)
+					$messages = $user->messages->take($request->loadQty);
+				else if(!is_array(explode(" ", $request->msgSender)))
+					$messages = RpgGameMessage
+						::where('rpg_game_user_id', $user->id)
+						->where('author', $request->msgSender)
+						->take($request->loadQty);
+				else
+					$messages = RpgGameMessage
+						::where('rpg_game_user_id', $user->id)
+						->whereIn('author', explode(" ", $request->msgSender))
+						->take($request->loadQty);
 		}
 		else
 			return Response::json(['error' => 'Wrong password!'],400);
+		
 		echo json_encode($messages);
 		exit;
 	}	
