@@ -1,1 +1,14 @@
-
+Laravel web game app built on top of old laravel installation
+- custom guard for login
+- Eloquent for db
+- popper and laravel event for receiving messages
+- private messaging to user, message sorting
+- paypal integration on store for membership(buy by item, no cart)
+- uses blade components for views
+- game and its data is client side one page (hide/show) with modals, uses Jquery and JS
+- local storage game state uploaded to db through ajax
+- user can watch other users as score list
+- file uploading for avatar
+- password reset emails
+- textboard for posting messages
+- simple job for cleaning textboard
