@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 	Route::get('/', function () {
 		return view('rpgGame');
-	})->name('home');
+	})->name('home')->middleware('auth:rpgUser');
 	
 	//all but login and register requires logged in user
 	//add to score db uses ajax incompat with middleware as-is

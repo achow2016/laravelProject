@@ -158,6 +158,13 @@ class rpggameRegistrationController extends Controller
 		//if has image, processes and stores
 		if($request->hasFile('avatar')) {
             $file = $request->file('avatar');
+			
+			if(exif_imagetype($file) != IMAGETYPE_JPEG){
+				return view('rpgGameUserPanel', 
+				['message' => 'Invalid image type.', 
+				'currentName' => $myUser->name, 'currentEmail' => $myUser->email]);
+			}
+			
             //getting timestamp
             $timestamp = str_replace([' ', ':'], '-', Carbon::now()->toDateTimeString());
             $name = $timestamp. '-' .$file->getClientOriginalName();

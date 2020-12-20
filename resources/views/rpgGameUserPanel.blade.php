@@ -57,11 +57,11 @@
 						@if (!empty($avatar))
 						Current Avatar	
 						<img class="img-responsive mt-1 mb-1" src="{{$avatar}}" alt="avatar">
-						<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active">Upload Avatar</button>
+						<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active">Upload Avatar (JPEG)</button>
 						<button style="display:none" id="hideAvatarMenu" type="button" class="btn btn-primary active w-100">Close Avatar Menu</button>
 						@else 
 						<p>No Avatar</p>
-						<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active">Upload Avatar</button>
+						<button id="showAvatarMenu" type="button" class="mb-1 btn btn-primary active">Upload Avatar (JPEG)</button>
 						<button style="display:none" id="hideAvatarMenu" type="button" class="btn btn-primary active w-100">Close Avatar Menu</button-->
 						@endif
 					</div>
